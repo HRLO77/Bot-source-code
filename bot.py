@@ -65,15 +65,21 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
 
-@client.listen
-async def on_message(message: discord.Message):
-    test = str(message.remove(' ', '')).lower()
-    if discord.Guild.get_member_named(message.author).bot:
+@client.event
+async def on_message(message:discord.Message):
+    global spam
+    global content
+    print(spam, content, message.author.bot)
+    test = str(str(message.content).replace(' ', '')).lower()
+    if message.author.bot:
         await client.process_commands(message)
         return
+    else:
+        pass
+    print('done')
     if spam == 1:
         if len((message.content)) > 950:
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
         if len((message.content)) > 450:
@@ -81,32 +87,31 @@ async def on_message(message: discord.Message):
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
         if len((message.content)) > 195:
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
         if len((message.content)) > 90:
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
-
     if content == 1:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 2:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data3):
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 3:
         for i in filter4:
             test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 4:
         for i in filter5:
             test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
-            await message.delete
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
     await client.process_commands(message)
 
@@ -353,8 +358,9 @@ async def delete_channels(ctx, *, channels):
 @client.command(aliases=('spam_filter', 'spam'))
 @commands.has_permissions(administrator=True)
 async def spam_check(ctx, value):
-    if type(value) == int and -1 < value < 5:
-        spam = value
+    global spam
+    if int(value) and -1 < int(value) < 5:
+        spam = int(value)
     else:
         await ctx.send('Invalid content_check value')
         return
@@ -364,8 +370,8 @@ async def spam_check(ctx, value):
 @commands.has_permissions(administrator=True)
 async def content_check(ctx, value):
     global content
-    if type(value) == int and -1 < value < 5:
-        content = value
+    if int(value) and -1 < int(value) < 5:
+        content = int(value)
     else:
         await ctx.send('Invalid content_check value')
         return
