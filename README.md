@@ -9,3 +9,5 @@ I will review the pull requests sent and get back to your if possible within 1-3
 If you need a link to servers where this bot is, you can just contact me.
 
 If you want to be a bot tester, let me know.
+
+btw the parts in the code where it mutes members it says role_id=, that role_id is the role with the muted permissions you want to add to mute the members.
