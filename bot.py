@@ -70,15 +70,13 @@ async def on_ready():
 async def on_message(message:discord.Message):
     global spam
     global content
-    print(spam, content, message.author.bot)
-    print(datetime.now(), message.author, message.channel, message.content)
+    print(datetime.now(), message.author, message.channel, message.content, message.author.bot, spam, content)
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
         return
     else:
         pass
-    print('done')
     if spam == 1:
         if len((message.content)) > 950:
             await message.delete()
@@ -134,11 +132,10 @@ async def on_member_remove(ctx, *, member: discord.member):
 async def ping(ctx):
     await ctx.send(f'{client.latency * 1000} ms.')
 
-
 @client.command(aliases=('delete', 'purge', 'clean'))
 @commands.has_permissions(manage_messages=True)
 async def clear(ctx, amount=10):
-    await ctx.channel.purge(limit=amount + 1)
+    await ctx.channel.purge(limit=int(amount) + 1)
 
 
 @client.command(aliases=('8ball', '8bal'))
@@ -181,8 +178,10 @@ async def unban(ctx, *, member):
 @commands.has_permissions(administrator=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role id here'))
+    role = ctx.guild.get_role(role_id=916896527312642078)
     await member.add_roles(role)
+    await member.send(f'''**{member.mention}** was muted by **{ctx.message.author}**:
+**{reason}**''')
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
@@ -190,9 +189,10 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role id here'))
+    role = ctx.guild.get_role(role_id=916896527312642078)
     await member.remove_roles(role)
-    await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**''')
+    await member.send(f'''**{member.mention}** was unmuted by **{ctx.message.author}**''')
+    await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**''')
 
 
 
@@ -242,6 +242,7 @@ async def file_unmute(ctx, member: discord.Member):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    await member.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author}**!''')
     await ctx.send(f"**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**!")
 
 @client.command()
@@ -250,6 +251,8 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    await member.send(f'''**{member.mention}** was file_muted by **{ctx.message.author}**:
+**{reason}**''')
     await ctx.send(f'''**{member.mention}** was file_muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
@@ -288,11 +291,12 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role id here'))
+    role = ctx.guild.get_role(role_id=916896527312642078)
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
+            await i.send(f'You were muted by **{ctx.author}**')
             await i.add_roles(role)
     await ctx.send(f'{ctx.author.mention} has hushed the channel.')
 
@@ -301,11 +305,12 @@ async def hush(ctx):
 @commands.has_permissions(administrator=True)
 async def un_hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role id here'))
+    role = ctx.guild.get_role(role_id=916896527312642078)
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
+            await i.send(f'You were unmuted by **{ctx.author}**')
             await i.remove_roles(role)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
