@@ -186,6 +186,15 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
+@client.command()
+@commands.has_permissions(administrator=True)
+async def unmute(ctx, member: discord.Member):
+    global role
+    role = ctx.guild.get_role(role_id=916896527312642078)
+    await member.remove_roles(role)
+    await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**''')
+
+
 
 @client.command()
 @commands.has_permissions(administrator=True)
