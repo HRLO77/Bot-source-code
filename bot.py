@@ -181,7 +181,7 @@ async def unban(ctx, *, member):
 @commands.has_permissions(administrator=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
-    role = ctx.guild.get_role(role_id=916896527312642078)
+    role = ctx.guild.get_role(role_id=('Mute role id here'))
     await member.add_roles(role)
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
@@ -190,7 +190,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
     global role
-    role = ctx.guild.get_role(role_id=916896527312642078)
+    role = ctx.guild.get_role(role_id=('Mute role id here'))
     await member.remove_roles(role)
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**''')
 
@@ -288,7 +288,7 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=916896527312642078)
+    role = ctx.guild.get_role(role_id=('Mute role id here'))
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
@@ -301,7 +301,7 @@ async def hush(ctx):
 @commands.has_permissions(administrator=True)
 async def un_hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=916896527312642078)
+    role = ctx.guild.get_role(role_id=('Mute role id here'))
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
