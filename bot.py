@@ -15,8 +15,8 @@ import csv
 from discord import guild
 muted_channel = False
 tracemalloc.start()
-spam = 3
-content = 2
+spam = 0
+content = 0
 
 explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k', 'sh!t', 'sht', 's h t', 's h ! t',
                   'sh*t', 's h * t', 'btch', 'bitch', 'b i t c h', 'b ! t c h', 'b t c h', 's u c', 'suc', 'suck',
@@ -59,7 +59,7 @@ byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
 
 intents = discord.Intents.all()
 client = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
-profanity.load_words(explicit_data3)
+profanity.load_words(explicit_data2)
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -255,7 +255,7 @@ async def channel_purge(ctx):
 async def warn(ctx, member: discord.Member, *, reason):
     with open('Warns.txt', 'a') as file:
         file = file.write(
-            '**{member.mention}** you were warned by **{ctx.author}**:**{reason}**\n')
+            f'**{member.mention}** you were warned by **{ctx.author}**:**{reason}**\n')
     await member.send(content=f'''**{member.mention}** you were warned by **{ctx.author}**:
 **{reason}**''')
     await ctx.send(f'''**{member.mention}** you were warned by **{ctx.author.mention}**:
@@ -380,7 +380,7 @@ async def content_check(ctx, value):
 
 @client.command(aliases=('get_help', 'pull_help'))
 async def fetch_help(ctx):
-    await ctx.send('https://pastebin.com/0z1MdE24')
+    await ctx.send('https://pastebin.com/WAG3xpZk')
 
 
 @client.command(aliases=('get_code', 'pull_code'))
