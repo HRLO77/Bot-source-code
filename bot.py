@@ -15,8 +15,8 @@ import csv
 from discord import guild
 muted_channel = False
 tracemalloc.start()
-spam = 0
-content = 0
+spam = 3
+content = 2
 
 explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k', 'sh!t', 'sht', 's h t', 's h ! t',
                   'sh*t', 's h * t', 'btch', 'bitch', 'b i t c h', 'b ! t c h', 'b t c h', 's u c', 'suc', 'suck',
@@ -70,6 +70,7 @@ async def on_message(message:discord.Message):
     global spam
     global content
     print(spam, content, message.author.bot)
+    print(datetime.now(), message.author, message.channel, message.content)
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -379,7 +380,7 @@ async def content_check(ctx, value):
 
 @client.command(aliases=('get_help', 'pull_help'))
 async def fetch_help(ctx):
-    await ctx.send('https://pastebin.com/p5uLyHgb')
+    await ctx.send('https://pastebin.com/0z1MdE24')
 
 
 @client.command(aliases=('get_code', 'pull_code'))
