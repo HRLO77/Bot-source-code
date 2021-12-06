@@ -389,7 +389,7 @@ async def content_check(ctx, value):
 
 @client.command(aliases=('get_help', 'pull_help'))
 async def fetch_help(ctx):
-    await ctx.send('https://pastebin.com/WAG3xpZk')
+    await ctx.send('https://pastebin.com/9w4Fp110')
 
 
 @client.command(aliases=('get_code', 'pull_code'))
