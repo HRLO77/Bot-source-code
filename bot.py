@@ -178,8 +178,17 @@ async def unban(ctx, *, member):
 @commands.has_permissions(administrator=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role here'))
-    await member.add_roles(role)
+    try:
+        role = ctx.guild.get_role(role_id=916896527312642078)
+    except AttributeError:
+        role = False
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
+    if role == False:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.add_roles(role)
     await member.send(f'''**{member.mention}** was muted by **{ctx.message.author}**:
 **{reason}**''')
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
@@ -189,8 +198,17 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role here'))
-    await member.remove_roles(role)
+    try:
+        role = ctx.guild.get_role(role_id=916896527312642078)
+    except AttributeError:
+        role = False
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
+    if role == False:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.remove_roles(role)
     await member.send(f'''**{member.mention}** was unmuted by **{ctx.message.author}**''')
     await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**''')
 
@@ -291,7 +309,13 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role here'))
+    try:
+        role = ctx.guild.get_role(role_id=916896527312642078)
+    except AttributeError:
+        role = False
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
@@ -305,13 +329,22 @@ async def hush(ctx):
 @commands.has_permissions(administrator=True)
 async def un_hush(ctx):
     global role
-    role = ctx.guild.get_role(role_id=('Mute role here'))
+    try:
+        role = ctx.guild.get_role(role_id=916896527312642078)
+    except AttributeError:
+        role = False
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
             await i.send(f'You were unmuted by **{ctx.author}**')
-            await i.remove_roles(role)
+            if role == False:
+                await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            else:
+                await i.remove_roles(role)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
@@ -427,9 +460,9 @@ def convert_to_list(str):
     data.append(cache)
     return data
 
-#    overwrite = discord.PermissionOverwrite()
-#    overwrite.send_messages = True
+#   overwrite = discord.PermissionOverwrite()
+#   overwrite.send_messages = True
 #   overwrite.read_messages = True
-# await ctx.message.channel.set_permissions(overwrite=overwrite)
+#   await ctx.message.channel.set_permissions(overwrite=overwrite)
 
 client.run('token')
