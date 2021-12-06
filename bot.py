@@ -59,8 +59,7 @@ byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
 
 intents = discord.Intents.all()
 client = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
-
-
+profanity.load_words(explicit_data3)
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -99,13 +98,13 @@ async def on_message(message: discord.Message):
             await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 3:
         for i in filter4:
-            test.replace(i, '*')
+            test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
             await message.delete
             await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 4:
         for i in filter5:
-            test.replace(i, '*')
+            test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
             await message.delete
             await message.channel.send(f'{message.author.mention} please do not swear.')
@@ -408,4 +407,4 @@ def convert_to_list(str):
     return data
 
 
-client.run('OTA5NjM5NjI3Mzc0MjAyODkw.YZHN6w.dECHRdk5dwx7fkpVAr6RHm_tglA')
+client.run('token')
