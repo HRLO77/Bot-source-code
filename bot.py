@@ -60,6 +60,7 @@ byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
 intents = discord.Intents.all()
 client = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
 profanity.load_words(explicit_data2)
+role = ''
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -179,10 +180,9 @@ async def unban(ctx, *, member):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = False
-    overwrite.read_messages = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    global role
+    role = ctx.guild.get_role(role_id=('The muted role here'))
+    await member.add_roles(role)
     await ctx.send(f"**{member.mention}** was muted by **{ctx.message.author.mention}**!")
 
 
@@ -236,10 +236,8 @@ async def file_unmute(ctx, member: discord.Member, *, reason='None'):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    role = ctx.guild.get_role(role_id=('The muted role here'))
+    await member.remove_roles(role)
     await ctx.send(f"**{member.mention}** was unmuted by **{ctx.message.author.mention}**!")
 
 
@@ -276,28 +274,26 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
+    global role
+    role = ctx.guild.get_role(role_id=('The muted role here'))
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
-            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            await i.add_roles(role)
     await ctx.send(f'{ctx.author.mention} has hushed the channel.')
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
 @commands.has_permissions(administrator=True)
 async def un_hush(ctx):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
+    global role
+    role = ctx.guild.get_role(role_id=('The muted role here'))
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
-            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            await i.remove_roles(role)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
@@ -413,5 +409,8 @@ def convert_to_list(str):
     data.append(cache)
     return data
 
-
+#    overwrite = discord.PermissionOverwrite()
+#    overwrite.send_messages = True
+#   overwrite.read_messages = True
+# await ctx.message.channel.set_permissions(overwrite=overwrite)
 client.run('token')
