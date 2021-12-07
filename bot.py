@@ -202,7 +202,7 @@ async def unban(ctx, *, member):
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -222,7 +222,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 async def unmute(ctx, member: discord.Member):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -320,7 +320,6 @@ async def warn(ctx, member: discord.Member, *, reason):
 
 
 @client.command(aliases=('get_member_histroy', 'pull_member_history'))
-@commands.has_permissions(administrator=True)
 async def fetch_member_history(ctx, member: discord.Member, channel: discord.TextChannel, limit=10):
     messages = []
     async for message in (channel.history(limit=limit)):
@@ -330,12 +329,20 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
     await ctx.send(messages)
 
 
+@client.command(aliases=('get_messages', 'pull_messages'))
+async def fetch_messages(ctx, member: discord.Member, channel: discord.TextChannel, limit=10):
+    messages = []
+    async for message in (channel.history(limit=limit)):
+            messages.insert(
+                0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+    await ctx.send(messages)
+
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -355,7 +362,7 @@ async def hush(ctx):
 async def un_hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -490,6 +497,11 @@ async def fetch_help(ctx):
 @client.command(aliases=('get_code', 'pull_code'))
 async def fetch_code(ctx):
     await ctx.send('https://github.com/HRLO77/Bot-source-code')
+
+
+@client.command(alieases=('get_message', 'pull_message'))
+async def fetch_message(ctx, *,message_id):
+    await ctx.send(f'https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}')
 
 
 def check_user_is_admin(user):
