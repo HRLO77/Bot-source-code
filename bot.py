@@ -70,6 +70,7 @@ async def on_ready():
 async def on_message(message:discord.Message):
     global spam
     global content
+    cache = ''
     print(datetime.now(), message.author, message.channel, message.content, message.author.bot, spam, content)
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
@@ -82,15 +83,30 @@ async def on_message(message:discord.Message):
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
-        if len((message.content)) > 450:
-            await message.delete
+        count = 0
+        for index, value in enumerate(test):
+            if value == cache:
+                count += 1
+            cache = value
+        if len((message.content)) > 450 or count > 30:
+            await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
-        if len((message.content)) > 195:
+        count = 0
+        for index, value in enumerate(test):
+            if value == cache:
+                count += 1
+            cache = value
+        if len((message.content)) > 195 or count > 15:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
-        if len((message.content)) > 90:
+        count = 0
+        for index, value in enumerate(test):
+            if value == cache:
+                count += 1
+            cache = value
+        if len((message.content)) > 90 or count > 6:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     if content == 1:
@@ -110,6 +126,7 @@ async def on_message(message:discord.Message):
     elif content == 4:
         for i in filter5:
             test = test.replace(i, '*')
+        print(test)
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
@@ -185,7 +202,7 @@ async def unban(ctx, *, member):
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -205,7 +222,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 async def unmute(ctx, member: discord.Member):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -318,7 +335,7 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 async def hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -338,7 +355,7 @@ async def hush(ctx):
 async def un_hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
