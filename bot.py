@@ -147,18 +147,24 @@ async def _8ball(ctx, *, question):
     await ctx.send(random.choice(_8ball))
 
 
-@client.command()
+@client.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'))
 @commands.has_permissions(administrator=True)
-async def kick(ctx, member: discord.Member, *, reason='Duh'):
+async def kick(ctx, member: discord.Member, *, reason='None'):
+    await member.send(f'''You were kicked by **{ctx.author}**:
+**{reason}**.''')
     await member.kick(reason=reason)
-    await ctx.send(f'**{ctx.message.author.mention}** kicked **{member.mention}**.')
+    await ctx.send(f'''**{ctx.message.author.mention}** kicked **{member.mention}**:
+**{reason}**.''')
 
 
-@client.command()
+@client.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(administrator=True)
-async def ban(ctx, member: discord.Member, *, reason='Duh'):
+async def ban(ctx, member: discord.Member, *, reason='None'):
+    await member.send(f'''You were banned by **{ctx.author}**:
+    **{reason}**''')
     await member.ban(reason=reason)
-    await (f'**{ctx.message.author.mention}** banned **{member.mention}**.')
+    await (f'''**{ctx.message.author.mention}** banned **{member.mention}**:
+**{reason}**.''')
 
 
 @client.command()
@@ -179,7 +185,7 @@ async def unban(ctx, *, member):
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -199,7 +205,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 async def unmute(ctx, member: discord.Member):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -256,12 +262,14 @@ async def role_file_mute(ctx, role: discord.Role, *, reason='None'):
 
 @client.command()
 @commands.has_permissions(administrator=True)
-async def file_unmute(ctx, member: discord.Member):
+async def file_unmute(ctx, member: discord.Member, *, reason):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    await member.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author}**!''')
-    await ctx.send(f"**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**!")
+    await member.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author}**:
+**{reason}**''')
+    await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**:
+**{reason}**''')
 
 @client.command()
 @commands.has_permissions(administrator=True)
@@ -310,7 +318,7 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 async def hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -330,7 +338,7 @@ async def hush(ctx):
 async def un_hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -401,6 +409,38 @@ async def delete_channels(ctx, *, channels):
         print(i)
         channel = await client.fetch_channel(int(i))
         await channel.delete()
+
+@client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
+@commands.has_permissions(administrator=True)
+async def kick_members(ctx, *, members):
+    try:
+        list(members)
+    except ValueError:
+        await ctx.send('Invalid list for "members"')
+        return
+    tup = convert_to_list(members)
+    print(tup)
+    for i in tup:
+        print(i)
+        member = await client.fetch_user(int(i))
+        await member.send(f'''You were kicked by **{ctx.author}**!''')
+        await member.kick(reason='None')
+
+@client.command(aliases=('ban_users', 'ban_people'))
+@commands.has_permissions(administrator=True)
+async def ban_members(ctx, *, members):
+    try:
+        list(members)
+    except ValueError:
+        await ctx.send('Invalid list for "members"')
+        return
+    tup = convert_to_list(members)
+    print(tup)
+    for i in tup:
+        print(i)
+        member = await client.fetch_user(int(i))
+        await member.send(f'''You were banned by **{ctx.author}**!''')
+        await member.ban()
 
 
 @client.command(aliases=('spam_filter', 'spam'))
