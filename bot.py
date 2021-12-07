@@ -330,7 +330,7 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 
 
 @client.command(aliases=('get_messages', 'pull_messages'))
-async def fetch_messages(ctx, member: discord.Member, channel: discord.TextChannel, limit=10):
+async def fetch_messages(ctx, channel: discord.TextChannel, limit=10):
     messages = []
     async for message in (channel.history(limit=limit)):
             messages.insert(
