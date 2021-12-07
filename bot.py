@@ -320,9 +320,9 @@ async def warn(ctx, member: discord.Member, *, reason):
 
 
 @client.command(aliases=('get_member_histroy', 'pull_member_history'))
-async def fetch_member_history(ctx, member: discord.Member, channel: discord.TextChannel, limit=10):
+async def fetch_member_history(ctx, member: discord.Member, limit=10):
     messages = []
-    async for message in (channel.history(limit=limit)):
+    async for message in (ctx.channel.history(limit=limit)):
         if message.author == member:
             messages.insert(
                 0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
@@ -330,9 +330,9 @@ async def fetch_member_history(ctx, member: discord.Member, channel: discord.Tex
 
 
 @client.command(aliases=('get_messages', 'pull_messages'))
-async def fetch_messages(ctx, channel: discord.TextChannel, limit=10):
+async def fetch_messages(ctx, limit=10):
     messages = []
-    async for message in (channel.history(limit=limit)):
+    async for message in (ctx.channel.history(limit=limit)):
             messages.insert(
                 0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
     await ctx.send(messages)
