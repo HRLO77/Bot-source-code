@@ -11,3 +11,5 @@ If you need a link to servers where this bot is, you can just contact me.
 If you want to be a bot tester, let me know.
 
 btw the parts in the code where it says, ('Mute role here, or blank'), that role_id is the role with the muted permissions you want to add to mute the members, leave it blank if you want to mute members individually without adding a role to them(NOTE: If you are adding a role, it expects roles to have proper permissions for muting, as it will not mute then.)
+
+Here is the documentation for the commands - https://pastebin.com/9w4Fp110
