@@ -15,12 +15,14 @@ import csv
 from discord import guild
 import pbwrap
 from pbwrap import pbwrap
+
 muted_channel = False
 tracemalloc.start()
 spam = 0
 content = 0
 
-explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k', 'sh!t', 'sht', 'f*ck', 'd*mn','s h t', 's h ! t',
+explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k', 'sh!t', 'sht', 'f*ck', 'd*mn', 's h t',
+                  's h ! t',
                   'sh*t', 's h * t', 'btch', 'bitch', 'b i t c h', 'b ! t c h', 'b t c h', 's u c', 'suc', 'suck',
                   's*ck', 's u c k', 'sex', 's e x', 'sx', 's x', 's * x', 's*x', 'xxx', 'x x x', 'porn', 'prn',
                   'p o r n', 'p*rn', 'p * r n', 'tit', 't!t', 't*t', 't i t', 't * t', 't ! t', 'bastard',
@@ -31,17 +33,33 @@ explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k',
                   'c r * p', 'idiot', 'idit', 'i d i o t', 'idoit', 'i d o i t', 'i d i t', 'piss', 'p*ss', 'p!ss',
                   'p i s s', 'pis', 'p i s', 'p * s s', 'p!s', 'p * s', 'p ! s', 'fuc', 'f u c', 'f u k', 'ass', 'arse',
                   'a s s', 'asre', 'a r s e', 'a s r e', 'puss', 'p u s', 'p u s s', 'stfu', 's t f u', 'fu', 'f u',
-                  'nigga', 'nigger', 'n!gga', 'n!gger', 'n*gger', 'n ! g g e r', 'n * g g a', 'n * g g e r', 'n ! g g a',
+                  'nigga', 'nigger', 'n!gga', 'n!gger', 'n*gger', 'n ! g g e r', 'n * g g a', 'n * g g e r',
+                  'n ! g g a',
                   'flip', 'f l i p', 'frick', 'f r i c k', 'dam', 'dayum', 'anal', 'butt', 'lana', 'seggs', 'segs',
                   'peg', 'damn', 'danm', 'shut', 'cunt', 'c*nt', 'clusterfuc', 'nazi', 'naz*', 'n*zi', 'neo', 'fk',
                   'fuke', 'trash', 'bang', 'hit', 'slap', 'gay', 'gai', 'hitler', 'geno', 'kil', 'mur', 'mutil',
                   'sta', 'blo', 'job', 'rob', 'robl', 'fort', 'nite', 'stup', 'dum', 'dam', 'dumb', 'dummy', 'lma',
                   'lmb', 'idg', 'pus', 'cu', 'come', 'dump', 'hac', 'dip', 'stick', 'rod', 'prod', 'pok', 'dum', 'thot',
                   't h o t', 'th*t', 't h * t', 'crud', 'crap', 'c r * d', 'fruck', 'f r u c k', 'fr*ck', 'f r * c k'}
-explicit_data4 = {'cunt', 'mur', 'pussy', 'sex', 'pis', 'frick', 'nigga', 'nazi', 'sht', 'sh*t', 'rape', 'crap', 'n*gger', 'xxx', 'neo', 'rupe', 'naz*', 'dam', 'asre', 'dummy', 'th*t', 'fort', 'thot', 'fk', 'prod', 'v*gina', 'pok', 'gay', 'lmb', 'peg', 'hac', 'geno', 'dayum', 'hit', 'job', 'n!gger', 'p*rn', 'flip', 'p*ss', 'idoit', 'damn', 'p*ssy', 'dump', 'nigger', 'p!s', 'fck', 'sta', 'crud', 'segs', 'shit', 'c!ck', 's*ck', 'bastard', 'kil', 'fuc', 'porn', 'cu', 't!t',
-                  'tit', 'fack', 'sh!t', 'butt', 'danm', 'dip', 's*x', 'd!ck', 'gai', 'idit', 'cock', 'fuke', 'puss', 'trash', 'slap', 'seggs', 'anal', 'sx', 'fac', 'idiot', 'c*nt', 'stup', 'fr*ck', 'n!gga', 'rob', 'mutil', 'dumb', 't*t', 'stfu', 'clusterfuc', 'blo', 'hitler', 'lana', 'rod', 'fuk', 'nite', 'suck', 'fuck', 'btch', 'lma', 'pus', 'p!ss', 'idg', 'cr*p', 'n*zi', 'robl', 'piss', 'shut', 'ass', 'bitch', 'fu', 'prn', 'arse', 'stick', 'fruck', 'suc', 'bang', 'dum', 'vagina', 'come', 'dick'}
-explicit_data3 = {'nazi', 'd!ck', 'slap', 'bitch', 'stick', 'idoit', 'vagina', 'cunt', 'hac', 'dip', 'pis', 'dumb', 'dam', 'sex', 'dick', 'fruck', 'prn', 'dump', 'stfu', 'rod', 'blo', 'p!ss', 'suc', 'dummy', 'hit', 'n!gga', 'anal', 'rape', 'fuc', 'fac', 'geno', 'fu', 'rob', 'robl', 'suck', 'sta', 'fack', 'damn', 'cock', 't!t', 'crap', 'fuke', 'lmb', 'lma', 'dum', 'nite', 'dayum', 'fck', 'btch', 'seggs', 'kil',
-                  'shit', 'lana', 'shut', 'flip', 'ass', 'come', 'butt', 'arse', 'gai', 'c!ck', 'fuck', 'pok', 'gay', 'xxx', 'fort', 'clusterfuc', 'puss', 'idg', 'mutil', 'sht', 'piss', 'frick', 'stup', 'prod', 'bang', 'sx', 'idit', 'nigger', 'rupe', 'danm', 'fk', 'pussy', 'asre', 'peg', 'pus', 'neo', 'mur', 'trash', 'p!s', 'hitler', 'idiot', 'tit', 'thot', 'segs', 'sh!t', 'nigga', 'job', 'bastard', 'fuk', 'n!gger', 'porn', 'cu', 'crud'}
+explicit_data4 = {'cunt', 'mur', 'pussy', 'sex', 'pis', 'frick', 'nigga', 'nazi', 'sht', 'sh*t', 'rape', 'crap',
+                  'n*gger', 'xxx', 'neo', 'rupe', 'naz*', 'dam', 'asre', 'dummy', 'th*t', 'fort', 'thot', 'fk', 'prod',
+                  'v*gina', 'pok', 'gay', 'lmb', 'peg', 'hac', 'geno', 'dayum', 'hit', 'job', 'n!gger', 'p*rn', 'flip',
+                  'p*ss', 'idoit', 'damn', 'p*ssy', 'dump', 'nigger', 'p!s', 'fck', 'sta', 'crud', 'segs', 'shit',
+                  'c!ck', 's*ck', 'bastard', 'kil', 'fuc', 'porn', 'cu', 't!t',
+                  'tit', 'fack', 'sh!t', 'butt', 'danm', 'dip', 's*x', 'd!ck', 'gai', 'idit', 'cock', 'fuke', 'puss',
+                  'trash', 'slap', 'seggs', 'anal', 'sx', 'fac', 'idiot', 'c*nt', 'stup', 'fr*ck', 'n!gga', 'rob',
+                  'mutil', 'dumb', 't*t', 'stfu', 'clusterfuc', 'blo', 'hitler', 'lana', 'rod', 'fuk', 'nite', 'suck',
+                  'fuck', 'btch', 'lma', 'pus', 'p!ss', 'idg', 'cr*p', 'n*zi', 'robl', 'piss', 'shut', 'ass', 'bitch',
+                  'fu', 'prn', 'arse', 'stick', 'fruck', 'suc', 'bang', 'dum', 'vagina', 'come', 'dick'}
+explicit_data3 = {'nazi', 'd!ck', 'slap', 'bitch', 'stick', 'idoit', 'vagina', 'cunt', 'hac', 'dip', 'pis', 'dumb',
+                  'dam', 'sex', 'dick', 'fruck', 'prn', 'dump', 'stfu', 'rod', 'blo', 'p!ss', 'suc', 'dummy', 'hit',
+                  'n!gga', 'anal', 'rape', 'fuc', 'fac', 'geno', 'fu', 'rob', 'robl', 'suck', 'sta', 'fack', 'damn',
+                  'cock', 't!t', 'crap', 'fuke', 'lmb', 'lma', 'dum', 'nite', 'dayum', 'fck', 'btch', 'seggs', 'kil',
+                  'shit', 'lana', 'shut', 'flip', 'ass', 'come', 'butt', 'arse', 'gai', 'c!ck', 'fuck', 'pok', 'gay',
+                  'xxx', 'fort', 'clusterfuc', 'puss', 'idg', 'mutil', 'sht', 'piss', 'frick', 'stup', 'prod', 'bang',
+                  'sx', 'idit', 'nigger', 'rupe', 'danm', 'fk', 'pussy', 'asre', 'peg', 'pus', 'neo', 'mur', 'trash',
+                  'p!s', 'hitler', 'idiot', 'tit', 'thot', 'segs', 'sh!t', 'nigga', 'job', 'bastard', 'fuk', 'n!gger',
+                  'porn', 'cu', 'crud'}
 explicit_data2 = {'cock', 'vagina', 'sex', 'anal', 'fuck',
                   'shit', 'nigga', 'piss', 'cunt', 'pussy', 'dick', 'nigger'}
 filter5 = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
@@ -70,7 +88,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message:discord.Message):
+async def on_message(message: discord.Message):
     global spam
     global content
     cache = ''
@@ -138,11 +156,18 @@ async def on_message(message:discord.Message):
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not swear.')
+    if client.user in message.mentions:
+        for i in message.guild.members:
+            if i.guild_permissions.administrator:
+                await i.send(
+                    f'**{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
+            else:
+                pass
     await client.process_commands(message)
 
 
 @client.event
-async def on_member_join(ctx, *,member : discord.Member):
+async def on_member_join(ctx, *, member: discord.Member):
     await ctx.send(f'{member.mention} joined.')
     await ctx.send(':wave:')
 
@@ -157,6 +182,7 @@ async def on_member_remove(ctx, *, member: discord.member):
 async def ping(ctx):
     await ctx.send(f'{client.latency * 1000} ms.')
 
+
 @client.command(aliases=('delete', 'purge', 'clean'))
 @commands.has_permissions(manage_messages=True)
 async def clear(ctx, amount=10):
@@ -166,9 +192,12 @@ async def clear(ctx, amount=10):
 @client.command(aliases=('8ball', '8bal'))
 async def _8ball(ctx, *, question):
     _8ball = ("As I see it, yes.", "Ask again later.", "Better not tell you now.", "Cannot predict now.",
-              "Concentrate and ask again.", "Don’t count on it.", "It is certain.", "It is decidedly so.", "Most likely.",
-              "My reply is no.", "My sources say no.", "Outlook not so good.", "Outlook good.", "Reply hazy, try again.",
-              "Signs point to yes.", "Very doubtful.", "Without a doubt.", "Yes.", "Yes – definitely.", "You may rely on it.")
+              "Concentrate and ask again.", "Don’t count on it.", "It is certain.", "It is decidedly so.",
+              "Most likely.",
+              "My reply is no.", "My sources say no.", "Outlook not so good.", "Outlook good.",
+              "Reply hazy, try again.",
+              "Signs point to yes.", "Very doubtful.", "Without a doubt.", "Yes.", "Yes – definitely.",
+              "You may rely on it.")
     await ctx.send(random.choice(_8ball))
 
 
@@ -215,6 +244,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
+
 @client.command()
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
@@ -223,7 +253,6 @@ async def unmute(ctx, member: discord.Member):
     overwrite.read_messages = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
     await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**!''')
-
 
 
 @client.command()
@@ -275,6 +304,7 @@ async def file_unmute(ctx, member: discord.Member, *, reason):
     await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
+
 @client.command()
 @commands.has_permissions(administrator=True)
 async def file_mute(ctx, member: discord.Member, *, reason='None'):
@@ -316,9 +346,10 @@ async def fetch_member_history(ctx, member: discord.Member, limit=10):
 async def fetch_messages(ctx, limit=10):
     messages = []
     async for message in (ctx.channel.history(limit=limit)):
-            messages.insert(
-                0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+        messages.insert(
+            0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
     await ctx.send(messages)
+
 
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(administrator=True)
@@ -402,6 +433,7 @@ async def delete_channels(ctx, *, channels):
         channel = await client.fetch_channel(int(i))
         await channel.delete()
 
+
 @client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
 @commands.has_permissions(administrator=True)
 async def kick_members(ctx, *, members):
@@ -417,6 +449,7 @@ async def kick_members(ctx, *, members):
         member = await client.fetch_user(int(i))
         await member.send(f'''You were kicked by **{ctx.author}**!''')
         await member.kick(reason='None')
+
 
 @client.command(aliases=('ban_users', 'ban_people'))
 @commands.has_permissions(administrator=True)
@@ -484,6 +517,11 @@ async def member_count(ctx):
     await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
 
 
+@client.command(aliases=('get_member', 'pull_member'))
+async def fetch_member(ctx, member_id: discord.Member):
+    await ctx.send(member_id.mention)
+
+
 def check_user_is_admin(user):
     admin_data = {'HRLO77', 'Sniperfirst21', 'Nvm!', 'bruisedbeans',
                   'Trismo', 'GlitchBotGaming', 'Zain.W', 'Jiyaa', 'E-BAG', 'Jilal'}
@@ -512,6 +550,7 @@ def convert_to_list(str):
             cache = f'{cache}{i}'
     data.append(cache)
     return data
+
 
 #   overwrite = discord.PermissionOverwrite()
 #   overwrite.send_messages = True
