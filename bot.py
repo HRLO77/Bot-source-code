@@ -13,6 +13,8 @@ from discord.ext import commands
 from datetime import datetime
 import csv
 from discord import guild
+import pbwrap
+from pbwrap import pbwrap
 muted_channel = False
 tracemalloc.start()
 spam = 0
@@ -60,7 +62,7 @@ byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
 intents = discord.Intents.all()
 client = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
 profanity.load_words(explicit_data2)
-role = ''
+
 
 @client.event
 async def on_ready():
@@ -206,40 +208,21 @@ async def unban(ctx, *, member):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
-    global role
-    try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
-    except AttributeError:
-        role = False
-        overwrite = discord.PermissionOverwrite()
-        overwrite.send_messages = True
-        overwrite.read_messages = True
-    if role == False:
-        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    else:
-        await member.add_roles(role)
-    await member.send(f'''**{member.mention}** was muted by **{ctx.message.author}**:
-**{reason}**''')
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = False
+    overwrite.read_messages = True
+    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
 @client.command()
 @commands.has_permissions(administrator=True)
 async def unmute(ctx, member: discord.Member):
-    global role
-    try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
-    except AttributeError:
-        role = False
-        overwrite = discord.PermissionOverwrite()
-        overwrite.send_messages = True
-        overwrite.read_messages = True
-    if role == False:
-        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    else:
-        await member.remove_roles(role)
-    await member.send(f'''**{member.mention}** was unmuted by **{ctx.message.author}**''')
-    await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**''')
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = True
+    overwrite.read_messages = True
+    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**!''')
 
 
 
@@ -289,8 +272,6 @@ async def file_unmute(ctx, member: discord.Member, *, reason):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    await member.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author}**:
-**{reason}**''')
     await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
@@ -300,8 +281,6 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    await member.send(f'''**{member.mention}** was file_muted by **{ctx.message.author}**:
-**{reason}**''')
     await ctx.send(f'''**{member.mention}** was file_muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
@@ -319,8 +298,6 @@ async def warn(ctx, member: discord.Member, *, reason):
     with open('Warns.txt', 'a') as file:
         file = file.write(
             f'**{member.mention}** you were warned by **{ctx.author}**:**{reason}**\n')
-    await member.send(content=f'''**{member.mention}** you were warned by **{ctx.author}**:
-**{reason}**''')
     await ctx.send(f'''**{member.mention}** you were warned by **{ctx.author.mention}**:
 **{reason}**''')
 
@@ -346,43 +323,28 @@ async def fetch_messages(ctx, limit=10):
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(administrator=True)
 async def hush(ctx):
-    global role
-    try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
-    except AttributeError:
-        role = False
-        overwrite = discord.PermissionOverwrite()
-        overwrite.send_messages = True
-        overwrite.read_messages = True
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = False
+    overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
-            await i.send(f'You were muted by **{ctx.author}**')
-            await i.add_roles(role)
+            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
     await ctx.send(f'{ctx.author.mention} has hushed the channel.')
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
 @commands.has_permissions(administrator=True)
 async def un_hush(ctx):
-    global role
-    try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
-    except AttributeError:
-        role = False
-        overwrite = discord.PermissionOverwrite()
-        overwrite.send_messages = True
-        overwrite.read_messages = True
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = True
+    overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.administrator:
             pass
         else:
-            await i.send(f'You were unmuted by **{ctx.author}**')
-            if role == False:
-                await ctx.message.channel.set_permissions(i, overwrite=overwrite)
-            else:
-                await i.remove_roles(role)
+            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
@@ -495,8 +457,8 @@ async def content_check(ctx, value):
         return
 
 
-@client.command(aliases=('get_help', 'pull_help'))
-async def fetch_help(ctx):
+@client.command(aliases=('get_docs', 'pull_docs'))
+async def fetch_docs(ctx):
     await ctx.send('https://pastebin.com/9w4Fp110')
 
 
@@ -555,5 +517,6 @@ def convert_to_list(str):
 #   overwrite.send_messages = True
 #   overwrite.read_messages = True
 #   await ctx.message.channel.set_permissions(overwrite=overwrite)
+
 
 client.run('token')
