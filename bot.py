@@ -202,7 +202,7 @@ async def unban(ctx, *, member):
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -222,7 +222,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 async def unmute(ctx, member: discord.Member):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -342,7 +342,7 @@ async def fetch_messages(ctx, limit=10):
 async def hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -362,7 +362,7 @@ async def hush(ctx):
 async def un_hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
+        role = ctx.guild.get_role(role_id=916896527312642078)
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -499,9 +499,21 @@ async def fetch_code(ctx):
     await ctx.send('https://github.com/HRLO77/Bot-source-code')
 
 
-@client.command(alieases=('get_message', 'pull_message'))
-async def fetch_message(ctx, *,message_id):
+@client.command(aliases=('get_message', 'pull_message'))
+async def fetch_message(ctx, message_id):
     await ctx.send(f'https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}')
+
+
+@client.command(aliases=('bm', 'mark', 'book'))
+async def bookmark(ctx, message_id):
+    member = await client.fetch_user(ctx.author.id)
+    await member.send(content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
+    https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
+
+
+@client.command(aliases=('members', 'member#'))
+async def member_count(ctx):
+    await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
 
 
 def check_user_is_admin(user):
