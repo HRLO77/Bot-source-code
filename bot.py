@@ -202,7 +202,7 @@ async def unban(ctx, *, member):
 async def mute(ctx, member: discord.Member, *, reason='None'):
     global role
     try:
-        role = ctx.guild.get_role(role_id=916896527312642078)
+        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -222,7 +222,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 async def unmute(ctx, member: discord.Member):
     global role
     try:
-        role = ctx.guild.get_role(role_id=916896527312642078)
+        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -342,7 +342,7 @@ async def fetch_messages(ctx, limit=10):
 async def hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=916896527312642078)
+        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
@@ -362,7 +362,7 @@ async def hush(ctx):
 async def un_hush(ctx):
     global role
     try:
-        role = ctx.guild.get_role(role_id=916896527312642078)
+        role = ctx.guild.get_role(role_id=('Mute role here, or leave blank'))
     except AttributeError:
         role = False
         overwrite = discord.PermissionOverwrite()
