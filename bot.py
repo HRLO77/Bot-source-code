@@ -2,6 +2,7 @@ import random
 import ctx
 import discord
 import Functions
+import datetime
 from datetime import datetime
 import requests
 import sys
@@ -15,6 +16,8 @@ import csv
 from discord import guild
 import pbwrap
 from pbwrap import pbwrap
+import antigravity
+
 
 muted_channel = False
 tracemalloc.start()
@@ -92,7 +95,7 @@ async def on_message(message: discord.Message):
     global spam
     global content
     cache = ''
-    print(datetime.now(), message.author, message.channel, message.content, message.author.bot, spam, content)
+    print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content, message.author.bot, spam, content, f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
