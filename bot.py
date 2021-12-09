@@ -521,6 +521,35 @@ async def member_count(ctx):
 async def fetch_member(ctx, member_id: discord.Member):
     await ctx.send(member_id.mention)
 
+@client.command(aliases=('dm_members', 'dm_users', 'direct_message_users'))
+@commands.has_permissions(administrator=True)
+async def direct_message_members(ctx, member_ids='all', *, content='None'):
+    if member_ids.lower() == 'all':
+        pass
+    else:
+        try:
+            tuple(member_ids)
+        except ValueError:
+            await ctx.send('Invalid member_ids.')
+            return
+        tup = convert_to_list(member_ids)
+        for i in tup:
+            try:
+                member = await client.fetch_user(int(i))
+                await member.send(f'''**{ctx.author}**:
+                **{content}**''')
+            except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
+                pass
+        await ctx.send(f'{ctx.author.mention} Messaged people in dms.')
+        return
+    for i in ctx.guild.members:
+        try:
+            await i.send(f'''**{ctx.author}**:
+**{content}**''')
+        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
+            pass
+    await ctx.send(f'{ctx.author.mention} Messaged everyone in dms.')
+
 
 def check_user_is_admin(user):
     admin_data = {'HRLO77', 'Sniperfirst21', 'Nvm!', 'bruisedbeans',
