@@ -103,7 +103,12 @@ async def on_message(message: discord.Message):
     else:
         pass
     if spam == 1:
-        if len(test) > 950:
+        count = 0
+        for index, value in enumerate(test):
+            if value == cache:
+                count += 1
+            cache = value
+        if len(test) > 950 or count > 25:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
@@ -112,7 +117,7 @@ async def on_message(message: discord.Message):
             if value == cache:
                 count += 1
             cache = value
-        if len(test) > 450 or count > 30:
+        if len(test) > 450 or count > 13:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
@@ -121,7 +126,7 @@ async def on_message(message: discord.Message):
             if value == cache:
                 count += 1
             cache = value
-        if len(test) > 195 or count > 15:
+        if len(test) > 195 or count > 9:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
@@ -130,7 +135,7 @@ async def on_message(message: discord.Message):
             if value == cache:
                 count += 1
             cache = value
-        if len(test) > 90 or count > 6:
+        if len(test) > 90 or count > 3:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     if content == 1:
