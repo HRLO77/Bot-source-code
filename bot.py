@@ -536,15 +536,16 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
         for i in tup:
             try:
                 member = await client.fetch_user(int(i))
-                await member.send(f'''**{ctx.author}**:
-                **{content}**''')
+                await member.send(f'''**{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
+**{content}**''')
             except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
                 pass
         await ctx.send(f'{ctx.author.mention} Messaged people in dms.')
         return
     for i in ctx.guild.members:
         try:
-            await i.send(f'''**{ctx.author}**:
+            await i.send(
+                f'''**{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
 **{content}**''')
         except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
             pass
