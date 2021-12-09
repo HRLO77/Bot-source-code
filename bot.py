@@ -444,13 +444,13 @@ async def delete_channels(ctx, *, channels):
 
 @client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
 @commands.has_permissions(administrator=True)
-async def kick_members(ctx, *, members):
+async def kick_members(ctx, *, member_ids):
     try:
-        list(members)
+        list(member_ids)
     except ValueError:
         await ctx.send('Invalid list for "members"')
         return
-    tup = convert_to_list(members)
+    tup = convert_to_list(member_ids)
     print(tup)
     for i in tup:
         print(i)
@@ -461,19 +461,35 @@ async def kick_members(ctx, *, members):
 
 @client.command(aliases=('ban_users', 'ban_people'))
 @commands.has_permissions(administrator=True)
-async def ban_members(ctx, *, members):
+async def ban_members(ctx, *, member_ids):
     try:
-        list(members)
+        list(member_ids)
     except ValueError:
         await ctx.send('Invalid list for "members"')
         return
-    tup = convert_to_list(members)
+    tup = convert_to_list(member_ids)
     print(tup)
     for i in tup:
         print(i)
         member = await client.fetch_user(int(i))
         await member.send(f'''You were banned by **{ctx.author}**!''')
         await member.ban()
+
+@client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
+@commands.has_permissions(administrator=True)
+async def clear_messages(ctx, *, message_ids):
+    try:
+        list(message_ids)
+    except ValueError:
+        await ctx.send('Invalid list for "members"')
+        return
+    tup = convert_to_list(message_ids)
+    print(tup)
+    for i in tup:
+        print(i)
+        message = await ctx.fetch_message(int(i))
+        await message.delete()
+
 
 
 @client.command(aliases=('spam_filter', 'spam'))
