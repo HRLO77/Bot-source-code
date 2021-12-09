@@ -16,7 +16,6 @@ import csv
 from discord import guild
 import pbwrap
 from pbwrap import pbwrap
-import antigravity
 
 
 muted_channel = False
@@ -243,7 +242,7 @@ async def unban(ctx, *, member):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -254,7 +253,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def unmute(ctx, member: discord.Member):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -264,7 +263,7 @@ async def unmute(ctx, member: discord.Member):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def role_mute(ctx, role: discord.Role, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -275,7 +274,7 @@ async def role_mute(ctx, role: discord.Role, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def role_unmute(ctx, role: discord.Role):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -285,7 +284,7 @@ async def role_unmute(ctx, role: discord.Role):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def role_file_unmute(ctx, role: discord.Role):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
@@ -294,7 +293,7 @@ async def role_file_unmute(ctx, role: discord.Role):
 
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def role_file_mute(ctx, role: discord.Role, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
@@ -305,12 +304,11 @@ async def role_file_mute(ctx, role: discord.Role, *, reason='None'):
 
 @client.command()
 @commands.has_permissions(administrator=True)
-async def file_unmute(ctx, member: discord.Member, *, reason):
+async def file_unmute(ctx, member: discord.Member):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**:
-**{reason}**''')
+    await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**''')
 
 
 @client.command()
@@ -324,7 +322,7 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
 
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True)
 async def channel_purge(ctx):
     await ctx.channel.purge()
     await (f'**{ctx.message.author.mention}** purged **{ctx.message.channel}**')
@@ -360,7 +358,7 @@ async def fetch_messages(ctx, limit=10):
 
 
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def hush(ctx):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -374,7 +372,7 @@ async def hush(ctx):
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def un_hush(ctx):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -404,9 +402,10 @@ async def get_roles(ctx, ids):
 
 
 @client.command(aliases=('remove_channel', 'end_channel'))
-@commands.has_permissions(administrator=True)
-async def delete_channel(ctx, channel: discord.TextChannel):
-    await channel.delete()
+@commands.has_permissions(manage_channels=True, manage_guild=True)
+async def delete_channel(ctx, channel):
+    is_channel = await client.fetch_channel(int(channel))
+    await is_channel.delete()
 
 
 @client.command(aliases=('get_channels', 'pull_channels'))
@@ -427,7 +426,7 @@ async def fetch_channels(ctx, link=False):
 
 
 @client.command(aliases=('remove_channels', 'end_channels'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
 async def delete_channels(ctx, *, channels):
     try:
         list(channels)
@@ -443,7 +442,7 @@ async def delete_channels(ctx, *, channels):
 
 
 @client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(kick_members=True)
 async def kick_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -460,7 +459,7 @@ async def kick_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('ban_users', 'ban_people'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(ban_members=True)
 async def ban_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -476,7 +475,7 @@ async def ban_members(ctx, *, member_ids):
         await member.ban()
 
 @client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True)
 async def clear_messages(ctx, *, message_ids):
     try:
         list(message_ids)
