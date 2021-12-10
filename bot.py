@@ -153,7 +153,6 @@ async def on_message(message: discord.Message):
                 count += 1
             cache = value
         count -= 1
-        print(f'{count} is the count.')
         if len(test) > 90 or count > 3:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
