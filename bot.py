@@ -599,6 +599,13 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
     await ctx.send(f'{ctx.author.mention} Messaged everyone in dms.')
 
 
+@client.command(aliases=('terminate_bot', 'kill_bot', 'cut_bot'))
+@commands.has_permissions(administrator=True)
+async def close_bot(ctx):
+    await ctx.send('Bot terminating...')
+    sys.exit()
+
+
 def check_user_is_admin(user):
     admin_data = {'HRLO77', 'Sniperfirst21', 'Nvm!', 'bruisedbeans',
                   'Trismo', 'GlitchBotGaming', 'Zain.W', 'Jiyaa', 'E-BAG', 'Jilal'}
@@ -632,7 +639,7 @@ def convert_to_list(str):
 #   overwrite = discord.PermissionOverwrite()
 #   overwrite.send_messages = True
 #   overwrite.read_messages = True
-#   await ctx.message.channel.set_permissions(overwrite=overwrite)
+#   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
 
 
 client.run('token')
