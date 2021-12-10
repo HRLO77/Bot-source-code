@@ -377,13 +377,13 @@ async def fetch_messages(ctx, limit=10):
 
 
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True)
 async def hush(ctx):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
     overwrite.read_messages = True
     for i in ctx.guild.members:
-        if i.guild_permissions.administrator:
+        if i.guild_permissions.manage_messages and i.guild_permissions.manage_channels:
             pass
         else:
             await ctx.message.channel.set_permissions(i, overwrite=overwrite)
@@ -391,13 +391,13 @@ async def hush(ctx):
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True)
 async def un_hush(ctx):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
     overwrite.read_messages = True
     for i in ctx.guild.members:
-        if i.guild_permissions.administrator:
+        if i.guild_permissions.manage_messages and i.guild_permissions.manage_channels:
             pass
         else:
             await ctx.message.channel.set_permissions(i, overwrite=overwrite)
@@ -471,7 +471,6 @@ async def kick_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    print(tup)
     for i in tup:
         print(i)
         member = await client.fetch_user(int(i))
@@ -488,7 +487,6 @@ async def ban_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    print(tup)
     for i in tup:
         print(i)
         member = await client.fetch_user(int(i))
@@ -506,7 +504,6 @@ async def clear_messages(ctx, *, message_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(message_ids)
-    print(tup)
     for i in tup:
         print(i)
         message = await ctx.fetch_message(int(i))
