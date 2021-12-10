@@ -17,7 +17,6 @@ from discord import guild
 import pbwrap
 from pbwrap import pbwrap
 
-
 muted_channel = False
 tracemalloc.start()
 spam = 0
@@ -67,6 +66,10 @@ explicit_data2 = {'cock', 'vagina', 'sex', 'anal', 'fuck',
 filter5 = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
            'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')'}
 filter4 = {'!', '@', '#', '$', '%', '&', '*'}
+valid_chars = {'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+               'x', 'w', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
+               'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
+               '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 responses = ('Leave me alone.',
              ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,',
              '...', "Cut it out", "You little-", "I'm guessing you punks like pain?", "Prepare to be hackified!",
@@ -93,20 +96,25 @@ async def on_ready():
 async def on_message(message: discord.Message):
     global spam
     global content
-    cache = ''
-    print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content, message.author.bot, spam, content, f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+    print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content,
+          message.author.bot, spam, content,
+          f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
         return
     else:
         pass
+    cache = ''
     if spam == 1:
         count = 0
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if not(value in valid_chars):
+                count += 1
             cache = value
+        count -= 1
         if len(test) > 950 or count > 25:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
@@ -115,7 +123,10 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if not(value in valid_chars):
+                count += 1
             cache = value
+        count -= 1
         if len(test) > 450 or count > 13:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
@@ -124,7 +135,10 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if not(value in valid_chars):
+                count += 1
             cache = value
+        count -= 1
         if len(test) > 195 or count > 9:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
@@ -133,7 +147,13 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if value in valid_chars:
+                pass
+            else:
+                count += 1
             cache = value
+        count -= 1
+        print(f'{count} is the count.')
         if len(test) > 90 or count > 3:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
@@ -211,21 +231,21 @@ async def _8ball(ctx, *, question):
 @client.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'))
 @commands.has_permissions(administrator=True)
 async def kick(ctx, member: discord.Member, *, reason='None'):
-    await member.send(f'''You were kicked by **{ctx.author}**:
-**{reason}**.''')
     await member.kick(reason=reason)
     await ctx.send(f'''**{ctx.message.author.mention}** kicked **{member.mention}**:
+    **{reason}**.''')
+    await member.send(f'''You were kicked from {ctx.guild} by **{ctx.author}**:
 **{reason}**.''')
 
 
 @client.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(administrator=True)
 async def ban(ctx, member: discord.Member, *, reason='None'):
-    await member.send(f'''You were banned by **{ctx.author}**:
-    **{reason}**''')
     await member.ban(reason=reason)
     await (f'''**{ctx.message.author.mention}** banned **{member.mention}**:
-**{reason}**.''')
+    **{reason}**.''')
+    await member.send(f'''You were banned from {ctx.guild} by **{ctx.author}**:
+    **{reason}**''')
 
 
 @client.command()
@@ -406,6 +426,7 @@ async def get_roles(ctx, ids):
 async def delete_channel(ctx, channel):
     is_channel = await client.fetch_channel(int(channel))
     await is_channel.delete()
+    await ctx.send('Deleted channel.')
 
 
 @client.command(aliases=('get_channels', 'pull_channels'))
@@ -439,6 +460,7 @@ async def delete_channels(ctx, *, channels):
         print(i)
         channel = await client.fetch_channel(int(i))
         await channel.delete()
+    await ctx.send('Deleted channels.')
 
 
 @client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
@@ -454,9 +476,9 @@ async def kick_members(ctx, *, member_ids):
     for i in tup:
         print(i)
         member = await client.fetch_user(int(i))
-        await member.send(f'''You were kicked by **{ctx.author}**!''')
         await member.kick(reason='None')
-
+        await member.send(f'''You were kicked from {ctx.guild} by **{ctx.author}**!''')
+    await ctx.send('Kicked members.')
 
 @client.command(aliases=('ban_users', 'ban_people'))
 @commands.has_permissions(ban_members=True)
@@ -471,8 +493,10 @@ async def ban_members(ctx, *, member_ids):
     for i in tup:
         print(i)
         member = await client.fetch_user(int(i))
-        await member.send(f'''You were banned by **{ctx.author}**!''')
         await member.ban()
+        await member.send(f'''You were banned from {ctx.guild} by **{ctx.author}**!''')
+    await ctx.send('Banned members.')
+
 
 @client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
@@ -490,7 +514,6 @@ async def clear_messages(ctx, *, message_ids):
         await message.delete()
 
 
-
 @client.command(aliases=('spam_filter', 'spam'))
 @commands.has_permissions(administrator=True)
 async def spam_check(ctx, value):
@@ -500,7 +523,7 @@ async def spam_check(ctx, value):
     else:
         await ctx.send('Invalid content_check value')
         return
-
+    await ctx.send(f'Spam filter level has been set to {value}.')
 
 @client.command(aliases=('content_filter', 'content', 'swear_check', 'profanity_filter', 'profanity_check'))
 @commands.has_permissions(administrator=True)
@@ -511,6 +534,7 @@ async def content_check(ctx, value):
     else:
         await ctx.send('Invalid content_check value')
         return
+    await ctx.send(f'Explicit filter level has been set to {value}.')
 
 
 @client.command(aliases=('get_docs', 'pull_docs'))
@@ -531,9 +555,11 @@ async def fetch_message(ctx, message_id):
 @client.command(aliases=('bm', 'mark', 'book'))
 async def bookmark(ctx, message_id):
     member = await client.fetch_user(ctx.author.id)
-    await member.send(content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
+    try:
+        await member.send(content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
     https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
-
+    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
+        await ctx.send('Cannot direct message member.')
 
 @client.command(aliases=('members', 'member#'))
 async def member_count(ctx):
@@ -543,6 +569,7 @@ async def member_count(ctx):
 @client.command(aliases=('get_member', 'pull_member'))
 async def fetch_member(ctx, member_id: discord.Member):
     await ctx.send(member_id.mention)
+
 
 @client.command(aliases=('dm_members', 'dm_users', 'direct_message_users'))
 @commands.has_permissions(administrator=True)
@@ -559,7 +586,8 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
         for i in tup:
             try:
                 member = await client.fetch_user(int(i))
-                await member.send(f'''**{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
+                await member.send(
+                    f'''**{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
 **{content}**''')
             except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
                 pass
