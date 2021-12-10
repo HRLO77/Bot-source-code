@@ -261,7 +261,7 @@ async def unban(ctx, *, member):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -272,7 +272,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True)
 async def unmute(ctx, member: discord.Member):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
