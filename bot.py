@@ -70,6 +70,8 @@ valid_chars = {'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'o', 
                'x', 'w', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
                'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
                '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
+special_chars = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
+               '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 responses = ('Leave me alone.',
              ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,',
              '...', "Cut it out", "You little-", "I'm guessing you punks like pain?", "Prepare to be hackified!",
@@ -111,11 +113,13 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if value in special_chars:
+                count += 1
             if not(value in valid_chars):
                 count += 1
             cache = value
         count -= 1
-        if len(test) > 950 or count > 25:
+        if len(test) > 950 or count > 27:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
@@ -123,11 +127,13 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
+            if value in special_chars:
+                count += 1
             if not(value in valid_chars):
                 count += 1
             cache = value
         count -= 1
-        if len(test) > 450 or count > 13:
+        if len(test) > 450 or count > 15:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
@@ -135,11 +141,13 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
-            if not(value in valid_chars):
+            if value in special_chars:
+                count += 1
+            if not (value in valid_chars):
                 count += 1
             cache = value
         count -= 1
-        if len(test) > 195 or count > 9:
+        if len(test) > 195 or count > 11:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
@@ -147,13 +155,13 @@ async def on_message(message: discord.Message):
         for index, value in enumerate(test):
             if value == cache:
                 count += 1
-            if value in valid_chars:
-                pass
-            else:
+            if value in special_chars:
+                count += 1
+            if not(value in valid_chars):
                 count += 1
             cache = value
         count -= 1
-        if len(test) > 90 or count > 3:
+        if len(test) > 90 or count > 5:
             await message.delete()
             await message.channel.send(f'{message.author.mention} please do not spam.')
     if content == 1:
