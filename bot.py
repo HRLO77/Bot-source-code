@@ -19,8 +19,8 @@ from pbwrap import pbwrap
 
 muted_channel = False
 tracemalloc.start()
-spam = 0
-content = 0
+spam = 3
+content = 2
 
 explicit_data5 = {'shit', 'fuck', 'fck', 'fu', 'f u', 'f u k', 'fuk', 'f u c k', 'sh!t', 'sht', 'f*ck', 'd*mn', 's h t',
                   's h ! t',
@@ -71,7 +71,7 @@ valid_chars = {'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'o', 
                'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
                '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 special_chars = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
-               '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
+                 '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 responses = ('Leave me alone.',
              ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,',
              '...', "Cut it out", "You little-", "I'm guessing you punks like pain?", "Prepare to be hackified!",
@@ -115,7 +115,7 @@ async def on_message(message: discord.Message):
                 count += 1
             if value in special_chars:
                 count += 1
-            if not(value in valid_chars):
+            if not (value in valid_chars):
                 count += 1
             cache = value
         count -= 1
@@ -129,7 +129,7 @@ async def on_message(message: discord.Message):
                 count += 1
             if value in special_chars:
                 count += 1
-            if not(value in valid_chars):
+            if not (value in valid_chars):
                 count += 1
             cache = value
         count -= 1
@@ -157,7 +157,7 @@ async def on_message(message: discord.Message):
                 count += 1
             if value in special_chars:
                 count += 1
-            if not(value in valid_chars):
+            if not (value in valid_chars):
                 count += 1
             cache = value
         count -= 1
@@ -366,21 +366,37 @@ async def warn(ctx, member: discord.Member, *, reason):
 
 
 @client.command(aliases=('get_member_histroy', 'pull_member_history'))
-async def fetch_member_history(ctx, member: discord.Member, limit=10):
+async def fetch_member_history(ctx, member: discord.Member, limit=10, links=False):
+    try:
+        bool(links)
+    except ValueError:
+        await ctx.send('Invalid value for "links".')
+        return
     messages = []
     async for message in (ctx.channel.history(limit=limit)):
         if message.author == member:
-            messages.insert(
-                0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+            if links:
+                messages.insert(
+                    0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+            else:
+                message.insert(0, message.id)
     await ctx.send(messages)
 
 
 @client.command(aliases=('get_messages', 'pull_messages'))
-async def fetch_messages(ctx, limit=10):
+async def fetch_messages(ctx, limit=10, links=False):
+    try:
+        bool(links)
+    except ValueError:
+        await ctx.send('Invalid value for "links".')
+        return
     messages = []
     async for message in (ctx.channel.history(limit=limit)):
-        messages.insert(
-            0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+        if links:
+            messages.insert(
+                0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+        else:
+            message.insert(0, {message.id})
     await ctx.send(messages)
 
 
@@ -424,7 +440,7 @@ async def get_roles(ctx, ids):
         if ids:
             roles.insert(0, i.id)
         else:
-            roles.insert(0, i)
+            roles.insert(0, i.name)
     await ctx.send(roles)
 
 
@@ -437,15 +453,15 @@ async def delete_channel(ctx, channel):
 
 
 @client.command(aliases=('get_channels', 'pull_channels'))
-async def fetch_channels(ctx, link=False):
+async def fetch_channels(ctx, links=False):
     try:
-        bool(link)
+        bool(links)
     except ValueError:
-        await ctx.send('Invalid boolean for "link"')
+        await ctx.send('Invalid boolean for "links".')
         return
     channels = []
     for i in ctx.guild.channels:
-        if link:
+        if links:
             channels.insert(
                 0, f'https://discord.com/channels/{ctx.guild.id}/{i.id}')
         else:
@@ -485,6 +501,7 @@ async def kick_members(ctx, *, member_ids):
         await member.kick(reason='None')
         await member.send(f'''You were kicked from {ctx.guild} by **{ctx.author}**!''')
     await ctx.send('Kicked members.')
+
 
 @client.command(aliases=('ban_users', 'ban_people'))
 @commands.has_permissions(ban_members=True)
@@ -529,6 +546,7 @@ async def spam_check(ctx, value):
         return
     await ctx.send(f'Spam filter level has been set to {value}.')
 
+
 @client.command(aliases=('content_filter', 'content', 'swear_check', 'profanity_filter', 'profanity_check'))
 @commands.has_permissions(administrator=True)
 async def content_check(ctx, value):
@@ -560,10 +578,12 @@ async def fetch_message(ctx, message_id):
 async def bookmark(ctx, message_id):
     member = await client.fetch_user(ctx.author.id)
     try:
-        await member.send(content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
+        await member.send(
+            content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
     https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError:
         await ctx.send('Cannot direct message member.')
+
 
 @client.command(aliases=('members', 'member#'))
 async def member_count(ctx):
