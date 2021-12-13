@@ -623,7 +623,7 @@ async def evaluate(ctx, *, command):
     result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```')}"], input=f, capture_output=True, text=True, timeout=5)
     f = ''
     await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```py
+```
 {result.stdout}
 ```''')
 
