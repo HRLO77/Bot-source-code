@@ -520,7 +520,7 @@ async def clear_messages(ctx, *, message_ids):
 @commands.has_permissions(administrator=True)
 async def spam_check(ctx, value):
     global spam
-    if int(value) and -1 < int(value) < 5:
+    if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
         spam = int(value)
     else:
         await ctx.send('Invalid content_check value')
@@ -532,7 +532,7 @@ async def spam_check(ctx, value):
 @commands.has_permissions(administrator=True)
 async def content_check(ctx, value):
     global content
-    if int(value) and -1 < int(value) < 5:
+    if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
         content = int(value)
     else:
         await ctx.send('Invalid content_check value')
