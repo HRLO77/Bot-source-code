@@ -272,7 +272,6 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 **{reason}**''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-    await ctx.send('Banned members.')
 
 
 @client.command()
@@ -287,7 +286,7 @@ async def unmute(ctx, member: discord.Member):
         await member.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-    await ctx.send('Banned members.')
+
 
 
 @client.command()
@@ -341,7 +340,6 @@ async def file_unmute(ctx, member: discord.Member):
         await member.send(f'''You were file_unmuted from {ctx.guild} by **{ctx.author}**!''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-    await ctx.send('Banned members.')
 
 
 @client.command()
@@ -357,7 +355,6 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
 **{reason}**''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-    await ctx.send('Banned members.')
 
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
@@ -380,7 +377,6 @@ async def warn(ctx, member: discord.Member, *, reason):
 **{reason}**''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-    await ctx.send('Banned members.')
 
 
 @client.command(aliases=('get_member_histroy', 'pull_member_history'))
