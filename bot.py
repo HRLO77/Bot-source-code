@@ -393,7 +393,7 @@ async def fetch_member_history(ctx, member: discord.Member, limit=10, links=Fals
                 messages.insert(
                     0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
             else:
-                message.insert(0, message.id)
+                messages.insert(0, message.id)
     await ctx.send(messages)
 
 
@@ -410,7 +410,7 @@ async def fetch_messages(ctx, limit=10, links=False):
             messages.insert(
                 0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
         else:
-            message.insert(0, {message.id})
+            messages.insert(0, {message.id})
     await ctx.send(messages)
 
 
