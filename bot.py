@@ -81,8 +81,8 @@ async def on_message(message: discord.Message):
     global spam
     global content
     print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content,
-          message.author.bot, spam, content,
-          f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+         message.author.bot, spam, content,
+         f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -261,10 +261,32 @@ async def unban(ctx, *, member):
 @client.command()
 @commands.has_permissions(manage_messages=True, send_messages=True, manage_channels=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = False
-    overwrite.read_messages = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = False
+        overwrite.read_messages = True
+    if role == True:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.add_roles(role)
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}**:
 **{reason}**''')
     try:
@@ -277,10 +299,32 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 @client.command()
 @commands.has_permissions(manage_messages=True, send_messages=True, manage_channels=True)
 async def unmute(ctx, member: discord.Member):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
+    if role == True:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.remove_roles(role)
     await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**!''')
     try:
         await member.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
@@ -316,7 +360,7 @@ async def role_file_unmute(ctx, role: discord.Role):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
-    await ctx.send(f"**{role.mention}** were file unmuted by **{ctx.message.author.mention}**!")
+    await ctx.send(f"**{role.mention}** were file_unmuted by **{ctx.message.author.mention}**!")
 
 
 @client.command()
@@ -325,17 +369,38 @@ async def role_file_mute(ctx, role: discord.Role, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
-    await ctx.send(f'''**{role.mention}** were file muted by **{ctx.message.author.mention}**:
+    await ctx.send(f'''**{role.mention}** were file_muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
 
 @client.command()
 @commands.has_permissions(attach_files=True, manage_messages=True, manage_channels=True)
 async def file_unmute(ctx, member: discord.Member):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.attach_files = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
-    await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**''')
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'file_muted':
+            role_id = i.id
+            break
+    if 'file_muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.attach_files = False
+        await ctx.guild.create_role(name='file_muted', permissions=permissions)
+        await ctx.send('"file_muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.attach_files = True
+    if role == True:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.remove_roles(role)
+    await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**!''')
     try:
         await member.send(f'''You were file_unmuted from {ctx.guild} by **{ctx.author}**!''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
@@ -345,17 +410,37 @@ async def file_unmute(ctx, member: discord.Member):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def file_mute(ctx, member: discord.Member, *, reason='None'):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.attach_files = True
-    await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'file_muted':
+            role_id = i.id
+            break
+    if 'file_muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.attach_files = False
+        await ctx.guild.create_role(name='file_muted', permissions=permissions)
+        await ctx.send('"file_muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.attach_files = False
+    if role == True:
+        await ctx.message.channel.set_permissions(member, overwrite=overwrite)
+    else:
+        await member.add_roles(role)
     await ctx.send(f'''**{member.mention}** was file_muted by **{ctx.message.author.mention}**:
 **{reason}**''')
     try:
         await member.send(f'''You were file_muted from {ctx.guild} by **{ctx.author}**:
-**{reason}**''')
+**reason**''')
     except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
         print(f'Cannot direct message {member.display_name}.')
-
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
@@ -415,16 +500,38 @@ async def fetch_messages(ctx, limit=10, links=False):
 
 
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True, manage_guild=True)
 async def hush(ctx):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = False
-    overwrite.read_messages = True
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = False
+        overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.manage_messages and i.guild_permissions.manage_channels:
             pass
         else:
-            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            if role == True:
+                await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            else:
+                await i.add_roles(role)
             try:
                 await i.send(f'''You were muted from {ctx.guild} by **{ctx.author}**!''')
             except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
@@ -433,20 +540,42 @@ async def hush(ctx):
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, manage_channels=True, manage_guild=True)
 async def un_hush(ctx):
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
     for i in ctx.guild.members:
         if i.guild_permissions.manage_messages and i.guild_permissions.manage_channels:
             pass
         else:
+            if role == True:
+                await ctx.message.channel.set_permissions(i, overwrite=overwrite)
+            else:
+                await i.remove_roles(role)
             try:
                 await i.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
             except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
                 print(f'Cannot direct message {i.display_name}.')
-            await ctx.message.channel.set_permissions(i, overwrite=overwrite)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
@@ -556,18 +685,40 @@ async def mute_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = False
-    overwrite.read_messages = True
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = False
+        overwrite.read_messages = True
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
-        await ctx.channel.set_permissions(member, overwrite=overwrite)
+        member = await ctx.guild.fetch_member(int(i))
+        if role == True:
+            await ctx.channel.set_permissions(member, overwrite=overwrite)
+        else:
+            await member.add_roles(role)
         try:
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
         except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
             print(f'Cannot direct message {member.display_name}.')
-    await ctx.send(f'{ctx.author.mention}, muted members.')
+    await ctx.send(f'{ctx.author.mention} muted members.')
 
 
 @client.command(aliases=('unmute_users', 'unmute_people'))
@@ -579,18 +730,40 @@ async def unmute_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = True
-    overwrite.read_messages = True
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'muted':
+            role_id = i.id
+            break
+    if 'muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.send_messages = False
+        permissions.read_messages = True
+        await ctx.guild.create_role(name='muted', permissions=permissions)
+        await ctx.send('"muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = True
+        overwrite.read_messages = True
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
-        await ctx.channel.set_permissions(member, overwrite=overwrite)
+        member = await ctx.guild.fetch_member(int(i))
+        if role == True:
+            await ctx.channel.set_permissions(member, overwrite=overwrite)
+        else:
+            await member.remove_roles(role)
         try:
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
         except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
             print(f'Cannot direct message {member.display_name}.')
-    await ctx.send(f'{ctx.author.mention}, unmuted members.')
+    await ctx.send(f'{ctx.author.mention} unmuted members.')
 
 
 @client.command(aliases=('file_mute_users', 'file_mute_people'))
@@ -602,17 +775,38 @@ async def file_mute_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    overwrite = discord.PermissionOverwrite()
-    overwrite.attach_files = False
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'file_muted':
+            role_id = i.id
+            break
+    if 'file_muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.attach_files = False
+        await ctx.guild.create_role(name='file_muted', permissions=permissions)
+        await ctx.send('"file_muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.attach_files = False
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
-        await ctx.channel.set_permissions(member, overwrite=overwrite)
+        member = await ctx.guild.fetch_member(int(i))
+        if role == True:
+            await ctx.channel.set_permissions(member, overwrite=overwrite)
+        else:
+            await member.add_roles(role)
         try:
-            await member.send(f'''{member.mention} you were file_muted in {ctx.guild} by **{ctx.author}**!''')
+            await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
         except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
             print(f'Cannot direct message {member.display_name}.')
-    await ctx.send(f'{ctx.author.mention}, file_muted members.')
+    await ctx.send(f'{ctx.author.mention} file_unmuted members.')
 
 
 @client.command(aliases=('file_unmute_users', 'file_unmute_people'))
@@ -624,18 +818,38 @@ async def file_unmute_members(ctx, *, member_ids):
         await ctx.send('Invalid list for "members"')
         return
     tup = convert_to_list(member_ids)
-    overwrite = discord.PermissionOverwrite()
-    overwrite.attach_files = True
+    roles = []
+    for i in ctx.guild.roles:
+        roles.append(i.name)
+        if i.name == 'file_muted':
+            role_id = i.id
+            break
+    if 'file_muted' in roles:
+        pass
+    else:
+        permissions = discord.Permissions()
+        permissions.attach_files = False
+        await ctx.guild.create_role(name='file_muted', permissions=permissions)
+        await ctx.send('"file_muted" role error')
+        return
+    try:
+        role = ctx.guild.get_role(role_id=role_id)
+    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = True
+        overwrite = discord.PermissionOverwrite()
+        overwrite.attach_files = True
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
-        await ctx.channel.set_permissions(member, overwrite=overwrite)
+        member = await ctx.guild.fetch_member(int(i))
+        if role == True:
+            await ctx.channel.set_permissions(member, overwrite=overwrite)
+        else:
+            await member.remove_roles(role)
         try:
             await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
         except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
             print(f'Cannot direct message {member.display_name}.')
-    await ctx.send(f'{ctx.author.mention}, file_unmuted members.')
-
+    await ctx.send(f'{ctx.author.mention} file_unmuted members.')
 
 @client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
@@ -800,6 +1014,7 @@ def convert_to_list(str):
 #   overwrite.send_messages = True
 #   overwrite.read_messages = True
 #   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
+#
 
 
 client.run('token')
