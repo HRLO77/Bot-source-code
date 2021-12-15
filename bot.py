@@ -1228,6 +1228,7 @@ async def evaluate(ctx, *, command):
     f = ''
     await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
 ```
+{result.stderr}
 {result.stdout}
 ```''')
 
