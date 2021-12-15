@@ -1,6 +1,6 @@
 import random
 import ctx
-import discord
+import disnake as discord
 import Functions
 import datetime
 import subprocess
@@ -11,21 +11,227 @@ import profanity
 from profanity import profanity
 import tracemalloc
 import ctypes
-from discord.ext import commands
+from disnake.ext import commands
 from datetime import datetime
-import csv
-from discord import guild
-import pbwrap
-from pbwrap import pbwrap
 
 muted_channel = False
 tracemalloc.start()
 spam = 0
 content = 0
 
-explicit_data5 = {'s x', 's*', 's x', '*x', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck', 'n * g g a', 'n*gg*', 'n * g g a', 'n*g*a', 'n * g g a', 'n**ga', 'n * g g a', 'n*gga', 'n * g g a', '**gga', 'fac', 'fa*', 'fac', 'f*c', 'fac', '*ac', 'p*ssy', 'p*ss*', 'p*ssy', 'p*s*y', 'p*ssy', 'p**sy', 'p*ssy', 'p*ssy', 'p*ssy', '**ssy', 'puss', 'pus*', 'puss', 'pu*s', 'puss', 'p*ss', 'puss', '*uss', 'hitler', 'hitle*', 'hitler', 'hitl*r', 'hitler', 'hit*er', 'hitler', 'hi*ler', 'hitler', 'h*tler', 'hitler', '*itler', 'damn', 'dam*', 'damn', 'da*n', 'damn', 'd*mn', 'damn', '*amn', 'p!ss', 'p!s*', 'p!ss', 'p!*s', 'p!ss', 'p*ss', 'p!ss', '*!ss', 'lana', 'lan*', 'lana', 'la*a', 'lana', 'l*na', 'lana', '*ana', 'th*t', 'th**', 'th*t', 'th*t', 'th*t', 't**t', 'th*t', '*h*t', 'rupe', 'rup*', 'rupe', 'ru*e', 'rupe', 'r*pe', 'rupe', '*upe', 'c ! c k', 'c!c*', 'c ! c k', 'c!*k', 'c ! c k', 'c*ck', 'c ! c k', '*!ck', 'cock', 'coc*', 'cock', 'co*k', 'cock', 'c*ck', 'cock', '*ock', 'prod', 'pro*', 'prod', 'pr*d', 'prod', 'p*od', 'prod', '*rod', 'seggs', 'segg*', 'seggs', 'seg*s', 'seggs', 'se*gs', 'seggs', 's*ggs', 'seggs', '*eggs', 'arse', 'ars*', 'arse', 'ar*e', 'arse', 'a*se', 'arse', '*rse', 'p * s', 'p**', 'p * s', 'p*s', 'p * s', '**s', 'r a p e', 'rap*', 'r a p e', 'ra*e', 'r a p e', 'r*pe', 'r a p e', '*ape', 'p i s', 'pi*', 'p i s', 'p*s', 'p i s', '*is', 'p u s', 'pu*', 'p u s', 'p*s', 'p u s', '*us', 'c r * p', 'cr**', 'c r * p', 'cr*p', 'c r * p', 'c**p', 'c r * p', '*r*p', 'p * r n', 'p*r*', 'p * r n', 'p**n', 'p * r n', 'p*rn', 'p * r n', '**rn', 'frick', 'fric*', 'frick', 'fri*k', 'frick', 'fr*ck', 'frick', 'f*ick', 'frick', '*rick', 'shut', 'shu*', 'shut', 'sh*t', 'shut', 's*ut', 'shut', '*hut', 'f r i c k', 'fric*', 'f r i c k', 'fri*k', 'f r i c k', 'fr*ck', 'f r i c k', 'f*ick', 'f r i c k', '*rick', 'c*nt', 'c*n*', 'c*nt', 'c**t', 'c*nt', 'c*nt', 'c*nt', '**nt', 'dip', 'di*', 'dip', 'd*p', 'dip', '*ip', 'rob', 'ro*', 'rob', 'r*b', 'rob', '*ob', 's*ck', 's*c*', 's*ck', 's**k', 's*ck', 's*ck', 's*ck', '**ck', 'p*ss', 'p*s*', 'p*ss', 'p**s', 'p*ss', 'p*ss', 'p*ss', '**ss', 't i t', 'ti*', 't i t', 't*t', 't i t', '*it', 't h o t', 'tho*', 't h o t', 'th*t', 't h o t', 't*ot', 't h o t', '*hot', 'piss', 'pis*', 'piss', 'pi*s', 'piss', 'p*ss', 'piss', '*iss', 'tit', 'ti*', 'tit', 't*t', 'tit', '*it', 'b i t c h', 'bitc*', 'b i t c h', 'bit*h', 'b i t c h', 'bi*ch', 'b i t c h', 'b*tch', 'b i t c h', '*itch', 'p*rn', 'p*r*', 'p*rn', 'p**n', 'p*rn', 'p*rn', 'p*rn', '**rn', 'cr*p', 'cr**', 'cr*p', 'cr*p', 'cr*p', 'c**p', 'cr*p', '*r*p', 'rape', 'rap*', 'rape', 'ra*e', 'rape', 'r*pe', 'rape', '*ape', 'btch', 'btc*', 'btch', 'bt*h', 'btch', 'b*ch', 'btch', '*tch', 't h * t', 'th**', 't h * t', 'th*t', 't h * t', 't**t', 't h * t', '*h*t', 'hit', 'hi*', 'hit', 'h*t', 'hit', '*it', 'a r s e', 'ars*', 'a r s e', 'ar*e', 'a r s e', 'a*se', 'a r s e', '*rse', 'dick', 'dic*', 'dick', 'di*k', 'dick', 'd*ck', 'dick', '*ick', 'dayum', 'dayu*', 'dayum', 'day*m', 'dayum', 'da*um', 'dayum', 'd*yum', 'dayum', '*ayum', 'bang', 'ban*', 'bang', 'ba*g', 'bang', 'b*ng', 'bang', '*ang', 'd * c k', 'd*c*', 'd * c k', 'd**k', 'd * c k', 'd*ck', 'd * c k', '**ck', 'cunt', 'cun*', 'cunt', 'cu*t', 'cunt', 'c*nt', 'cunt', '*unt', 'b t c h', 'btc*', 'b t c h', 'bt*h', 'b t c h', 'b*ch', 'b t c h', '*tch', 'c!ck', 'c!c*', 'c!ck', 'c!*k', 'c!ck', 'c*ck', 'c!ck', '*!ck', 'fruck', 'fruc*', 'fruck', 'fru*k', 'fruck', 'fr*ck', 'fruck', 'f*uck', 'fruck', '*ruck', 'c r u d', 'cru*', 'c r u d', 'cr*d', 'c r u d', 'c*ud', 'c r u d', '*rud', 'p o r n', 'por*', 'p o r n', 'po*n', 'p o r n', 'p*rn', 'p o r n', '*orn', 'fort', 'for*', 'fort', 'fo*t', 'fort', 'f*rt', 'fort', '*ort', 'porn', 'por*', 'porn', 'po*n', 'porn', 'p*rn', 'porn', '*orn', 'mur', 'mu*', 'mur', 'm*r', 'mur', '*ur', 'p * s s', 'p*s*', 'p * s s', 'p**s', 'p * s s', 'p*ss', 'p * s s', '**ss', 'xxx', 'xx*', 'xxx', 'x*x', 'xxx', '*xx', 'n!gga', 'n!gg*', 'n!gga', 'n!g*a', 'n!gga', 'n!*ga', 'n!gga', 'n*gga', 'n!gga', '*!gga', 'r * p e', 'r*p*', 'r * p e', 'r**e', 'r * p e', 'r*pe', 'r * p e', '**pe', 'f l i p', 'fli*', 'f l i p', 'fl*p', 'f l i p', 'f*ip', 'f l i p', '*lip', 'p i s s', 'pis*', 'p i s s', 'pi*s', 'p i s s', 'p*ss', 'p i s s', '*iss', 'rod', 'ro*', 'rod', 'r*d', 'rod', '*od', 'n*zi', 'n*z*', 'n*zi', 'n**i', 'n*zi', 'n*zi', 'n*zi', '**zi', 'robl', 'rob*', 'robl', 'ro*l', 'robl', 'r*bl', 'robl', '*obl', 'peg', 'pe*', 'peg', 'p*g', 'peg', '*eg', 'nigga', 'nigg*', 'nigga', 'nig*a', 'nigga', 'ni*ga', 'nigga', 'n*gga', 'nigga', '*igga', 'b * s t * r d', 'b*st*r*', 'b * s t * r d', 'b*st**d', 'b * s t * r d', 'b*st*rd', 'b * s t * r d', 'b*s**rd', 'b * s t * r d', 'b**t*rd', 'b * s t * r d', 'b*st*rd', 'b * s t * r d', '**st*rd', 'fuck', 'fuc*', 'fuck', 'fu*k', 'fuck', 'f*ck', 'fuck', '*uck', 'c o c k', 'coc*', 'c o c k', 'co*k', 'c o c k', 'c*ck', 'c o c k', '*ock', 'stfu', 'stf*', 'stfu', 'st*u', 'stfu', 's*fu', 'stfu', '*tfu', 'idg', 'id*', 'idg', 'i*g', 'idg', '*dg', 'dum', 'du*', 'dum', 'd*m', 'dum', '*um', 'c r a p', 'cra*', 'c r a p', 'cr*p', 'c r a p', 'c*ap', 'c r a p', '*rap', 'i d i o t', 'idio*', 'i d i o t', 'idi*t', 'i d i o t', 'id*ot', 'i d i o t', 'i*iot', 'i d i o t', '*diot', 'd ! c k', 'd!c*', 'd ! c k', 'd!*k', 'd ! c k', 'd*ck', 'd ! c k', '*!ck', 'lmb', 'lm*', 'lmb', 'l*b', 'lmb', '*mb', 'i d o i t', 'idoi*', 'i d o i t', 'ido*t', 'i d o i t', 'id*it', 'i d o i t', 'i*oit', 'i d o i t', '*doit', 'suck', 'suc*', 'suck', 'su*k', 'suck', 's*ck', 'suck', '*uck', 'nite', 'nit*', 'nite', 'ni*e', 'nite', 'n*te', 'nite', '*ite', 'bastard', 'bastar*', 'bastard', 'basta*d', 'bastard', 'bast*rd', 'bastard', 'bas*ard', 'bastard', 'ba*tard', 'bastard', 'b*stard', 'bastard', '*astard', 'p * s s y', 'p*ss*', 'p * s s y', 'p*s*y', 'p * s s y', 'p**sy', 'p * s s y', 'p*ssy', 'p * s s y', '**ssy', 'pis', 'pi*', 'pis', 'p*s', 'pis', '*is', 'stick', 'stic*', 'stick', 'sti*k', 'stick', 'st*ck', 'stick', 's*ick', 'stick', '*tick', 'r u p e', 'rup*', 'r u p e', 'ru*e', 'r u p e', 'r*pe', 'r u p e', '*upe', 't!t', 't!*', 't!t', 't*t', 't!t', '*!t', 's * x', 's**', 's * x', 's*x', 's * x', '**x', 'dam', 'da*', 'dam', 'd*m', 'dam', '*am', 'p!s', 'p!*', 'p!s', 'p*s', 'p!s', '*!s', 'segs', 'seg*', 'segs', 'se*s', 'segs', 's*gs', 'segs', '*egs', 'b ! t c h', 'b!tc*', 'b ! t c h', 'b!t*h', 'b ! t c h', 'b!*ch', 'b ! t c h', 'b*tch', 'b ! t c h', '*!tch', 'crud', 'cru*', 'crud', 'cr*d', 'crud', 'c*ud', 'crud', '*rud', 'job', 'jo*', 'job', 'j*b', 'job', '*ob', 'f u c', 'fu*', 'f u c', 'f*c', 'f u c', '*uc', 'd i c k', 'dic*', 'd i c k', 'di*k', 'd i c k', 'd*ck', 'd i c k', '*ick', 'c r * d', 'cr**', 'c r * d', 'cr*d', 'c r * d', 'c**d', 'c r * d', '*r*d', 'bitch', 'bitc*', 'bitch', 'bit*h', 'bitch', 'bi*ch', 'bitch', 'b*tch', 'bitch', '*itch', 'fuk', 'fu*', 'fuk', 'f*k', 'fuk', '*uk', 'trash', 'tras*', 'trash', 'tra*h', 'trash', 'tr*sh', 'trash', 't*ash', 'trash', '*rash', 'kil', 'ki*', 'kil', 'k*l', 'kil', '*il', 's e x', 'se*', 's e x', 's*x', 's e x', '*ex', 'gai', 'ga*', 'gai', 'g*i', 'gai', '*ai', 'fr*ck', 'fr*c*', 'fr*ck', 'fr**k', 'fr*ck', 'fr*ck', 'fr*ck', 'f**ck', 'fr*ck', '*r*ck', 'n ! g g a', 'n!gg*', 'n ! g g a', 'n!g*a', 'n ! g g a', 'n!*ga', 'n ! g g a', 'n*gga', 'n ! g g a', '*!gga', 'sh*t', 'sh**', 'sh*t', 'sh*t', 'sh*t', 's**t', 'sh*t', '*h*t', 'crap', 'cra*', 'crap', 'cr*p', 'crap', 'c*ap', 'crap', '*rap', 'idit', 'idi*', 'idit', 'id*t', 'idit', 'i*it', 'idit', '*dit', 'sx', 's*', 'sx', '*x', 'sht', 'sh*', 'sht', 's*t', 'sht', '*ht', 'sta', 'st*', 'sta', 's*a', 'sta', '*ta', 'danm', 'dan*', 'danm', 'da*m', 'danm', 'd*nm', 'danm', '*anm', 'suc', 'su*', 'suc', 's*c', 'suc', '*uc', 'f u k', 'fu*', 'f u k', 'f*k', 'f u k', '*uk', 't ! t', 't!*', 't ! t', 't*t', 't ! t', '*!t', 'cu', 'c*', 'cu', '*u', 'v*gina', 'v*gin*', 'v*gina', 'v*gi*a', 'v*gina', 'v*g*na', 'v*gina', 'v**ina', 'v*gina', 'v*gina', 'v*gina', '**gina', 'dummy', 'dumm*', 'dummy', 'dum*y', 'dummy', 'du*my', 'dummy', 'd*mmy', 'dummy', '*ummy', 'shit', 'shi*', 'shit', 'sh*t', 'shit', 's*it', 'shit', '*hit', 'nigger', 'nigge*', 'nigger', 'nigg*r', 'nigger', 'nig*er', 'nigger', 'ni*ger', 'nigger', 'n*gger', 'nigger', '*igger', 'p u s s', 'pus*', 'p u s s', 'pu*s', 'p u s s', 'p*ss', 'p u s s', '*uss', 'thot', 'tho*', 'thot', 'th*t', 'thot', 't*ot', 'thot', '*hot', 'pussy', 'puss*', 'pussy', 'pus*y', 'pussy', 'pu*sy', 'pussy', 'p*ssy', 'pussy', '*ussy', 'naz*', 'naz*', 'naz*', 'na**', 'naz*', 'n*z*', 'naz*', '*az*', 'a s r e', 'asr*', 'a s r e', 'as*e', 'a s r e', 'a*re', 'a s r e', '*sre', 'fck', 'fc*', 'fck', 'f*k', 'fck', '*ck', 'prn', 'pr*', 'prn', 'p*n', 'prn', '*rn', 'b a s t a r d', 'bastar*', 'b a s t a r d', 'basta*d', 'b a s t a r d', 'bast*rd', 'b a s t a r d', 'bas*ard', 'b a s t a r d', 'ba*tard', 'b a s t a r d', 'b*stard', 'b a s t a r d', '*astard', 'hac', 'ha*', 'hac', 'h*c', 'hac', '*ac', 'a s s', 'as*', 'a s s', 'a*s', 'a s s', '*ss', 'pus', 'pu*', 'pus', 'p*s', 'pus', '*us', 'pok', 'po*', 'pok', 'p*k', 'pok', '*ok', 't * t', 't**', 't * t', 't*t', 't * t', '**t', 'stup', 'stu*', 'stup', 'st*p', 'stup', 's*up', 'stup', '*tup', 's t f u', 'stf*', 's t f u', 'st*u', 's t f u', 's*fu', 's t f u', '*tfu', 'dumb', 'dum*', 'dumb', 'du*b', 'dumb', 'd*mb', 'dumb', '*umb', 't*t', 't**', 't*t', 't*t', 't*t', '**t', 'fuc', 'fu*', 'fuc', 'f*c', 'fuc', '*uc', 'f r * c k', 'fr*c*', 'f r * c k', 'fr**k', 'f r * c k', 'fr*ck', 'f r * c k', 'f**ck', 'f r * c k', '*r*ck', 'lma', 'lm*', 'lma', 'l*a', 'lma', '*ma', 'asre', 'asr*', 'asre', 'as*e', 'asre', 'a*re', 'asre', '*sre', 'sex', 'se*', 'sex', 's*x', 'sex', '*ex', 'f u c k', 'fuc*', 'f u c k', 'fu*k', 'f u c k', 'f*ck', 'f u c k', '*uck', 'nazi', 'naz*', 'nazi', 'na*i', 'nazi', 'n*zi', 'nazi', '*azi', 'flip', 'fli*', 'flip', 'fl*p', 'flip', 'f*ip', 'flip', '*lip', 'fack', 'fac*', 'fack', 'fa*k', 'fack', 'f*ck', 'fack', '*ack', 'vagina', 'vagin*', 'vagina', 'vagi*a', 'vagina', 'vag*na', 'vagina', 'va*ina', 'vagina', 'v*gina', 'vagina', '*agina', 'c * c k', 'c*c*', 'c * c k', 'c**k', 'c * c k', 'c*ck', 'c * c k', '**ck', 'n * g g e r', 'n*gge*', 'n * g g e r', 'n*gg*r', 'n * g g e r', 'n*g*er', 'n * g g e r', 'n**ger', 'n * g g e r', 'n*gger', 'n * g g e r', '**gger', 'geno', 'gen*', 'geno', 'ge*o', 'geno', 'g*no', 'geno', '*eno', 'i d i t', 'idi*', 'i d i t', 'id*t', 'i d i t', 'i*it', 'i d i t', '*dit', 'butt', 'but*', 'butt', 'bu*t', 'butt', 'b*tt', 'butt', '*utt', 'sh!t', 'sh!*', 'sh!t', 'sh*t', 'sh!t', 's*!t', 'sh!t', '*h!t', 's h t', 'sh*', 's h t', 's*t', 's h t', '*ht', 'ass', 'as*', 'ass', 'a*s', 'ass', '*ss', 'clusterfuc', 'clusterfu*', 'clusterfuc', 'clusterf*c', 'clusterfuc', 'cluster*uc', 'clusterfuc', 'cluste*fuc', 'clusterfuc', 'clust*rfuc', 'clusterfuc', 'clus*erfuc', 'clusterfuc', 'clu*terfuc', 'clusterfuc', 'cl*sterfuc', 'clusterfuc', 'c*usterfuc', 'clusterfuc', '*lusterfuc', 'idoit', 'idoi*', 'idoit', 'ido*t', 'idoit', 'id*it', 'idoit', 'i*oit', 'idoit', '*doit', 'mutil', 'muti*', 'mutil', 'mut*l', 'mutil', 'mu*il', 'mutil', 'm*til', 'mutil', '*util', 'idiot', 'idio*', 'idiot', 'idi*t', 'idiot', 'id*ot', 'idiot', 'i*iot', 'idiot', '*diot', 'fu', 'f*', 'fu', '*u', 'neo', 'ne*', 'neo', 'n*o', 'neo', '*eo', 'dump', 'dum*', 'dump', 'du*p', 'dump', 'd*mp', 'dump', '*ump', 'f r u c k', 'fruc*', 'f r u c k', 'fru*k', 'f r u c k', 'fr*ck', 'f r u c k', 'f*uck', 'f r u c k', '*ruck', 'blo', 'bl*', 'blo', 'b*o', 'blo', '*lo', 'come', 'com*', 'come', 'co*e', 'come', 'c*me', 'come', '*ome', 's*x', 's**', 's*x', 's*x', 's*x', '**x', 'f*ck', 'f*c*', 'f*ck', 'f**k', 'f*ck', 'f*ck', 'f*ck', '**ck', 'p ! s', 'p!*', 'p ! s', 'p*s', 'p ! s', '*!s', 'f u', 'f*', 'f u', '*u', 'd*mn', 'd*m*', 'd*mn', 'd**n', 'd*mn', 'd*mn', 'd*mn', '**mn', 's h ! t', 'sh!*', 's h ! t', 'sh*t', 's h ! t', 's*!t', 's h ! t', '*h!t', 'fuke', 'fuk*', 'fuke', 'fu*e', 'fuke', 'f*ke', 'fuke', '*uke', 'n ! g g e r', 'n!gge*', 'n ! g g e r', 'n!gg*r', 'n ! g g e r', 'n!g*er', 'n ! g g e r', 'n!*ger', 'n ! g g e r', 'n*gger', 'n ! g g e r', '*!gger', 'anal', 'ana*', 'anal', 'an*l', 'anal', 'a*al', 'anal', '*nal', 's h * t', 'sh**', 's h * t', 'sh*t', 's h * t', 's**t', 's h * t', '*h*t', 'p u s s y', 'puss*', 'p u s s y', 'pus*y', 'p u s s y', 'pu*sy', 'p u s s y', 'p*ssy', 'p u s s y', '*ussy', 'f a c l', 'fac*', 'f a c l', 'fa*l', 'f a c l', 'f*cl', 'f a c l', '*acl', 'n!gger', 'n!gge*', 'n!gger', 'n!gg*r', 'n!gger', 'n!g*er', 'n!gger', 'n!*ger', 'n!gger', 'n*gger', 'n!gger', '*!gger', 'n*gger', 'n*gge*', 'n*gger', 'n*gg*r', 'n*gger', 'n*g*er', 'n*gger', 'n**ger', 'n*gger', 'n*gger', 'n*gger', '**gger', 'slap', 'sla*', 'slap', 'sl*p', 'slap', 's*ap', 'slap', '*lap', 's u c k', 'suc*', 's u c k', 'su*k', 's u c k', 's*ck', 's u c k', '*uck', 's u c', 'su*', 's u c', 's*c', 's u c', '*uc', 'v * g i n a', 'v*gin*', 'v * g i n a', 'v*gi*a', 'v * g i n a', 'v*g*na', 'v * g i n a', 'v**ina', 'v * g i n a', 'v*gina', 'v * g i n a', '**gina', 'x x x', 'xx*', 'x x x', 'x*x', 'x x x', '*xx', 'gay', 'ga*', 'gay', 'g*y', 'gay', '*ay', 'f a c', 'fa*', 'f a c', 'f*c', 'f a c', '*ac', 'fk', 'f*', 'fk', '*k'}
+explicit_data5 = {'s x', 's*', 's x', '*x', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck', 'n * g g a',
+                  'n*gg*', 'n * g g a', 'n*g*a', 'n * g g a', 'n**ga', 'n * g g a', 'n*gga', 'n * g g a', '**gga',
+                  'fac', 'fa*', 'fac', 'f*c', 'fac', '*ac', 'p*ssy', 'p*ss*', 'p*ssy', 'p*s*y', 'p*ssy', 'p**sy',
+                  'p*ssy', 'p*ssy', 'p*ssy', '**ssy', 'puss', 'pus*', 'puss', 'pu*s', 'puss', 'p*ss', 'puss', '*uss',
+                  'hitler', 'hitle*', 'hitler', 'hitl*r', 'hitler', 'hit*er', 'hitler', 'hi*ler', 'hitler', 'h*tler',
+                  'hitler', '*itler', 'damn', 'dam*', 'damn', 'da*n', 'damn', 'd*mn', 'damn', '*amn', 'p!ss', 'p!s*',
+                  'p!ss', 'p!*s', 'p!ss', 'p*ss', 'p!ss', '*!ss', 'lana', 'lan*', 'lana', 'la*a', 'lana', 'l*na',
+                  'lana', '*ana', 'th*t', 'th**', 'th*t', 'th*t', 'th*t', 't**t', 'th*t', '*h*t', 'rupe', 'rup*',
+                  'rupe', 'ru*e', 'rupe', 'r*pe', 'rupe', '*upe', 'c ! c k', 'c!c*', 'c ! c k', 'c!*k', 'c ! c k',
+                  'c*ck', 'c ! c k', '*!ck', 'cock', 'coc*', 'cock', 'co*k', 'cock', 'c*ck', 'cock', '*ock', 'prod',
+                  'pro*', 'prod', 'pr*d', 'prod', 'p*od', 'prod', '*rod', 'seggs', 'segg*', 'seggs', 'seg*s', 'seggs',
+                  'se*gs', 'seggs', 's*ggs', 'seggs', '*eggs', 'arse', 'ars*', 'arse', 'ar*e', 'arse', 'a*se', 'arse',
+                  '*rse', 'p * s', 'p**', 'p * s', 'p*s', 'p * s', '**s', 'r a p e', 'rap*', 'r a p e', 'ra*e',
+                  'r a p e', 'r*pe', 'r a p e', '*ape', 'p i s', 'pi*', 'p i s', 'p*s', 'p i s', '*is', 'p u s', 'pu*',
+                  'p u s', 'p*s', 'p u s', '*us', 'c r * p', 'cr**', 'c r * p', 'cr*p', 'c r * p', 'c**p', 'c r * p',
+                  '*r*p', 'p * r n', 'p*r*', 'p * r n', 'p**n', 'p * r n', 'p*rn', 'p * r n', '**rn', 'frick', 'fric*',
+                  'frick', 'fri*k', 'frick', 'fr*ck', 'frick', 'f*ick', 'frick', '*rick', 'shut', 'shu*', 'shut',
+                  'sh*t', 'shut', 's*ut', 'shut', '*hut', 'f r i c k', 'fric*', 'f r i c k', 'fri*k', 'f r i c k',
+                  'fr*ck', 'f r i c k', 'f*ick', 'f r i c k', '*rick', 'c*nt', 'c*n*', 'c*nt', 'c**t', 'c*nt', 'c*nt',
+                  'c*nt', '**nt', 'dip', 'di*', 'dip', 'd*p', 'dip', '*ip', 'rob', 'ro*', 'rob', 'r*b', 'rob', '*ob',
+                  's*ck', 's*c*', 's*ck', 's**k', 's*ck', 's*ck', 's*ck', '**ck', 'p*ss', 'p*s*', 'p*ss', 'p**s',
+                  'p*ss', 'p*ss', 'p*ss', '**ss', 't i t', 'ti*', 't i t', 't*t', 't i t', '*it', 't h o t', 'tho*',
+                  't h o t', 'th*t', 't h o t', 't*ot', 't h o t', '*hot', 'piss', 'pis*', 'piss', 'pi*s', 'piss',
+                  'p*ss', 'piss', '*iss', 'tit', 'ti*', 'tit', 't*t', 'tit', '*it', 'b i t c h', 'bitc*', 'b i t c h',
+                  'bit*h', 'b i t c h', 'bi*ch', 'b i t c h', 'b*tch', 'b i t c h', '*itch', 'p*rn', 'p*r*', 'p*rn',
+                  'p**n', 'p*rn', 'p*rn', 'p*rn', '**rn', 'cr*p', 'cr**', 'cr*p', 'cr*p', 'cr*p', 'c**p', 'cr*p',
+                  '*r*p', 'rape', 'rap*', 'rape', 'ra*e', 'rape', 'r*pe', 'rape', '*ape', 'btch', 'btc*', 'btch',
+                  'bt*h', 'btch', 'b*ch', 'btch', '*tch', 't h * t', 'th**', 't h * t', 'th*t', 't h * t', 't**t',
+                  't h * t', '*h*t', 'hit', 'hi*', 'hit', 'h*t', 'hit', '*it', 'a r s e', 'ars*', 'a r s e', 'ar*e',
+                  'a r s e', 'a*se', 'a r s e', '*rse', 'dick', 'dic*', 'dick', 'di*k', 'dick', 'd*ck', 'dick', '*ick',
+                  'dayum', 'dayu*', 'dayum', 'day*m', 'dayum', 'da*um', 'dayum', 'd*yum', 'dayum', '*ayum', 'bang',
+                  'ban*', 'bang', 'ba*g', 'bang', 'b*ng', 'bang', '*ang', 'd * c k', 'd*c*', 'd * c k', 'd**k',
+                  'd * c k', 'd*ck', 'd * c k', '**ck', 'cunt', 'cun*', 'cunt', 'cu*t', 'cunt', 'c*nt', 'cunt', '*unt',
+                  'b t c h', 'btc*', 'b t c h', 'bt*h', 'b t c h', 'b*ch', 'b t c h', '*tch', 'c!ck', 'c!c*', 'c!ck',
+                  'c!*k', 'c!ck', 'c*ck', 'c!ck', '*!ck', 'fruck', 'fruc*', 'fruck', 'fru*k', 'fruck', 'fr*ck', 'fruck',
+                  'f*uck', 'fruck', '*ruck', 'c r u d', 'cru*', 'c r u d', 'cr*d', 'c r u d', 'c*ud', 'c r u d', '*rud',
+                  'p o r n', 'por*', 'p o r n', 'po*n', 'p o r n', 'p*rn', 'p o r n', '*orn', 'fort', 'for*', 'fort',
+                  'fo*t', 'fort', 'f*rt', 'fort', '*ort', 'porn', 'por*', 'porn', 'po*n', 'porn', 'p*rn', 'porn',
+                  '*orn', 'mur', 'mu*', 'mur', 'm*r', 'mur', '*ur', 'p * s s', 'p*s*', 'p * s s', 'p**s', 'p * s s',
+                  'p*ss', 'p * s s', '**ss', 'xxx', 'xx*', 'xxx', 'x*x', 'xxx', '*xx', 'n!gga', 'n!gg*', 'n!gga',
+                  'n!g*a', 'n!gga', 'n!*ga', 'n!gga', 'n*gga', 'n!gga', '*!gga', 'r * p e', 'r*p*', 'r * p e', 'r**e',
+                  'r * p e', 'r*pe', 'r * p e', '**pe', 'f l i p', 'fli*', 'f l i p', 'fl*p', 'f l i p', 'f*ip',
+                  'f l i p', '*lip', 'p i s s', 'pis*', 'p i s s', 'pi*s', 'p i s s', 'p*ss', 'p i s s', '*iss', 'rod',
+                  'ro*', 'rod', 'r*d', 'rod', '*od', 'n*zi', 'n*z*', 'n*zi', 'n**i', 'n*zi', 'n*zi', 'n*zi', '**zi',
+                  'robl', 'rob*', 'robl', 'ro*l', 'robl', 'r*bl', 'robl', '*obl', 'peg', 'pe*', 'peg', 'p*g', 'peg',
+                  '*eg', 'nigga', 'nigg*', 'nigga', 'nig*a', 'nigga', 'ni*ga', 'nigga', 'n*gga', 'nigga', '*igga',
+                  'b * s t * r d', 'b*st*r*', 'b * s t * r d', 'b*st**d', 'b * s t * r d', 'b*st*rd', 'b * s t * r d',
+                  'b*s**rd', 'b * s t * r d', 'b**t*rd', 'b * s t * r d', 'b*st*rd', 'b * s t * r d', '**st*rd', 'fuck',
+                  'fuc*', 'fuck', 'fu*k', 'fuck', 'f*ck', 'fuck', '*uck', 'c o c k', 'coc*', 'c o c k', 'co*k',
+                  'c o c k', 'c*ck', 'c o c k', '*ock', 'stfu', 'stf*', 'stfu', 'st*u', 'stfu', 's*fu', 'stfu', '*tfu',
+                  'idg', 'id*', 'idg', 'i*g', 'idg', '*dg', 'dum', 'du*', 'dum', 'd*m', 'dum', '*um', 'c r a p', 'cra*',
+                  'c r a p', 'cr*p', 'c r a p', 'c*ap', 'c r a p', '*rap', 'i d i o t', 'idio*', 'i d i o t', 'idi*t',
+                  'i d i o t', 'id*ot', 'i d i o t', 'i*iot', 'i d i o t', '*diot', 'd ! c k', 'd!c*', 'd ! c k',
+                  'd!*k', 'd ! c k', 'd*ck', 'd ! c k', '*!ck', 'lmb', 'lm*', 'lmb', 'l*b', 'lmb', '*mb', 'i d o i t',
+                  'idoi*', 'i d o i t', 'ido*t', 'i d o i t', 'id*it', 'i d o i t', 'i*oit', 'i d o i t', '*doit',
+                  'suck', 'suc*', 'suck', 'su*k', 'suck', 's*ck', 'suck', '*uck', 'nite', 'nit*', 'nite', 'ni*e',
+                  'nite', 'n*te', 'nite', '*ite', 'bastard', 'bastar*', 'bastard', 'basta*d', 'bastard', 'bast*rd',
+                  'bastard', 'bas*ard', 'bastard', 'ba*tard', 'bastard', 'b*stard', 'bastard', '*astard', 'p * s s y',
+                  'p*ss*', 'p * s s y', 'p*s*y', 'p * s s y', 'p**sy', 'p * s s y', 'p*ssy', 'p * s s y', '**ssy',
+                  'pis', 'pi*', 'pis', 'p*s', 'pis', '*is', 'stick', 'stic*', 'stick', 'sti*k', 'stick', 'st*ck',
+                  'stick', 's*ick', 'stick', '*tick', 'r u p e', 'rup*', 'r u p e', 'ru*e', 'r u p e', 'r*pe',
+                  'r u p e', '*upe', 't!t', 't!*', 't!t', 't*t', 't!t', '*!t', 's * x', 's**', 's * x', 's*x', 's * x',
+                  '**x', 'dam', 'da*', 'dam', 'd*m', 'dam', '*am', 'p!s', 'p!*', 'p!s', 'p*s', 'p!s', '*!s', 'segs',
+                  'seg*', 'segs', 'se*s', 'segs', 's*gs', 'segs', '*egs', 'b ! t c h', 'b!tc*', 'b ! t c h', 'b!t*h',
+                  'b ! t c h', 'b!*ch', 'b ! t c h', 'b*tch', 'b ! t c h', '*!tch', 'crud', 'cru*', 'crud', 'cr*d',
+                  'crud', 'c*ud', 'crud', '*rud', 'job', 'jo*', 'job', 'j*b', 'job', '*ob', 'f u c', 'fu*', 'f u c',
+                  'f*c', 'f u c', '*uc', 'd i c k', 'dic*', 'd i c k', 'di*k', 'd i c k', 'd*ck', 'd i c k', '*ick',
+                  'c r * d', 'cr**', 'c r * d', 'cr*d', 'c r * d', 'c**d', 'c r * d', '*r*d', 'bitch', 'bitc*', 'bitch',
+                  'bit*h', 'bitch', 'bi*ch', 'bitch', 'b*tch', 'bitch', '*itch', 'fuk', 'fu*', 'fuk', 'f*k', 'fuk',
+                  '*uk', 'trash', 'tras*', 'trash', 'tra*h', 'trash', 'tr*sh', 'trash', 't*ash', 'trash', '*rash',
+                  'kil', 'ki*', 'kil', 'k*l', 'kil', '*il', 's e x', 'se*', 's e x', 's*x', 's e x', '*ex', 'gai',
+                  'ga*', 'gai', 'g*i', 'gai', '*ai', 'fr*ck', 'fr*c*', 'fr*ck', 'fr**k', 'fr*ck', 'fr*ck', 'fr*ck',
+                  'f**ck', 'fr*ck', '*r*ck', 'n ! g g a', 'n!gg*', 'n ! g g a', 'n!g*a', 'n ! g g a', 'n!*ga',
+                  'n ! g g a', 'n*gga', 'n ! g g a', '*!gga', 'sh*t', 'sh**', 'sh*t', 'sh*t', 'sh*t', 's**t', 'sh*t',
+                  '*h*t', 'crap', 'cra*', 'crap', 'cr*p', 'crap', 'c*ap', 'crap', '*rap', 'idit', 'idi*', 'idit',
+                  'id*t', 'idit', 'i*it', 'idit', '*dit', 'sx', 's*', 'sx', '*x', 'sht', 'sh*', 'sht', 's*t', 'sht',
+                  '*ht', 'sta', 'st*', 'sta', 's*a', 'sta', '*ta', 'danm', 'dan*', 'danm', 'da*m', 'danm', 'd*nm',
+                  'danm', '*anm', 'suc', 'su*', 'suc', 's*c', 'suc', '*uc', 'f u k', 'fu*', 'f u k', 'f*k', 'f u k',
+                  '*uk', 't ! t', 't!*', 't ! t', 't*t', 't ! t', '*!t', 'cu', 'c*', 'cu', '*u', 'v*gina', 'v*gin*',
+                  'v*gina', 'v*gi*a', 'v*gina', 'v*g*na', 'v*gina', 'v**ina', 'v*gina', 'v*gina', 'v*gina', '**gina',
+                  'dummy', 'dumm*', 'dummy', 'dum*y', 'dummy', 'du*my', 'dummy', 'd*mmy', 'dummy', '*ummy', 'shit',
+                  'shi*', 'shit', 'sh*t', 'shit', 's*it', 'shit', '*hit', 'nigger', 'nigge*', 'nigger', 'nigg*r',
+                  'nigger', 'nig*er', 'nigger', 'ni*ger', 'nigger', 'n*gger', 'nigger', '*igger', 'p u s s', 'pus*',
+                  'p u s s', 'pu*s', 'p u s s', 'p*ss', 'p u s s', '*uss', 'thot', 'tho*', 'thot', 'th*t', 'thot',
+                  't*ot', 'thot', '*hot', 'pussy', 'puss*', 'pussy', 'pus*y', 'pussy', 'pu*sy', 'pussy', 'p*ssy',
+                  'pussy', '*ussy', 'naz*', 'naz*', 'naz*', 'na**', 'naz*', 'n*z*', 'naz*', '*az*', 'a s r e', 'asr*',
+                  'a s r e', 'as*e', 'a s r e', 'a*re', 'a s r e', '*sre', 'fck', 'fc*', 'fck', 'f*k', 'fck', '*ck',
+                  'prn', 'pr*', 'prn', 'p*n', 'prn', '*rn', 'b a s t a r d', 'bastar*', 'b a s t a r d', 'basta*d',
+                  'b a s t a r d', 'bast*rd', 'b a s t a r d', 'bas*ard', 'b a s t a r d', 'ba*tard', 'b a s t a r d',
+                  'b*stard', 'b a s t a r d', '*astard', 'hac', 'ha*', 'hac', 'h*c', 'hac', '*ac', 'a s s', 'as*',
+                  'a s s', 'a*s', 'a s s', '*ss', 'pus', 'pu*', 'pus', 'p*s', 'pus', '*us', 'pok', 'po*', 'pok', 'p*k',
+                  'pok', '*ok', 't * t', 't**', 't * t', 't*t', 't * t', '**t', 'stup', 'stu*', 'stup', 'st*p', 'stup',
+                  's*up', 'stup', '*tup', 's t f u', 'stf*', 's t f u', 'st*u', 's t f u', 's*fu', 's t f u', '*tfu',
+                  'dumb', 'dum*', 'dumb', 'du*b', 'dumb', 'd*mb', 'dumb', '*umb', 't*t', 't**', 't*t', 't*t', 't*t',
+                  '**t', 'fuc', 'fu*', 'fuc', 'f*c', 'fuc', '*uc', 'f r * c k', 'fr*c*', 'f r * c k', 'fr**k',
+                  'f r * c k', 'fr*ck', 'f r * c k', 'f**ck', 'f r * c k', '*r*ck', 'lma', 'lm*', 'lma', 'l*a', 'lma',
+                  '*ma', 'asre', 'asr*', 'asre', 'as*e', 'asre', 'a*re', 'asre', '*sre', 'sex', 'se*', 'sex', 's*x',
+                  'sex', '*ex', 'f u c k', 'fuc*', 'f u c k', 'fu*k', 'f u c k', 'f*ck', 'f u c k', '*uck', 'nazi',
+                  'naz*', 'nazi', 'na*i', 'nazi', 'n*zi', 'nazi', '*azi', 'flip', 'fli*', 'flip', 'fl*p', 'flip',
+                  'f*ip', 'flip', '*lip', 'fack', 'fac*', 'fack', 'fa*k', 'fack', 'f*ck', 'fack', '*ack', 'vagina',
+                  'vagin*', 'vagina', 'vagi*a', 'vagina', 'vag*na', 'vagina', 'va*ina', 'vagina', 'v*gina', 'vagina',
+                  '*agina', 'c * c k', 'c*c*', 'c * c k', 'c**k', 'c * c k', 'c*ck', 'c * c k', '**ck', 'n * g g e r',
+                  'n*gge*', 'n * g g e r', 'n*gg*r', 'n * g g e r', 'n*g*er', 'n * g g e r', 'n**ger', 'n * g g e r',
+                  'n*gger', 'n * g g e r', '**gger', 'geno', 'gen*', 'geno', 'ge*o', 'geno', 'g*no', 'geno', '*eno',
+                  'i d i t', 'idi*', 'i d i t', 'id*t', 'i d i t', 'i*it', 'i d i t', '*dit', 'butt', 'but*', 'butt',
+                  'bu*t', 'butt', 'b*tt', 'butt', '*utt', 'sh!t', 'sh!*', 'sh!t', 'sh*t', 'sh!t', 's*!t', 'sh!t',
+                  '*h!t', 's h t', 'sh*', 's h t', 's*t', 's h t', '*ht', 'ass', 'as*', 'ass', 'a*s', 'ass', '*ss',
+                  'clusterfuc', 'clusterfu*', 'clusterfuc', 'clusterf*c', 'clusterfuc', 'cluster*uc', 'clusterfuc',
+                  'cluste*fuc', 'clusterfuc', 'clust*rfuc', 'clusterfuc', 'clus*erfuc', 'clusterfuc', 'clu*terfuc',
+                  'clusterfuc', 'cl*sterfuc', 'clusterfuc', 'c*usterfuc', 'clusterfuc', '*lusterfuc', 'idoit', 'idoi*',
+                  'idoit', 'ido*t', 'idoit', 'id*it', 'idoit', 'i*oit', 'idoit', '*doit', 'mutil', 'muti*', 'mutil',
+                  'mut*l', 'mutil', 'mu*il', 'mutil', 'm*til', 'mutil', '*util', 'idiot', 'idio*', 'idiot', 'idi*t',
+                  'idiot', 'id*ot', 'idiot', 'i*iot', 'idiot', '*diot', 'fu', 'f*', 'fu', '*u', 'neo', 'ne*', 'neo',
+                  'n*o', 'neo', '*eo', 'dump', 'dum*', 'dump', 'du*p', 'dump', 'd*mp', 'dump', '*ump', 'f r u c k',
+                  'fruc*', 'f r u c k', 'fru*k', 'f r u c k', 'fr*ck', 'f r u c k', 'f*uck', 'f r u c k', '*ruck',
+                  'blo', 'bl*', 'blo', 'b*o', 'blo', '*lo', 'come', 'com*', 'come', 'co*e', 'come', 'c*me', 'come',
+                  '*ome', 's*x', 's**', 's*x', 's*x', 's*x', '**x', 'f*ck', 'f*c*', 'f*ck', 'f**k', 'f*ck', 'f*ck',
+                  'f*ck', '**ck', 'p ! s', 'p!*', 'p ! s', 'p*s', 'p ! s', '*!s', 'f u', 'f*', 'f u', '*u', 'd*mn',
+                  'd*m*', 'd*mn', 'd**n', 'd*mn', 'd*mn', 'd*mn', '**mn', 's h ! t', 'sh!*', 's h ! t', 'sh*t',
+                  's h ! t', 's*!t', 's h ! t', '*h!t', 'fuke', 'fuk*', 'fuke', 'fu*e', 'fuke', 'f*ke', 'fuke', '*uke',
+                  'n ! g g e r', 'n!gge*', 'n ! g g e r', 'n!gg*r', 'n ! g g e r', 'n!g*er', 'n ! g g e r', 'n!*ger',
+                  'n ! g g e r', 'n*gger', 'n ! g g e r', '*!gger', 'anal', 'ana*', 'anal', 'an*l', 'anal', 'a*al',
+                  'anal', '*nal', 's h * t', 'sh**', 's h * t', 'sh*t', 's h * t', 's**t', 's h * t', '*h*t',
+                  'p u s s y', 'puss*', 'p u s s y', 'pus*y', 'p u s s y', 'pu*sy', 'p u s s y', 'p*ssy', 'p u s s y',
+                  '*ussy', 'f a c l', 'fac*', 'f a c l', 'fa*l', 'f a c l', 'f*cl', 'f a c l', '*acl', 'n!gger',
+                  'n!gge*', 'n!gger', 'n!gg*r', 'n!gger', 'n!g*er', 'n!gger', 'n!*ger', 'n!gger', 'n*gger', 'n!gger',
+                  '*!gger', 'n*gger', 'n*gge*', 'n*gger', 'n*gg*r', 'n*gger', 'n*g*er', 'n*gger', 'n**ger', 'n*gger',
+                  'n*gger', 'n*gger', '**gger', 'slap', 'sla*', 'slap', 'sl*p', 'slap', 's*ap', 'slap', '*lap',
+                  's u c k', 'suc*', 's u c k', 'su*k', 's u c k', 's*ck', 's u c k', '*uck', 's u c', 'su*', 's u c',
+                  's*c', 's u c', '*uc', 'v * g i n a', 'v*gin*', 'v * g i n a', 'v*gi*a', 'v * g i n a', 'v*g*na',
+                  'v * g i n a', 'v**ina', 'v * g i n a', 'v*gina', 'v * g i n a', '**gina', 'x x x', 'xx*', 'x x x',
+                  'x*x', 'x x x', '*xx', 'gay', 'ga*', 'gay', 'g*y', 'gay', '*ay', 'f a c', 'fa*', 'f a c', 'f*c',
+                  'f a c', '*ac', 'fk', 'f*', 'fk', '*k'}
 
-explicit_data4 = {'lma', 'lm*', 'lma', 'l*a', 'lma', '*ma', 'pis', 'pi*', 'pis', 'p*s', 'pis', '*is', 's*ck', 's*c*', 's*ck', 's**k', 's*ck', 's*ck', 's*ck', '**ck', 'butt', 'but*', 'butt', 'bu*t', 'butt', 'b*tt', 'butt', '*utt', 'kil', 'ki*', 'kil', 'k*l', 'kil', '*il', 'flip', 'fli*', 'flip', 'fl*p', 'flip', 'f*ip', 'flip', '*lip', 'rape', 'rap*', 'rape', 'ra*e', 'rape', 'r*pe', 'rape', '*ape', 'segs', 'seg*', 'segs', 'se*s', 'segs', 's*gs', 'segs', '*egs', 'prod', 'pro*', 'prod', 'pr*d', 'prod', 'p*od', 'prod', '*rod', 's*x', 's**', 's*x', 's*x', 's*x', '**x', 'btch', 'btc*', 'btch', 'bt*h', 'btch', 'b*ch', 'btch', '*tch', 'c*nt', 'c*n*', 'c*nt', 'c**t', 'c*nt', 'c*nt', 'c*nt', '**nt', 'trash', 'tras*', 'trash', 'tra*h', 'trash', 'tr*sh', 'trash', 't*ash', 'trash', '*rash', 'sx', 's*', 'sx', '*x', 'thot', 'tho*', 'thot', 'th*t', 'thot', 't*ot', 'thot', '*hot', 'suc', 'su*', 'suc', 's*c', 'suc', '*uc', 'bastard', 'bastar*', 'bastard', 'basta*d', 'bastard', 'bast*rd', 'bastard', 'bas*ard', 'bastard', 'ba*tard', 'bastard', 'b*stard', 'bastard', '*astard', 'pok', 'po*', 'pok', 'p*k', 'pok', '*ok', 'lana', 'lan*', 'lana', 'la*a', 'lana', 'l*na', 'lana', '*ana', 'n!gger', 'n!gge*', 'n!gger', 'n!gg*r', 'n!gger', 'n!g*er', 'n!gger', 'n!*ger', 'n!gger', 'n*gger', 'n!gger', '*!gger', 'geno', 'gen*', 'geno', 'ge*o', 'geno', 'g*no', 'geno', '*eno', 'mutil', 'muti*', 'mutil', 'mut*l', 'mutil', 'mu*il', 'mutil', 'm*til', 'mutil', '*util', 't*t', 't**', 't*t', 't*t', 't*t', '**t', 'fuck', 'fuc*', 'fuck', 'fu*k', 'fuck', 'f*ck', 'fuck', '*uck', 'shut', 'shu*', 'shut', 'sh*t', 'shut', 's*ut', 'shut', '*hut', 'clusterfuc', 'clusterfu*', 'clusterfuc', 'clusterf*c', 'clusterfuc', 'cluster*uc', 'clusterfuc', 'cluste*fuc', 'clusterfuc', 'clust*rfuc', 'clusterfuc', 'clus*erfuc', 'clusterfuc', 'clu*terfuc', 'clusterfuc', 'cl*sterfuc', 'clusterfuc', 'c*usterfuc', 'clusterfuc', '*lusterfuc', 'job', 'jo*', 'job', 'j*b', 'job', '*ob', 'dam', 'da*', 'dam', 'd*m', 'dam', '*am', 'crap', 'cra*', 'crap', 'cr*p', 'crap', 'c*ap', 'crap', '*rap', 'th*t', 'th**', 'th*t', 'th*t', 'th*t', 't**t', 'th*t', '*h*t', 'stfu', 'stf*', 'stfu', 'st*u', 'stfu', 's*fu', 'stfu', '*tfu', 'hitler', 'hitle*', 'hitler', 'hitl*r', 'hitler', 'hit*er', 'hitler', 'hi*ler', 'hitler', 'h*tler', 'hitler', '*itler', 'tit', 'ti*', 'tit', 't*t', 'tit', '*it', 'p!s', 'p!*', 'p!s', 'p*s', 'p!s', '*!s', 'piss', 'pis*', 'piss', 'pi*s', 'piss', 'p*ss', 'piss', '*iss', 'cr*p', 'cr**', 'cr*p', 'cr*p', 'cr*p', 'c**p', 'cr*p', '*r*p', 'suck', 'suc*', 'suck', 'su*k', 'suck', 's*ck', 'suck', '*uck', 'idiot', 'idio*', 'idiot', 'idi*t', 'idiot', 'id*ot', 'idiot', 'i*iot', 'idiot', '*diot', 'rob', 'ro*', 'rob', 'r*b', 'rob', '*ob', 'sh!t', 'sh!*', 'sh!t', 'sh*t', 'sh!t', 's*!t', 'sh!t', '*h!t', 't!t', 't!*', 't!t', 't*t', 't!t', '*!t', 'fu', 'f*', 'fu', '*u', 'v*gina', 'v*gin*', 'v*gina', 'v*gi*a', 'v*gina', 'v*g*na', 'v*gina', 'v**ina', 'v*gina', 'v*gina', 'v*gina', '**gina', 'prn', 'pr*', 'prn', 'p*n', 'prn', '*rn', 'c!ck', 'c!c*', 'c!ck', 'c!*k', 'c!ck', 'c*ck', 'c!ck', '*!ck', 'p!ss', 'p!s*', 'p!ss', 'p!*s', 'p!ss', 'p*ss', 'p!ss', '*!ss', 'p*ssy', 'p*ss*', 'p*ssy', 'p*s*y', 'p*ssy', 'p**sy', 'p*ssy', 'p*ssy', 'p*ssy', '**ssy', 'idg', 'id*', 'idg', 'i*g', 'idg', '*dg', 'fruck', 'fruc*', 'fruck', 'fru*k', 'fruck', 'fr*ck', 'fruck', 'f*uck', 'fruck', '*ruck', 'danm', 'dan*', 'danm', 'da*m', 'danm', 'd*nm', 'danm', '*anm', 'come', 'com*', 'come', 'co*e', 'come', 'c*me', 'come', '*ome', 'nazi', 'naz*', 'nazi', 'na*i', 'nazi', 'n*zi', 'nazi', '*azi', 'robl', 'rob*', 'robl', 'ro*l', 'robl', 'r*bl', 'robl', '*obl', 'sta', 'st*', 'sta', 's*a', 'sta', '*ta', 'gay', 'ga*', 'gay', 'g*y', 'gay', '*ay', 'idit', 'idi*', 'idit', 'id*t', 'idit', 'i*it', 'idit', '*dit', 'fk', 'f*', 'fk', '*k', 'rod', 'ro*', 'rod', 'r*d', 'rod', '*od', 'n!gga', 'n!gg*', 'n!gga', 'n!g*a', 'n!gga', 'n!*ga', 'n!gga', 'n*gga', 'n!gga', '*!gga', 'sht', 'sh*', 'sht', 's*t', 'sht', '*ht', 'frick', 'fric*', 'frick', 'fri*k', 'frick', 'fr*ck', 'frick', 'f*ick', 'frick', '*rick', 'stup', 'stu*', 'stup', 'st*p', 'stup', 's*up', 'stup', '*tup', 'peg', 'pe*', 'peg', 'p*g', 'peg', '*eg', 'neo', 'ne*', 'neo', 'n*o', 'neo', '*eo', 'dum', 'du*', 'dum', 'd*m', 'dum', '*um', 'bang', 'ban*', 'bang', 'ba*g', 'bang', 'b*ng', 'bang', '*ang', 'cu', 'c*', 'cu', '*u', 'seggs', 'segg*', 'seggs', 'seg*s', 'seggs', 'se*gs', 'seggs', 's*ggs', 'seggs', '*eggs', 'stick', 'stic*', 'stick', 'sti*k', 'stick', 'st*ck', 'stick', 's*ick', 'stick', '*tick', 'dummy', 'dumm*', 'dummy', 'dum*y', 'dummy', 'du*my', 'dummy', 'd*mmy', 'dummy', '*ummy', 'sh*t', 'sh**', 'sh*t', 'sh*t', 'sh*t', 's**t', 'sh*t', '*h*t', 'dump', 'dum*', 'dump', 'du*p', 'dump', 'd*mp', 'dump', '*ump', 'arse', 'ars*', 'arse', 'ar*e', 'arse', 'a*se', 'arse', '*rse', 'crud', 'cru*', 'crud', 'cr*d', 'crud', 'c*ud', 'crud', '*rud', 'mur', 'mu*', 'mur', 'm*r', 'mur', '*ur', 'rupe', 'rup*', 'rupe', 'ru*e', 'rupe', 'r*pe', 'rupe', '*upe', 'dumb', 'dum*', 'dumb', 'du*b', 'dumb', 'd*mb', 'dumb', '*umb', 'fuk', 'fu*', 'fuk', 'f*k', 'fuk', '*uk', 'bitch', 'bitc*', 'bitch', 'bit*h', 'bitch', 'bi*ch', 'bitch', 'b*tch', 'bitch', '*itch', 'dip', 'di*', 'dip', 'd*p', 'dip', '*ip', 'fck', 'fc*', 'fck', 'f*k', 'fck', '*ck', 'cock', 'coc*', 'cock', 'co*k', 'cock', 'c*ck', 'cock', '*ock', 'cunt', 'cun*', 'cunt', 'cu*t', 'cunt', 'c*nt', 'cunt', '*unt', 'fuc', 'fu*', 'fuc', 'f*c', 'fuc', '*uc', 'hit', 'hi*', 'hit', 'h*t', 'hit', '*it', 'pus', 'pu*', 'pus', 'p*s', 'pus', '*us', 'pussy', 'puss*', 'pussy', 'pus*y', 'pussy', 'pu*sy', 'pussy', 'p*ssy', 'pussy', '*ussy', 'hac', 'ha*', 'hac', 'h*c', 'hac', '*ac', 'vagina', 'vagin*', 'vagina', 'vagi*a', 'vagina', 'vag*na', 'vagina', 'va*ina', 'vagina', 'v*gina', 'vagina', '*agina', 'asre', 'asr*', 'asre', 'as*e', 'asre', 'a*re', 'asre', '*sre', 'dick', 'dic*', 'dick', 'di*k', 'dick', 'd*ck', 'dick', '*ick', 'lmb', 'lm*', 'lmb', 'l*b', 'lmb', '*mb', 'anal', 'ana*', 'anal', 'an*l', 'anal', 'a*al', 'anal', '*nal', 'fac', 'fa*', 'fac', 'f*c', 'fac', '*ac', 'fuke', 'fuk*', 'fuke', 'fu*e', 'fuke', 'f*ke', 'fuke', '*uke', 'fort', 'for*', 'fort', 'fo*t', 'fort', 'f*rt', 'fort', '*ort', 'fr*ck', 'fr*c*', 'fr*ck', 'fr**k', 'fr*ck', 'fr*ck', 'fr*ck', 'f**ck', 'fr*ck', '*r*ck', 'sex', 'se*', 'sex', 's*x', 'sex', '*ex', 'n*zi', 'n*z*', 'n*zi', 'n**i', 'n*zi', 'n*zi', 'n*zi', '**zi', 'p*ss', 'p*s*', 'p*ss', 'p**s', 'p*ss', 'p*ss', 'p*ss', '**ss', 'shit', 'shi*', 'shit', 'sh*t', 'shit', 's*it', 'shit', '*hit', 'ass', 'as*', 'ass', 'a*s', 'ass', '*ss', 'slap', 'sla*', 'slap', 'sl*p', 'slap', 's*ap', 'slap', '*lap', 'nigger', 'nigge*', 'nigger', 'nigg*r', 'nigger', 'nig*er', 'nigger', 'ni*ger', 'nigger', 'n*gger', 'nigger', '*igger', 'p*rn', 'p*r*', 'p*rn', 'p**n', 'p*rn', 'p*rn', 'p*rn', '**rn', 'dayum', 'dayu*', 'dayum', 'day*m', 'dayum', 'da*um', 'dayum', 'd*yum', 'dayum', '*ayum', 'nite', 'nit*', 'nite', 'ni*e', 'nite', 'n*te', 'nite', '*ite', 'blo', 'bl*', 'blo', 'b*o', 'blo', '*lo', 'fack', 'fac*', 'fack', 'fa*k', 'fack', 'f*ck', 'fack', '*ack', 'n*gger', 'n*gge*', 'n*gger', 'n*gg*r', 'n*gger', 'n*g*er', 'n*gger', 'n**ger', 'n*gger', 'n*gger', 'n*gger', '**gger', 'damn', 'dam*', 'damn', 'da*n', 'damn', 'd*mn', 'damn', '*amn', 'xxx', 'xx*', 'xxx', 'x*x', 'xxx', '*xx', 'porn', 'por*', 'porn', 'po*n', 'porn', 'p*rn', 'porn', '*orn', 'gai', 'ga*', 'gai', 'g*i', 'gai', '*ai', 'idoit', 'idoi*', 'idoit', 'ido*t', 'idoit', 'id*it', 'idoit', 'i*oit', 'idoit', '*doit', 'nigga', 'nigg*', 'nigga', 'nig*a', 'nigga', 'ni*ga', 'nigga', 'n*gga', 'nigga', '*igga', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck', 'naz*', 'naz*', 'naz*', 'na**', 'naz*', 'n*z*', 'naz*', '*az*', 'puss', 'pus*', 'puss', 'pu*s', 'puss', 'p*ss', 'puss', '*uss'}
+explicit_data4 = {'lma', 'lm*', 'lma', 'l*a', 'lma', '*ma', 'pis', 'pi*', 'pis', 'p*s', 'pis', '*is', 's*ck', 's*c*',
+                  's*ck', 's**k', 's*ck', 's*ck', 's*ck', '**ck', 'butt', 'but*', 'butt', 'bu*t', 'butt', 'b*tt',
+                  'butt', '*utt', 'kil', 'ki*', 'kil', 'k*l', 'kil', '*il', 'flip', 'fli*', 'flip', 'fl*p', 'flip',
+                  'f*ip', 'flip', '*lip', 'rape', 'rap*', 'rape', 'ra*e', 'rape', 'r*pe', 'rape', '*ape', 'segs',
+                  'seg*', 'segs', 'se*s', 'segs', 's*gs', 'segs', '*egs', 'prod', 'pro*', 'prod', 'pr*d', 'prod',
+                  'p*od', 'prod', '*rod', 's*x', 's**', 's*x', 's*x', 's*x', '**x', 'btch', 'btc*', 'btch', 'bt*h',
+                  'btch', 'b*ch', 'btch', '*tch', 'c*nt', 'c*n*', 'c*nt', 'c**t', 'c*nt', 'c*nt', 'c*nt', '**nt',
+                  'trash', 'tras*', 'trash', 'tra*h', 'trash', 'tr*sh', 'trash', 't*ash', 'trash', '*rash', 'sx', 's*',
+                  'sx', '*x', 'thot', 'tho*', 'thot', 'th*t', 'thot', 't*ot', 'thot', '*hot', 'suc', 'su*', 'suc',
+                  's*c', 'suc', '*uc', 'bastard', 'bastar*', 'bastard', 'basta*d', 'bastard', 'bast*rd', 'bastard',
+                  'bas*ard', 'bastard', 'ba*tard', 'bastard', 'b*stard', 'bastard', '*astard', 'pok', 'po*', 'pok',
+                  'p*k', 'pok', '*ok', 'lana', 'lan*', 'lana', 'la*a', 'lana', 'l*na', 'lana', '*ana', 'n!gger',
+                  'n!gge*', 'n!gger', 'n!gg*r', 'n!gger', 'n!g*er', 'n!gger', 'n!*ger', 'n!gger', 'n*gger', 'n!gger',
+                  '*!gger', 'geno', 'gen*', 'geno', 'ge*o', 'geno', 'g*no', 'geno', '*eno', 'mutil', 'muti*', 'mutil',
+                  'mut*l', 'mutil', 'mu*il', 'mutil', 'm*til', 'mutil', '*util', 't*t', 't**', 't*t', 't*t', 't*t',
+                  '**t', 'fuck', 'fuc*', 'fuck', 'fu*k', 'fuck', 'f*ck', 'fuck', '*uck', 'shut', 'shu*', 'shut', 'sh*t',
+                  'shut', 's*ut', 'shut', '*hut', 'clusterfuc', 'clusterfu*', 'clusterfuc', 'clusterf*c', 'clusterfuc',
+                  'cluster*uc', 'clusterfuc', 'cluste*fuc', 'clusterfuc', 'clust*rfuc', 'clusterfuc', 'clus*erfuc',
+                  'clusterfuc', 'clu*terfuc', 'clusterfuc', 'cl*sterfuc', 'clusterfuc', 'c*usterfuc', 'clusterfuc',
+                  '*lusterfuc', 'job', 'jo*', 'job', 'j*b', 'job', '*ob', 'dam', 'da*', 'dam', 'd*m', 'dam', '*am',
+                  'crap', 'cra*', 'crap', 'cr*p', 'crap', 'c*ap', 'crap', '*rap', 'th*t', 'th**', 'th*t', 'th*t',
+                  'th*t', 't**t', 'th*t', '*h*t', 'stfu', 'stf*', 'stfu', 'st*u', 'stfu', 's*fu', 'stfu', '*tfu',
+                  'hitler', 'hitle*', 'hitler', 'hitl*r', 'hitler', 'hit*er', 'hitler', 'hi*ler', 'hitler', 'h*tler',
+                  'hitler', '*itler', 'tit', 'ti*', 'tit', 't*t', 'tit', '*it', 'p!s', 'p!*', 'p!s', 'p*s', 'p!s',
+                  '*!s', 'piss', 'pis*', 'piss', 'pi*s', 'piss', 'p*ss', 'piss', '*iss', 'cr*p', 'cr**', 'cr*p', 'cr*p',
+                  'cr*p', 'c**p', 'cr*p', '*r*p', 'suck', 'suc*', 'suck', 'su*k', 'suck', 's*ck', 'suck', '*uck',
+                  'idiot', 'idio*', 'idiot', 'idi*t', 'idiot', 'id*ot', 'idiot', 'i*iot', 'idiot', '*diot', 'rob',
+                  'ro*', 'rob', 'r*b', 'rob', '*ob', 'sh!t', 'sh!*', 'sh!t', 'sh*t', 'sh!t', 's*!t', 'sh!t', '*h!t',
+                  't!t', 't!*', 't!t', 't*t', 't!t', '*!t', 'fu', 'f*', 'fu', '*u', 'v*gina', 'v*gin*', 'v*gina',
+                  'v*gi*a', 'v*gina', 'v*g*na', 'v*gina', 'v**ina', 'v*gina', 'v*gina', 'v*gina', '**gina', 'prn',
+                  'pr*', 'prn', 'p*n', 'prn', '*rn', 'c!ck', 'c!c*', 'c!ck', 'c!*k', 'c!ck', 'c*ck', 'c!ck', '*!ck',
+                  'p!ss', 'p!s*', 'p!ss', 'p!*s', 'p!ss', 'p*ss', 'p!ss', '*!ss', 'p*ssy', 'p*ss*', 'p*ssy', 'p*s*y',
+                  'p*ssy', 'p**sy', 'p*ssy', 'p*ssy', 'p*ssy', '**ssy', 'idg', 'id*', 'idg', 'i*g', 'idg', '*dg',
+                  'fruck', 'fruc*', 'fruck', 'fru*k', 'fruck', 'fr*ck', 'fruck', 'f*uck', 'fruck', '*ruck', 'danm',
+                  'dan*', 'danm', 'da*m', 'danm', 'd*nm', 'danm', '*anm', 'come', 'com*', 'come', 'co*e', 'come',
+                  'c*me', 'come', '*ome', 'nazi', 'naz*', 'nazi', 'na*i', 'nazi', 'n*zi', 'nazi', '*azi', 'robl',
+                  'rob*', 'robl', 'ro*l', 'robl', 'r*bl', 'robl', '*obl', 'sta', 'st*', 'sta', 's*a', 'sta', '*ta',
+                  'gay', 'ga*', 'gay', 'g*y', 'gay', '*ay', 'idit', 'idi*', 'idit', 'id*t', 'idit', 'i*it', 'idit',
+                  '*dit', 'fk', 'f*', 'fk', '*k', 'rod', 'ro*', 'rod', 'r*d', 'rod', '*od', 'n!gga', 'n!gg*', 'n!gga',
+                  'n!g*a', 'n!gga', 'n!*ga', 'n!gga', 'n*gga', 'n!gga', '*!gga', 'sht', 'sh*', 'sht', 's*t', 'sht',
+                  '*ht', 'frick', 'fric*', 'frick', 'fri*k', 'frick', 'fr*ck', 'frick', 'f*ick', 'frick', '*rick',
+                  'stup', 'stu*', 'stup', 'st*p', 'stup', 's*up', 'stup', '*tup', 'peg', 'pe*', 'peg', 'p*g', 'peg',
+                  '*eg', 'neo', 'ne*', 'neo', 'n*o', 'neo', '*eo', 'dum', 'du*', 'dum', 'd*m', 'dum', '*um', 'bang',
+                  'ban*', 'bang', 'ba*g', 'bang', 'b*ng', 'bang', '*ang', 'cu', 'c*', 'cu', '*u', 'seggs', 'segg*',
+                  'seggs', 'seg*s', 'seggs', 'se*gs', 'seggs', 's*ggs', 'seggs', '*eggs', 'stick', 'stic*', 'stick',
+                  'sti*k', 'stick', 'st*ck', 'stick', 's*ick', 'stick', '*tick', 'dummy', 'dumm*', 'dummy', 'dum*y',
+                  'dummy', 'du*my', 'dummy', 'd*mmy', 'dummy', '*ummy', 'sh*t', 'sh**', 'sh*t', 'sh*t', 'sh*t', 's**t',
+                  'sh*t', '*h*t', 'dump', 'dum*', 'dump', 'du*p', 'dump', 'd*mp', 'dump', '*ump', 'arse', 'ars*',
+                  'arse', 'ar*e', 'arse', 'a*se', 'arse', '*rse', 'crud', 'cru*', 'crud', 'cr*d', 'crud', 'c*ud',
+                  'crud', '*rud', 'mur', 'mu*', 'mur', 'm*r', 'mur', '*ur', 'rupe', 'rup*', 'rupe', 'ru*e', 'rupe',
+                  'r*pe', 'rupe', '*upe', 'dumb', 'dum*', 'dumb', 'du*b', 'dumb', 'd*mb', 'dumb', '*umb', 'fuk', 'fu*',
+                  'fuk', 'f*k', 'fuk', '*uk', 'bitch', 'bitc*', 'bitch', 'bit*h', 'bitch', 'bi*ch', 'bitch', 'b*tch',
+                  'bitch', '*itch', 'dip', 'di*', 'dip', 'd*p', 'dip', '*ip', 'fck', 'fc*', 'fck', 'f*k', 'fck', '*ck',
+                  'cock', 'coc*', 'cock', 'co*k', 'cock', 'c*ck', 'cock', '*ock', 'cunt', 'cun*', 'cunt', 'cu*t',
+                  'cunt', 'c*nt', 'cunt', '*unt', 'fuc', 'fu*', 'fuc', 'f*c', 'fuc', '*uc', 'hit', 'hi*', 'hit', 'h*t',
+                  'hit', '*it', 'pus', 'pu*', 'pus', 'p*s', 'pus', '*us', 'pussy', 'puss*', 'pussy', 'pus*y', 'pussy',
+                  'pu*sy', 'pussy', 'p*ssy', 'pussy', '*ussy', 'hac', 'ha*', 'hac', 'h*c', 'hac', '*ac', 'vagina',
+                  'vagin*', 'vagina', 'vagi*a', 'vagina', 'vag*na', 'vagina', 'va*ina', 'vagina', 'v*gina', 'vagina',
+                  '*agina', 'asre', 'asr*', 'asre', 'as*e', 'asre', 'a*re', 'asre', '*sre', 'dick', 'dic*', 'dick',
+                  'di*k', 'dick', 'd*ck', 'dick', '*ick', 'lmb', 'lm*', 'lmb', 'l*b', 'lmb', '*mb', 'anal', 'ana*',
+                  'anal', 'an*l', 'anal', 'a*al', 'anal', '*nal', 'fac', 'fa*', 'fac', 'f*c', 'fac', '*ac', 'fuke',
+                  'fuk*', 'fuke', 'fu*e', 'fuke', 'f*ke', 'fuke', '*uke', 'fort', 'for*', 'fort', 'fo*t', 'fort',
+                  'f*rt', 'fort', '*ort', 'fr*ck', 'fr*c*', 'fr*ck', 'fr**k', 'fr*ck', 'fr*ck', 'fr*ck', 'f**ck',
+                  'fr*ck', '*r*ck', 'sex', 'se*', 'sex', 's*x', 'sex', '*ex', 'n*zi', 'n*z*', 'n*zi', 'n**i', 'n*zi',
+                  'n*zi', 'n*zi', '**zi', 'p*ss', 'p*s*', 'p*ss', 'p**s', 'p*ss', 'p*ss', 'p*ss', '**ss', 'shit',
+                  'shi*', 'shit', 'sh*t', 'shit', 's*it', 'shit', '*hit', 'ass', 'as*', 'ass', 'a*s', 'ass', '*ss',
+                  'slap', 'sla*', 'slap', 'sl*p', 'slap', 's*ap', 'slap', '*lap', 'nigger', 'nigge*', 'nigger',
+                  'nigg*r', 'nigger', 'nig*er', 'nigger', 'ni*ger', 'nigger', 'n*gger', 'nigger', '*igger', 'p*rn',
+                  'p*r*', 'p*rn', 'p**n', 'p*rn', 'p*rn', 'p*rn', '**rn', 'dayum', 'dayu*', 'dayum', 'day*m', 'dayum',
+                  'da*um', 'dayum', 'd*yum', 'dayum', '*ayum', 'nite', 'nit*', 'nite', 'ni*e', 'nite', 'n*te', 'nite',
+                  '*ite', 'blo', 'bl*', 'blo', 'b*o', 'blo', '*lo', 'fack', 'fac*', 'fack', 'fa*k', 'fack', 'f*ck',
+                  'fack', '*ack', 'n*gger', 'n*gge*', 'n*gger', 'n*gg*r', 'n*gger', 'n*g*er', 'n*gger', 'n**ger',
+                  'n*gger', 'n*gger', 'n*gger', '**gger', 'damn', 'dam*', 'damn', 'da*n', 'damn', 'd*mn', 'damn',
+                  '*amn', 'xxx', 'xx*', 'xxx', 'x*x', 'xxx', '*xx', 'porn', 'por*', 'porn', 'po*n', 'porn', 'p*rn',
+                  'porn', '*orn', 'gai', 'ga*', 'gai', 'g*i', 'gai', '*ai', 'idoit', 'idoi*', 'idoit', 'ido*t', 'idoit',
+                  'id*it', 'idoit', 'i*oit', 'idoit', '*doit', 'nigga', 'nigg*', 'nigga', 'nig*a', 'nigga', 'ni*ga',
+                  'nigga', 'n*gga', 'nigga', '*igga', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck',
+                  'naz*', 'naz*', 'naz*', 'na**', 'naz*', 'n*z*', 'naz*', '*az*', 'puss', 'pus*', 'puss', 'pu*s',
+                  'puss', 'p*ss', 'puss', '*uss'}
 
 explicit_data3 = {'nazi', 'd!ck', 'slap', 'bitch', 'stick', 'idoit', 'vagina', 'cunt', 'hac', 'dip', 'pis', 'dumb',
                   'dam', 'sex', 'dick', 'fruck', 'prn', 'dump', 'stfu', 'rod', 'blo', 'p!ss', 'suc', 'dummy', 'hit',
@@ -41,11 +247,12 @@ explicit_data2 = {'cock', 'vagina', 'sex', 'anal', 'fuck',
                   'shit', 'nigga', 'piss', 'cunt', 'pussy', 'dick', 'nigger'}
 
 filter5 = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
-               'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
-               '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
-                 '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
+           'u', 'i', 'o', 'y', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
+           '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' ', '!', '@', '#', '$', '%', '^',
+           '&', '*', '(', ')', '.', ',', "'", '"', '-', '=', '_',
+           '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 
-filter4 = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '|', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',}
+filter4 = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '|', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', }
 
 valid_chars = {'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
                'x', 'w', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'e',
@@ -80,9 +287,12 @@ async def on_ready():
 async def on_message(message: discord.Message):
     global spam
     global content
-    print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content,
-         message.author.bot, spam, content,
-         f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+    try:
+        print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content,
+              message.author.bot, spam, content,
+              f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Log error')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -226,7 +436,7 @@ async def kick(ctx, member: discord.Member, *, reason='None'):
     try:
         await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**:
     **{reason}**''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'Kicked {member.mention}.')
 
@@ -240,7 +450,7 @@ async def ban(ctx, member: discord.Member, *, reason='None'):
     try:
         await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**:
 **{reason}**''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'Banned {member.mention}.')
 
@@ -277,8 +487,8 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = False
@@ -292,7 +502,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
     try:
         await member.send(f'''You were muted from {ctx.guild} by **{ctx.author}**:
 **{reason}**''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
 
 
@@ -315,8 +525,9 @@ async def unmute(ctx, member: discord.Member):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = True
@@ -328,9 +539,8 @@ async def unmute(ctx, member: discord.Member):
     await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**!''')
     try:
         await member.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
-
 
 
 @client.command()
@@ -391,8 +601,8 @@ async def file_unmute(ctx, member: discord.Member):
         await ctx.send('"file_muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.attach_files = True
@@ -403,7 +613,9 @@ async def file_unmute(ctx, member: discord.Member):
     await ctx.send(f'''**{member.mention}** was file_unmuted by **{ctx.message.author.mention}**!''')
     try:
         await member.send(f'''You were file_unmuted from {ctx.guild} by **{ctx.author}**!''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
 
 
@@ -425,8 +637,10 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
         await ctx.send('"file_muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.attach_files = False
@@ -439,8 +653,11 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
     try:
         await member.send(f'''You were file_muted from {ctx.guild} by **{ctx.author}**:
 **reason**''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
+
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
@@ -460,7 +677,9 @@ async def warn(ctx, member: discord.Member, *, reason):
     try:
         await member.send(f'''{member.mention} you were warned in {ctx.guild} by **{ctx.author}**:
 **{reason}**''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.display_name}.')
 
 
@@ -518,8 +737,10 @@ async def hush(ctx):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = False
@@ -534,7 +755,9 @@ async def hush(ctx):
                 await i.add_roles(role)
             try:
                 await i.send(f'''You were muted from {ctx.guild} by **{ctx.author}**!''')
-            except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+            except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 print(f'Cannot direct message {i.display_name}.')
     await ctx.send(f'{ctx.author.mention} has hushed the channel.')
 
@@ -558,8 +781,10 @@ async def un_hush(ctx):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = True
@@ -574,7 +799,9 @@ async def un_hush(ctx):
                 await i.remove_roles(role)
             try:
                 await i.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
-            except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+            except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 print(f'Cannot direct message {i.display_name}.')
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
@@ -652,7 +879,8 @@ async def kick_members(ctx, *, member_ids):
         await member.kick(reason='None')
         try:
             await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send('Kicked members.')
 
@@ -672,9 +900,11 @@ async def ban_members(ctx, *, member_ids):
         await member.ban()
         try:
             await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send('Banned members.')
+
 
 @client.command(aliases=('mute_users', 'mute_people'))
 @commands.has_permissions(manage_messages=True, send_messages=True, manage_guild=True, manage_channels=True)
@@ -701,8 +931,10 @@ async def mute_members(ctx, *, member_ids):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = False
@@ -716,7 +948,8 @@ async def mute_members(ctx, *, member_ids):
             await member.add_roles(role)
         try:
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'{ctx.author.mention} muted members.')
 
@@ -746,8 +979,10 @@ async def unmute_members(ctx, *, member_ids):
         await ctx.send('"muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = True
@@ -761,13 +996,15 @@ async def unmute_members(ctx, *, member_ids):
             await member.remove_roles(role)
         try:
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'{ctx.author.mention} unmuted members.')
 
 
 @client.command(aliases=('file_mute_users', 'file_mute_people'))
-@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, manage_channels=True, manage_guild=True)
+@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, manage_channels=True,
+                          manage_guild=True)
 async def file_mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -790,8 +1027,10 @@ async def file_mute_members(ctx, *, member_ids):
         await ctx.send('"file_muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.attach_files = False
@@ -804,13 +1043,15 @@ async def file_mute_members(ctx, *, member_ids):
             await member.add_roles(role)
         try:
             await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'{ctx.author.mention} file_unmuted members.')
 
 
 @client.command(aliases=('file_unmute_users', 'file_unmute_people'))
-@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, manage_channels=True, manage_guild=True)
+@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, manage_channels=True,
+                          manage_guild=True)
 async def file_unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -833,8 +1074,10 @@ async def file_unmute_members(ctx, *, member_ids):
         await ctx.send('"file_muted" role error')
         return
     try:
-        role = ctx.guild.get_role(role_id=role_id)
-    except ValueError or discord.Forbidden or discord.HTTPException:
+        role = ctx.guild.get_role(role_id)
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.attach_files = True
@@ -847,9 +1090,11 @@ async def file_unmute_members(ctx, *, member_ids):
             await member.remove_roles(role)
         try:
             await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send(f'{ctx.author.mention} file_unmuted members.')
+
 
 @client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
@@ -912,7 +1157,9 @@ async def bookmark(ctx, message_id):
         await member.send(
             content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
     https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
-    except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send(f'Cannot direct message {member.mention}.')
         print(f'Cannot direct message {member.display_name}.')
 
@@ -945,7 +1192,9 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
                 await member.send(
                     f'''{member.mention} **{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
 **{content}**''')
-            except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+            except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 print(f'Cannot direct message {member.display_name}.')
                 pass
         await ctx.send(f'{ctx.author.mention} Messaged people in dms.')
@@ -955,7 +1204,9 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             await i.send(
                 f'''{i.mention} **{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
 **{content}**''')
-        except discord.HTTPException or discord.errors.HTTPException or discord.ext.commands.errors.CommandInvokeError or commands.CommandInvokeError or commands.CommandError or AttributeError or discord.Forbidden:
+        except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {i.display_name}.')
             pass
     await ctx.send(f'{ctx.author.mention} Messaged everyone in dms.')
@@ -972,7 +1223,8 @@ async def close_bot(ctx):
 async def evaluate(ctx, *, command):
     f = open('compile_user_code.py', 'w')
     f = f.writelines(str(command).strip('```py').strip('```'))
-    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```')}"], input=f, capture_output=True, text=True, timeout=5)
+    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```')}"], input=f,
+                            capture_output=True, text=True, timeout=5)
     f = ''
     await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
 ```
@@ -1014,7 +1266,6 @@ def convert_to_list(str):
 #   overwrite.send_messages = True
 #   overwrite.read_messages = True
 #   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
-#
 
 
 client.run('token')
