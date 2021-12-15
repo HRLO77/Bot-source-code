@@ -754,7 +754,7 @@ async def hush(ctx):
             else:
                 await i.add_roles(role)
             try:
-                await i.send(f'''You were muted from {ctx.guild} by **{ctx.author}**!''')
+                await i.send(f'''You were muted in {ctx.guild} by **{ctx.author}**!''')
             except (
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
@@ -798,7 +798,7 @@ async def un_hush(ctx):
             else:
                 await i.remove_roles(role)
             try:
-                await i.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
+                await i.send(f'''You were unmuted in {ctx.guild} by **{ctx.author}**!''')
             except (
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
