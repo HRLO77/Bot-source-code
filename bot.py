@@ -1182,11 +1182,30 @@ async def bookmark(ctx, message_id):
         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send(f'Cannot direct message {member.mention}.')
         print(f'Cannot direct message {member.display_name}.')
-
+        
 
 @client.command(aliases=('members', 'member#'))
 async def member_count(ctx):
-    await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
+    members = 0
+    for i in ctx.guild.members:
+        if i.bot:
+            continue
+        else:
+            members += 1
+    await ctx.send(f'{members} members are in the guild.')
+
+
+@client.command(aliases=('online_members', 'online_member#'))
+async def online_member_count(ctx):
+    members = 0
+    for i in ctx.guild.members:
+        if i.bot:
+            continue
+        elif str(i.status) == 'offline':
+            continue
+        else:
+            members += 1
+    await ctx.send(f'{members} members are online in the guild.')
 
 
 @client.command(aliases=('get_member', 'pull_member'))
