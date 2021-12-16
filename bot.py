@@ -1,17 +1,16 @@
+import os
 import random
-import ctx
 import disnake as discord
+from disnake.ext import commands
 import Functions
 import datetime
 import subprocess
 from datetime import datetime
-import requests
 import sys
 import profanity
 from profanity import profanity
 import tracemalloc
 import ctypes
-from disnake.ext import commands
 from datetime import datetime
 
 muted_channel = False
@@ -416,7 +415,7 @@ async def clear(ctx, amount=10):
 
 
 @client.command(aliases=('8ball', '8bal'))
-async def _8ball(ctx, *, question):
+async def _8ball(ctx):
     _8ball = ("As I see it, yes.", "Ask again later.", "Better not tell you now.", "Cannot predict now.",
               "Concentrate and ask again.", "Don’t count on it.", "It is certain.", "It is decidedly so.",
               "Most likely.",
@@ -825,7 +824,7 @@ async def get_roles(ctx, ids):
 @client.command(aliases=('remove_channel', 'end_channel'))
 @commands.has_permissions(manage_channels=True, manage_guild=True)
 async def delete_channel(ctx, channel):
-    is_channel = await client.fetch_channel(int(channel))
+    is_channel = await ctx.guild.fetch_channel(int(channel))
     await is_channel.delete()
     await ctx.send('Deleted channel.')
 
@@ -859,7 +858,7 @@ async def delete_channels(ctx, *, channels):
     print(tup)
     for i in tup:
         print(i)
-        channel = await client.fetch_channel(int(i))
+        channel = await ctx.guild.fetch_channel(int(i))
         await channel.delete()
     await ctx.send('Deleted channels.')
 
@@ -875,7 +874,7 @@ async def kick_members(ctx, *, member_ids):
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
+        member = await ctx.guild.fetch_member(int(i))
         await member.kick(reason='None')
         try:
             await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**!''')
@@ -896,7 +895,7 @@ async def ban_members(ctx, *, member_ids):
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
-        member = await client.fetch_user(int(i))
+        member = await ctx.guild.fetch_member(int(i))
         await member.ban()
         try:
             await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**!''')
@@ -904,6 +903,27 @@ async def ban_members(ctx, *, member_ids):
                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.display_name}.')
     await ctx.send('Banned members.')
+
+
+@client.command(aliases=('unban_users', 'unban_people'))
+@commands.has_permissions(ban_members=True)
+async def unban_members(ctx, *, user_ids):
+    try:
+        list(user_ids)
+    except ValueError:
+        await ctx.send('Invalid list for "user_ids"')
+        return
+    tup = convert_to_list(user_ids)
+    for i in tup:
+        print(i)
+        user = await client.fetch_user(int(i))
+        await ctx.guild.unban(user)
+        try:
+            await user.send(f'''{user.mention} you were unbanned from {ctx.guild} by **{ctx.author}**!''')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {user.display_name}.')
+    await ctx.send('Unbanned members.')
 
 
 @client.command(aliases=('mute_users', 'mute_people'))
@@ -1152,7 +1172,7 @@ async def fetch_message(ctx, message_id):
 
 @client.command(aliases=('bm', 'mark', 'book'))
 async def bookmark(ctx, message_id):
-    member = await client.fetch_user(ctx.author.id)
+    member = await ctx.guild.fetch_member(ctx.author.id)
     try:
         await member.send(
             content=f'''{ctx.author.mention}. You bookmarked a post in {ctx.guild.name} in {ctx.channel.name}.
@@ -1187,8 +1207,8 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             return
         tup = convert_to_list(member_ids)
         for i in tup:
+            member = await ctx.guild.fetch_member(int(i))
             try:
-                member = await client.fetch_user(int(i))
                 await member.send(
                     f'''{member.mention} **{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
 **{content}**''')
@@ -1231,6 +1251,14 @@ async def evaluate(ctx, *, command):
 {result.stderr}
 {result.stdout}
 ```''')
+
+
+@client.command()
+@commands.has_permissions(administrator=True)
+async def restart(ctx):
+    await ctx.send('Restarting bot...')
+    exec(open('restart.py').read())
+    sys.exit()
 
 
 def check_user_is_admin(user):
