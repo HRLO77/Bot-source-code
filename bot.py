@@ -1222,8 +1222,8 @@ async def close_bot(ctx):
 @client.command(aliases=('e', 'eval'))
 async def evaluate(ctx, *, command):
     f = open('compile_user_code.py', 'w')
-    f = f.writelines(str(command).strip('```py').strip('```'))
-    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```')}"], input=f,
+    f = f.writelines(str(command).strip('```py').strip('```').strip('```python'))
+    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```').strip('```python')}"], input=f,
                             capture_output=True, text=True, timeout=5)
     f = ''
     await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
