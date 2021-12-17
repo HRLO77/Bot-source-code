@@ -1273,7 +1273,7 @@ async def evaluate(ctx, *, command):
     if len(result.stdout) > 45:
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
-        file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
+        file = discord.File(r'path_to_out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
@@ -1296,7 +1296,7 @@ async def restart(ctx):
 @client.command(aliases=('get_warns', 'pull_warns'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
 async def fetch_warns(ctx):
-    file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\Warns.txt')
+    file = discord.File(r'path_to_Warns.txt')
     await ctx.send(content='Warns:', file=file)
 
 
