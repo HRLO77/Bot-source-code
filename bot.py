@@ -393,7 +393,7 @@ async def on_message(message: discord.Message):
                     print(f'Cannot direct message {i.display_name}.')
             else:
                 pass
-        await message.channel.send(f'{message.author.mentio} pinged Administrators.')
+        await message.channel.send(f'{message.author.mention} pinged Administrators.')
     await client.process_commands(message)
 
 
@@ -1270,6 +1270,13 @@ async def evaluate(ctx, *, command):
     f = f.writelines(str(command).strip('```py').strip('```').strip('```python'))
     result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```').strip('```python')}"], input=f,
                             capture_output=True, text=True, timeout=5)
+    if len(result.stdout) > 45:
+        o = open('out.txt', 'w')
+        o = o.writelines(str(result.stdout))
+        file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
+        await ctx.send(content='Program output too long, full output in text document:', file=file)
+        o = ''
+        return
     f = ''
     await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
 ```
@@ -1284,6 +1291,13 @@ async def restart(ctx):
     await ctx.send('Restarting bot...')
     exec(open('restart.py').read())
     sys.exit()
+
+
+@client.command(aliases=('get_warns', 'pull_warns'))
+@commands.has_permissions(manage_messages=True, manage_channels=True)
+async def fetch_warns(ctx):
+    file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\Warns.txt')
+    await ctx.send(content='Warns:', file=file)
 
 
 def check_user_is_admin(user):
