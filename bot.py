@@ -1,4 +1,3 @@
-import os
 import random
 import disnake as discord
 from disnake.ext import commands
@@ -287,11 +286,13 @@ async def on_message(message: discord.Message):
     global spam
     global content
     try:
-        print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.content,
+        print('Full log: ')
+        print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild, message.channel, message.author, message.content,
               message.author.bot, spam, content,
               f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print('Log error')
+        print(f'Log error, Minimized log: ')
+        print(datetime.now(), message.guild, message.channel, message.author, message.content, message.author.bot, spam, content)
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -384,10 +385,15 @@ async def on_message(message: discord.Message):
     if client.user in message.mentions:
         for i in message.guild.members:
             if i.guild_permissions.administrator:
-                await i.send(
-                    f'**{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
+                try:
+                    await i.send(f'{i.mention} **{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
+                except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                    print(f'Cannot direct message {i.display_name}.')
             else:
                 pass
+        await message.channel.send(f'{message.author.mentio} pinged Administrators.')
     await client.process_commands(message)
 
 
@@ -1182,7 +1188,7 @@ async def bookmark(ctx, message_id):
         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send(f'Cannot direct message {member.mention}.')
         print(f'Cannot direct message {member.display_name}.')
-        
+
 
 @client.command(aliases=('members', 'member#'))
 async def member_count(ctx):
