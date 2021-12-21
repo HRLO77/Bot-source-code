@@ -1,17 +1,23 @@
+import codecs
+
 import random
-import disnake as discord
-from disnake.ext import commands
+import discord as discord
+from discord.ext import commands
 import Functions
 import datetime
 import subprocess
-from datetime import datetime
 import sys
 import profanity
 from profanity import profanity
 import tracemalloc
 import ctypes
 from datetime import datetime
+import secrets
 
+
+a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+
+print(a)
 
 muted_channel = False
 tracemalloc.start()
@@ -1274,7 +1280,7 @@ async def evaluate(ctx, *, command):
     if len(result.stdout) > 45:
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
-        file = discord.File(r'filepath_to_out.txt')
+        file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
@@ -1297,7 +1303,7 @@ async def restart(ctx):
 @client.command(aliases=('get_warns', 'pull_warns'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
 async def fetch_warns(ctx):
-    file = discord.File(r'filepath_to_Warns.txt')
+    file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\Warns.txt')
     await ctx.send(content='Warns:', file=file)
 
 
@@ -1337,4 +1343,4 @@ def convert_to_list(str):
 #   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
 
 
-client.run('token')
+client.run('toke')
