@@ -2,6 +2,7 @@ import codecs
 
 import random
 import discord as discord
+import scipy
 from discord.ext import commands
 import Functions
 import datetime
@@ -272,7 +273,7 @@ responses = ('Leave me alone.',
              'ARG time: MDAxMDExMTAwMDEwMTEwMTAwMTAwMDAwMDAxMDExMTAwMDEwMTExMDAwMTAxMTEwMDAxMDExMTAwMDEwMDAwMDAwMTAxMTEwMDAxMDExMDEwMDEwMTExMDAwMTAwMDAwMDAxMDExMDEwMDEwMTEwMTAwMTAxMTAxMDAxMDExMDEwMDEwMTEwMTAwMTAwMDAwMDAxMDExMDEwMDEwMTExMDAwMTAxMTAxMDAxMDExMTAwMDEwMDAwMDAwMTAxMTAxMDAxMDExMTAwMDEwMTExMDAwMTAwMDAwMDAxMDExMDEwMDEwMTEwMTAwMTAxMTAxMDAxMDAwMDAwMDEwMTExMDAwMTAxMTEwMDAxMDExMTAwMDEwMTEwMTAwMTAwMDAwMDAxMDExMTAwMDEwMTEwMTAwMTAxMTEwMDAxMDExMTAwMDEwMDAwMDAwMTAxMTEwMDAxMDExMTAwMDEwMTEwMTAwMTAxMTAxMDAxMDExMDEwMDEwMDAwMDAwMTAxMTAxMDAxMDExMTAwMDEwMTExMDAwMTAwMDAwMDAxMDExMDEwMDEwMTExMDAwMTAwMDAwMDAxMDExMTAwMDEwMTEwMTAwMTAxMTEwMDAxMDExMTAwMDEwMDAwMDAwMTAxMTAxMDAxMDExMDEwMDEwMDAwMDAwMTAxMTAxMDAxMDExMTAwMDEwMTExMDAwMTAwMDAwMDAxMDExMDEwMDEwMTExMDAwMTAwMDAwMDAxMDExMTAwMDEwMTEwMTAwMTAxMTEwMDAxMDExMTAwMDEwMDAwMDAwMTAxMTEwMDAxMDExMTAwMDEwMTExMDAwMTAxMTAxMDAxMDExMDEwMDEwMDAwMDAwMTAxMTAxMDAxMDExMTAwMDEwMTExMDAwMTAwMDAwMDAxMDExMTAwMDEwMTExMDAwMTAxMTEwMDAxMDExMTAwMDEwMDAwMDAwMTAxMTAxMDAxMDExMTAwMDEwMTEwMTAwMTAxMTAxMDAxMDAwMDAwMDEwMTEwMTAwMTAxMTEwMDAxMDAwMDAwMDEwMTEwMTAwMTAxMTEwMDAxMDExMDEwMDEwMTEwMTAwMTAwMDAwMDAxMDExMDEwMDEwMTExMDAwMTAxMTEwMDAxMDExMDE= ',
              'Stop it, get some help.', "Don't you have anything better to do?", "" 'Mesa angeryyyyyyyyy.',
              'Piss the hell off.', 'No one asked.', 'Frick you.', "Don't make me angry",
-             "Do you want to summon my wrath?", "Piss off before I'm forced to use %0.0000023 of my bot power.")
+             "Do you want to summon my wrath?", "Piss off before I'm forced to use   %0.0000023 of my bot power.")
 greetings = ('Hello', 'Nice to see you', 'Welcome',
              'Hi', 'Hey there', 'Bonjour', 'Hi there')
 byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
@@ -284,6 +285,21 @@ profanity.load_words(explicit_data2)
 
 @client.event
 async def on_ready():
+    for i in client.guilds:
+        for channel in i.channels:
+            if 'text' in channel.type:
+                for member in i.members:
+                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+                    try:
+                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
+If a staff member asks for your verification code/token, send them a picture of this message.''')
+                    except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                        print(f'Cannot direct message {i.name}.')
+            if 'text' in channel.type:
+                await channel.send(f'Logged in.')
+                break
     print('We have logged in as {0.user}'.format(client))
 
 
@@ -300,7 +316,9 @@ async def on_message(message: discord.Message):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Direct message log: ')
-        print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id, message.content, message.author.bot, spam, content, f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
+        print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
+              message.content, message.author.bot, spam, content,
+              f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -546,8 +564,9 @@ async def unmute(ctx, member: discord.Member):
     try:
         role = ctx.guild.get_role(role_id)
     except (
-    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
-    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            ValueError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
 
         role = True
         overwrite = discord.PermissionOverwrite()
@@ -625,8 +644,9 @@ async def file_unmute(ctx, member: discord.Member):
     try:
         role = ctx.guild.get_role(role_id)
     except (
-    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError, ValueError,
-    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            ValueError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         role = True
         overwrite = discord.PermissionOverwrite()
         overwrite.attach_files = True
