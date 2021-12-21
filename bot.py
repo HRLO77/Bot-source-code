@@ -300,7 +300,7 @@ async def on_message(message: discord.Message):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Log error, Minimized log: ')
-        print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id, message.content, message.author.bot, spam, content)
+        print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id, message.content, message.author.bot, spam, content, f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
