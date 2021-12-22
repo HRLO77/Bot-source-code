@@ -15,6 +15,8 @@ import ctypes
 from datetime import datetime
 import secrets
 
+
+# If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 reacting = {'guild_id': ('reacting_message_id', 'default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
