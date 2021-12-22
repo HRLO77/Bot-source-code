@@ -15,6 +15,8 @@ import ctypes
 from datetime import datetime
 import secrets
 
+reacting = {'guild_id': ('reacting_message_id', 'default_role_id', 'emoji_to_react')}
+
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 
 print(a)
@@ -285,21 +287,21 @@ profanity.load_words(explicit_data2)
 
 @client.event
 async def on_ready():
-    for i in client.guilds:
-        for channel in i.channels:
-            if 'text' in channel.type:
-                for member in i.members:
-                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-                    try:
-                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
-If a staff member asks for your verification code/token, send them a picture of this message.''')
-                    except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                        print(f'Cannot direct message {i.name}.')
-            if 'text' in channel.type:
-                await channel.send(f'Logged in.')
-                break
+    #     for i in client.guilds:
+    #         for channel in i.channels:
+    #             if 'text' in channel.type:
+    #                 for member in i.members:
+    #                     secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+    #                     try:
+    #                         await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
+    # If a staff member asks for your verification code/token, send them a picture of this message.''')
+    #                     except (
+    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+    #                         print(f'Cannot direct message {i.name}.')
+    #             if 'text' in channel.type:
+    #                 await channel.send(f'Logged in.')
+    #                 break
     print('We have logged in as {0.user}'.format(client))
 
 
@@ -446,6 +448,28 @@ async def ping(ctx):
 @commands.has_permissions(manage_messages=True)
 async def clear(ctx, amount=10):
     await ctx.channel.purge(limit=int(amount) + 1)
+
+
+@client.event
+async def on_raw_reaction_add(payload):
+    data = reacting.get(payload.guild_id)
+    if int(payload.message_id) == data[0] and str(payload.emoji) == data[2]:
+        guild = await client.fetch_guild(payload.guild_id)
+        member = await guild.fetch_member(payload.user_id)
+        role = guild.get_role(data[1])
+        await member.send(f'You got the **{role.name}** role in **{guild.name}** for reacting!')
+        await member.add_roles(role)
+
+
+@client.event
+async def on_raw_reaction_remove(payload):
+    data = reacting.get(payload.guild_id)
+    if int(payload.message_id) == data[0] and str(payload.emoji) == data[2]:
+        guild = await client.fetch_guild(payload.guild_id)
+        member = await guild.fetch_member(payload.user_id)
+        role = guild.get_role(data[1])
+        await member.send(f'You lost the **{role.name}** role in **{guild.name}** for unreacting!')
+        await member.remove_roles(role)
 
 
 @client.command(aliases=('8ball', '8bal'))
