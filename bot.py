@@ -1,8 +1,5 @@
-import codecs
-
 import random
 import discord as discord
-import scipy
 from discord.ext import commands
 import Functions
 import datetime
