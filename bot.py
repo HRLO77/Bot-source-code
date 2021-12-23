@@ -1,6 +1,6 @@
 import random
-import discord as discord
-from discord.ext import commands
+import disnake as discord
+from disnake.ext import commands
 import Functions
 import datetime
 import subprocess
@@ -11,7 +11,6 @@ import tracemalloc
 import ctypes
 from datetime import datetime
 import secrets
-
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 reacting = {'guild_id': ('reacting_message_id', 'default_role_id', 'emoji_to_react')}
@@ -286,21 +285,21 @@ profanity.load_words(explicit_data2)
 
 @client.event
 async def on_ready():
-    #     for i in client.guilds:
-    #         for channel in i.channels:
-    #             if 'text' in channel.type:
-    #                 for member in i.members:
-    #                     secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-    #                     try:
-    #                         await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
-    # If a staff member asks for your verification code/token, send them a picture of this message.''')
-    #                     except (
-    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-    #                         print(f'Cannot direct message {i.name}.')
-    #             if 'text' in channel.type:
-    #                 await channel.send(f'Logged in.')
-    #                 break
+    for i in client.guilds:
+        for channel in i.channels:
+            if 'text' in channel.type:
+                for member in i.members:
+                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+                    try:
+                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
+    If a staff member asks for your verification code/token, send them a picture of this message.''')
+                    except (
+                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                        print(f'Cannot direct message {i.name}.')
+            if 'text' in channel.type:
+                await channel.send(f'Logged in.')
+                break
     print('We have logged in as {0.user}'.format(client))
 
 
@@ -320,6 +319,9 @@ async def on_message(message: discord.Message):
         print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
               message.content, message.author.bot, spam, content,
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Log error.')
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await client.process_commands(message)
@@ -498,6 +500,80 @@ async def kick(ctx, member: discord.Member, *, reason='None'):
     await ctx.send(f'Kicked {member.mention}.')
 
 
+@client.command()
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None'):
+    duration = (time * 60)
+    await member.timeout(duration=duration, reason=reason)
+    try:
+        await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
+**{reason}**.''')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f'Cannot direct message {member.name}.')
+    await ctx.send(f'''{ctx.author.mention} was put {member.mention} in the timeout chair for {time} minutes, because:
+**{reason}**.''')
+
+
+@client.command()
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+async def un_timeout(ctx, member: discord.Member, *, reason='None'):
+    await member.timeout(duration=None, reason=reason)
+    try:
+        await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
+{reason}''')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f'Cannot direct message {member.name}.')
+    await ctx.send(f'''{ctx.author.mention} were taken out of the {member.mention} in the timeout chair, because:
+**{reason}**''')
+
+
+@client.command(aliases=('un_timeout_users', 'un_timeout_people'))
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+async def un_timeout_members(ctx, member_ids, *, reason='None'):
+    try:
+        tuple(member_ids)
+    except ValueError:
+        await ctx.send('Invalid list for "member_ids".')
+        return
+    members = convert_to_list(member_ids)
+    for member in members:
+        i = await ctx.guild.fetch_member(int(member))
+        await i.timeout(duration=None, reason=reason)
+        try:
+            await i.send(f'''{i.mention} you were taken out of the timeout chair by **{ctx.author}** for, because:
+**{reason}**.''')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {i.name}.')
+    await ctx.send(f'''{ctx.author.mention} took lots of members out of the timeout chair, because:
+**{reason}**.''')
+
+
+@client.command(aliases=('timeout_users', 'timeout_people'))
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
+    duration = (time * 60)
+    try:
+        tuple(member_ids)
+    except ValueError:
+        await ctx.send('Invalid list for "member_ids".')
+        return
+    members = convert_to_list(member_ids)
+    for member in members:
+        i = await ctx.guild.fetch_member(int(member))
+        await i.timeout(duration=duration, reason=reason)
+        try:
+            await i.send(f'''{i.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
+**{reason}**.''')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {i.name}.')
+    await ctx.send(f'''{ctx.author.mention} put lots of members in the timeout chair for {time} minutes, because:
+**{reason}**.''')
+
+
 @client.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason='None'):
@@ -529,6 +605,7 @@ async def unban(ctx, *, member):
 @client.command()
 @commands.has_permissions(manage_messages=True, send_messages=True, manage_channels=True)
 async def mute(ctx, member: discord.Member, *, reason='None'):
+    member
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
