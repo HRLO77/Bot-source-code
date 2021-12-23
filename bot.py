@@ -413,7 +413,7 @@ async def on_message(message: discord.Message):
             await message.channel.send(f'{message.author.mention} please do not swear.')
     if client.user in message.mentions:
         for i in message.guild.members:
-            if i.guild_permissions.administrator:
+            if i.guild_permissions.manage_messages and i.guild_permissions.kick_members and i.guild_permissions.ban_members:
                 try:
                     await i.send(
                         f'{i.mention} **{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
@@ -571,6 +571,45 @@ async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {i.name}.')
     await ctx.send(f'''{ctx.author.mention} put lots of members in the timeout chair for {time} minutes, because:
+**{reason}**.''')
+    
+    
+@client.command()
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+async def timeout_hush(ctx, time: float=None, *, reason='None'):
+    duration = (time * 60)
+    for member in ctx.guild.members:
+        if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
+            continue
+        else:
+            pass
+        await member.timeout(duration=duration, reason=reason)
+        try:
+            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
+**{reason}**.''')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {member.name}.')
+    await ctx.send(f'''{ctx.author.mention} put the channel in the timeout chair for {time} minutes, because:
+**{reason}**.''')
+
+
+@client.command()
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+async def timeout_un_hush(ctx, *, reason='None'):
+    for member in ctx.guild.members:
+        if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
+            continue
+        else:
+            pass
+        await member.timeout(duration=None, reason=reason)
+        try:
+            await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
+**{reason}**.''')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {member.name}.')
+    await ctx.send(f'''{ctx.author.mention} took the channel out of the timeout chair, because:
 **{reason}**.''')
 
 
