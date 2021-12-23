@@ -18,5 +18,7 @@ If you are creating an instance of the bot, or using it in a new server, do NOT 
 
 Fill in the dictionary in the first few lines after imports if you want to create a default role syntax for your guild.
 
+You can comment all the lines of code in the on_ready, except the last print line to stop the bot from direct messaging all the members in all the guilds.
+
 
 Here is the documentation for the commands - https://pastebin.com/9w4Fp110
