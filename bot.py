@@ -511,10 +511,10 @@ async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.name}.')
-    await ctx.send(f'''{ctx.author.mention} was put {member.mention} in the timeout chair for {time} minutes, because:
+    await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {time} minutes, because:
 **{reason}**.''')
 
-
+    
 @client.command()
 @commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
 async def un_timeout(ctx, member: discord.Member, *, reason='None'):
