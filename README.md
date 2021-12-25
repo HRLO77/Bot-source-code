@@ -20,5 +20,7 @@ Fill in the dictionary in the first few lines after imports if you want to creat
 
 You can comment all the lines of code in the on_ready, except the last print line to stop the bot from direct messaging all the members in all the guilds.
 
+For the timeout functions, disnake, pycord, and discord.py do not support moderate_members or timeout_members boolean for permissions, so if you provide timing out members in a role, they will require ban, kicking members, and manage_messages permissions instead to timeout members using the bot. I will update this accordingly if the feature ever is added.
+
 
 Here is the documentation for the commands - https://pastebin.com/9w4Fp110
