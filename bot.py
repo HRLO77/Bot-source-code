@@ -300,7 +300,7 @@ async def on_ready():
             if 'text' in channel.type:
                 await channel.send(f'Logged in.')
                 break
-    print('We have logged in as {0.user}'.format(client))
+    print(f'We have logged in as {client.user}')
 
 
 @client.event
@@ -1486,6 +1486,14 @@ async def restart(ctx):
 async def fetch_warns(ctx):
     file = discord.File(r'filepath_to_Warns.txt')
     await ctx.send(content='Warns:', file=file)
+    
+    
+@client.command()
+async def print_out(ctx, *, message):
+    member = await ctx.guild.fetch_member(ctx.message.author.id)
+    new_message = await ctx.message.channel.send(message)
+    await member.send(f'{member.mention} you printed out a message in https://discord.com/channels/{ctx.guild.id}/{ctx.message.channel.id}/{new_message.id}.')
+    await ctx.message.delete()
 
 
 def check_user_is_admin(user):
