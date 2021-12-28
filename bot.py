@@ -13,7 +13,8 @@ from datetime import datetime
 import secrets
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
-reacting = {'guild_id':('reacting_message_id', 'default_role_id', 'emoji_to_react')}
+# Remember to enter intgers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
+reacting = {('guild_id', 'reacting_message_id'):('default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
@@ -452,24 +453,40 @@ async def clear(ctx, amount=10):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    data = reacting.get(payload.guild_id)
-    if int(payload.message_id) == data[0] and str(payload.emoji) == data[2]:
+    data = reacting.get((payload.guild_id, payload.message_id))
+    if type(data) == tuple:
+        pass
+    else:
+        return
+    if str(payload.emoji) == data[1]:
         guild = await client.fetch_guild(payload.guild_id)
         member = await guild.fetch_member(payload.user_id)
-        role = guild.get_role(data[1])
-        await member.send(f'You got the **{role.name}** role in **{guild.name}** for reacting!')
+        role = guild.get_role(data[0])
         await member.add_roles(role)
+        try:
+            await member.send(f'You got the **{role.name}** role in **{guild.name}** for reacting!')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {member.name}')
 
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    data = reacting.get(payload.guild_id)
-    if int(payload.message_id) == data[0] and str(payload.emoji) == data[2]:
+    data = reacting.get((payload.guild_id, payload.message_id))
+    if type(data) == tuple:
+        pass
+    else:
+        return
+    if str(payload.emoji) == data[1]:
         guild = await client.fetch_guild(payload.guild_id)
         member = await guild.fetch_member(payload.user_id)
-        role = guild.get_role(data[1])
-        await member.send(f'You lost the **{role.name}** role in **{guild.name}** for unreacting!')
+        role = guild.get_role(data[0])
         await member.remove_roles(role)
+        try:
+            await member.send(f'You lost the **{role.name}** role in **{guild.name}** for unreacting!')
+        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {member.name}')
 
 
 @client.command(aliases=('8ball', '8bal'))
