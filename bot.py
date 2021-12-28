@@ -13,10 +13,9 @@ from datetime import datetime
 import secrets
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
-reacting = {'guild_id': ('reacting_message_id', 'default_role_id', 'emoji_to_react')}
+reacting = {'guild_id':('reacting_message_id', 'default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-
 print(a)
 
 muted_channel = False
@@ -285,21 +284,21 @@ profanity.load_words(explicit_data2)
 
 @client.event
 async def on_ready():
-    for i in client.guilds:
-        for channel in i.channels:
-            if 'text' in channel.type:
-                for member in i.members:
-                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-                    try:
-                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
-    If a staff member asks for your verification code/token, send them a picture of this message.''')
-                    except (
-                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                        print(f'Cannot direct message {i.name}.')
-            if 'text' in channel.type:
-                await channel.send(f'Logged in.')
-                break
+    # for i in client.guilds:
+    #     for channel in i.channels:
+    #         if 'text' in channel.type:
+    #             for member in i.members:
+    #                 secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+    #                 try:
+    #                     await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{i.name}**.
+    # If a staff member asks for your verification code/token, send them a picture of this message.''')
+    #                 except (
+    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+    #                     print(f'Cannot direct message {i.name}.')
+    #         if 'text' in channel.type:
+    #             await channel.send(f'Logged in.')
+    #             break
     print(f'We have logged in as {client.user}')
 
 
@@ -514,7 +513,7 @@ async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None
     await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {time} minutes, because:
 **{reason}**.''')
 
-    
+
 @client.command()
 @commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
 async def un_timeout(ctx, member: discord.Member, *, reason='None'):
@@ -525,7 +524,7 @@ async def un_timeout(ctx, member: discord.Member, *, reason='None'):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {member.name}.')
-    await ctx.send(f'''{ctx.author.mention} were taken out of the {member.mention} in the timeout chair, because:
+    await ctx.send(f'''{ctx.author.mention} took {member.mention} out of the timeout chair, because:
 **{reason}**''')
 
 
@@ -542,7 +541,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
         i = await ctx.guild.fetch_member(int(member))
         await i.timeout(duration=None, reason=reason)
         try:
-            await i.send(f'''{i.mention} you were taken out of the timeout chair by **{ctx.author}** for, because:
+            await i.send(f'''{i.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
@@ -572,8 +571,8 @@ async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
             print(f'Cannot direct message {i.name}.')
     await ctx.send(f'''{ctx.author.mention} put lots of members in the timeout chair for {time} minutes, because:
 **{reason}**.''')
-    
-    
+
+
 @client.command()
 @commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
 async def timeout_hush(ctx, time: float=None, *, reason='None'):
@@ -657,6 +656,11 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
         permissions = discord.Permissions()
         permissions.send_messages = False
         permissions.read_messages = True
+        permissions.send_messages_in_threads = False
+        permissions.read_message_history = False
+        permissions.create_public_threads = False
+        permissions.create_private_threads = False
+        permissions.add_reactions = True
         await ctx.guild.create_role(name='muted', permissions=permissions)
         await ctx.send('"muted" role error')
         return
@@ -697,6 +701,11 @@ async def unmute(ctx, member: discord.Member):
         permissions = discord.Permissions()
         permissions.send_messages = False
         permissions.read_messages = True
+        permissions.send_messages_in_threads = False
+        permissions.read_message_history = False
+        permissions.create_public_threads = False
+        permissions.create_private_threads = False
+        permissions.add_reactions = True
         await ctx.guild.create_role(name='muted', permissions=permissions)
         await ctx.send('"muted" role error')
         return
@@ -852,7 +861,7 @@ async def channel_purge(ctx):
 
 @client.command(aliases=('alert', 'notify', 'inform'))
 @commands.has_permissions(administrator=True)
-async def warn(ctx, member: discord.Member, *, reason):
+async def warn(ctx, member: discord.Member, *, reason='None'):
     with open('Warns.txt', 'a') as file:
         file = file.write(
             f'**{member.mention}** you were warned by **{ctx.author}**:**{reason}**\n')
@@ -1134,6 +1143,11 @@ async def mute_members(ctx, *, member_ids):
         permissions = discord.Permissions()
         permissions.send_messages = False
         permissions.read_messages = True
+        permissions.send_messages_in_threads = False
+        permissions.read_message_history = False
+        permissions.create_public_threads = False
+        permissions.create_private_threads = False
+        permissions.add_reactions = True
         await ctx.guild.create_role(name='muted', permissions=permissions)
         await ctx.send('"muted" role error')
         return
@@ -1183,6 +1197,11 @@ async def unmute_members(ctx, *, member_ids):
         permissions = discord.Permissions()
         permissions.send_messages = False
         permissions.read_messages = True
+        permissions.send_messages_in_threads = False
+        permissions.read_message_history = False
+        permissions.create_public_threads = False
+        permissions.create_private_threads = False
+        permissions.add_reactions = True
         await ctx.guild.create_role(name='muted', permissions=permissions)
         await ctx.send('"muted" role error')
         return
@@ -1488,14 +1507,6 @@ async def restart(ctx):
 async def fetch_warns(ctx):
     file = discord.File(r'filepath_to_Warns.txt')
     await ctx.send(content='Warns:', file=file)
-    
-    
-@client.command()
-async def print_out(ctx, *, message):
-    member = await ctx.guild.fetch_member(ctx.message.author.id)
-    new_message = await ctx.message.channel.send(message)
-    await member.send(f'{member.mention} you printed out a message in https://discord.com/channels/{ctx.guild.id}/{ctx.message.channel.id}/{new_message.id}.')
-    await ctx.message.delete()
 
 
 def check_user_is_admin(user):
@@ -1527,6 +1538,18 @@ def convert_to_list(str):
     data.append(cache)
     return data
 
+
+@client.command()
+async def print_out(ctx, *, message):
+    member = await ctx.guild.fetch_member(ctx.message.author.id)
+    new_message = await ctx.message.channel.send(message)
+    await member.send(f'{member.mention} you printed out a message in https://discord.com/channels/{ctx.guild.id}/{ctx.message.channel.id}/{new_message.id}.')
+    await ctx.message.delete()
+
+
+@client.command()
+async def test(ctx):
+    print(ctx.message.reference)
 
 #   overwrite = discord.PermissionOverwrite()
 #   overwrite.send_messages = True
