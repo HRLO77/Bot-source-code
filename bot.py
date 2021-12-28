@@ -14,15 +14,15 @@ import secrets
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'):('default_role_id', 'emoji_to_react')}
+reacting = {('guild_id', 'reacting_message_id'): ('default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
 
 muted_channel = False
 tracemalloc.start()
-spam = 0
-content = 0
+spam = 2
+content = 2
 
 explicit_data5 = {'s x', 's*', 's x', '*x', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck', 'n * g g a',
                   'n*gg*', 'n * g g a', 'n*g*a', 'n * g g a', 'n**ga', 'n * g g a', 'n*gga', 'n * g g a', '**gga',
@@ -305,6 +305,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
+    ctx = await client.get_context(message)
     global spam
     global content
     try:
@@ -421,7 +422,7 @@ async def on_message(message: discord.Message):
                         discord.HTTPException, discord.errors.HTTPException,
                         discord.ext.commands.errors.CommandInvokeError,
                         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                    print(f'Cannot direct message {i.display_name}.')
+                    print(f'Cannot direct message {i.name}.')
             else:
                 pass
         await message.channel.send(f'{message.author.mention} pinged Administrators.')
@@ -447,8 +448,8 @@ async def ping(ctx):
 
 @client.command(aliases=('delete', 'purge', 'clean'))
 @commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount:int =10):
-    await ctx.channel.purge(limit=int(amount) + 1)
+async def clear(ctx, amount: int=10):
+    await ctx.channel.purge(limit=amount + 1)
 
 
 @client.event
@@ -512,13 +513,13 @@ async def kick(ctx, member: discord.Member, *, reason='None'):
     **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
     await ctx.send(f'Kicked {member.mention}.')
 
 
 @client.command()
 @commands.has_permissions(moderate_members=True)
-async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None'):
+async def timeout(ctx, member: discord.Member, time: float = None, *, reason='None'):
     duration = (time * 60)
     await member.timeout(duration=duration, reason=reason)
     try:
@@ -561,15 +562,15 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
             await i.send(f'''{i.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {i.name}.')
     await ctx.send(f'''{ctx.author.mention} took lots of members out of the timeout chair, because:
 **{reason}**.''')
 
 
 @client.command(aliases=('timeout_users', 'timeout_people'))
-@commands.has_permissions(moderate_members=True)
-async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
+@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+async def timeout_members(ctx, member_ids, time: float = None, *, reason='None'):
     duration = (time * 60)
     try:
         tuple(member_ids)
@@ -584,7 +585,7 @@ async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
             await i.send(f'''{i.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {i.name}.')
     await ctx.send(f'''{ctx.author.mention} put lots of members in the timeout chair for {time} minutes, because:
 **{reason}**.''')
@@ -592,7 +593,7 @@ async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
 
 @client.command()
 @commands.has_permissions(moderate_members=True)
-async def timeout_hush(ctx, time: float=None, *, reason='None'):
+async def timeout_hush(ctx, time: float = None, *, reason='None'):
     duration = (time * 60)
     for member in ctx.guild.members:
         if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
@@ -604,7 +605,7 @@ async def timeout_hush(ctx, time: float=None, *, reason='None'):
             await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.name}.')
     await ctx.send(f'''{ctx.author.mention} put the channel in the timeout chair for {time} minutes, because:
 **{reason}**.''')
@@ -623,7 +624,7 @@ async def timeout_un_hush(ctx, *, reason='None'):
             await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {member.name}.')
     await ctx.send(f'''{ctx.author.mention} took the channel out of the timeout chair, because:
 **{reason}**.''')
@@ -640,7 +641,7 @@ async def ban(ctx, member: discord.Member, *, reason='None'):
 **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
     await ctx.send(f'Banned {member.mention}.')
 
 
@@ -700,7 +701,7 @@ async def mute(ctx, member: discord.Member, *, reason='None'):
 **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command()
@@ -746,7 +747,7 @@ async def unmute(ctx, member: discord.Member):
         await member.send(f'''You were unmuted from {ctx.guild} by **{ctx.author}**!''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command()
@@ -825,7 +826,7 @@ async def file_unmute(ctx, member: discord.Member):
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command()
@@ -866,7 +867,7 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
@@ -891,7 +892,7 @@ async def warn(ctx, member: discord.Member, *, reason='None'):
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command(aliases=('get_member_histroy', 'pull_member_history'))
@@ -970,7 +971,7 @@ async def hush(ctx):
             except (
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {i.display_name}.')
+                print(f'Cannot direct message {i.name}.')
     await ctx.send(f'{ctx.author.mention} has hushed the channel.')
 
 
@@ -1015,7 +1016,7 @@ async def un_hush(ctx):
             except (
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {i.display_name}.')
+                print(f'Cannot direct message {i.name}.')
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
@@ -1094,7 +1095,7 @@ async def kick_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send('Kicked members.')
 
 
@@ -1115,7 +1116,7 @@ async def ban_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send('Banned members.')
 
 
@@ -1136,7 +1137,7 @@ async def unban_members(ctx, *, user_ids):
             await user.send(f'''{user.mention} you were unbanned from {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {user.display_name}.')
+            print(f'Cannot direct message {user.name}.')
     await ctx.send('Unbanned members.')
 
 
@@ -1190,7 +1191,7 @@ async def mute_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send(f'{ctx.author.mention} muted members.')
 
 
@@ -1244,7 +1245,7 @@ async def unmute_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were muted in {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send(f'{ctx.author.mention} unmuted members.')
 
 
@@ -1292,7 +1293,7 @@ async def file_mute_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send(f'{ctx.author.mention} file_unmuted members.')
 
 
@@ -1340,7 +1341,7 @@ async def file_unmute_members(ctx, *, member_ids):
             await member.send(f'''{member.mention} you were file_unmuted in {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {member.display_name}.')
+            print(f'Cannot direct message {member.name}.')
     await ctx.send(f'{ctx.author.mention} file_unmuted members.')
 
 
@@ -1412,7 +1413,7 @@ async def bookmark(ctx, message_id):
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send(f'Cannot direct message {member.mention}.')
-        print(f'Cannot direct message {member.display_name}.')
+        print(f'Cannot direct message {member.name}.')
 
 
 @client.command(aliases=('members', 'member#'))
@@ -1465,7 +1466,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             except (
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {member.display_name}.')
+                print(f'Cannot direct message {member.name}.')
                 pass
         await ctx.send(f'{ctx.author.mention} Messaged people in dms.')
         return
@@ -1478,7 +1479,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 ValueError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {i.display_name}.')
+            print(f'Cannot direct message {i.name}.')
             pass
     await ctx.send(f'{ctx.author.mention} Messaged everyone in dms.')
 
@@ -1561,13 +1562,15 @@ def convert_to_list(str):
 async def print_out(ctx, *, message):
     member = await ctx.guild.fetch_member(ctx.message.author.id)
     new_message = await ctx.message.channel.send(message)
-    await member.send(f'{member.mention} you printed out a message in https://discord.com/channels/{ctx.guild.id}/{ctx.message.channel.id}/{new_message.id}.')
+    await member.send(
+        f'{member.mention} you printed out a message in https://discord.com/channels/{ctx.guild.id}/{ctx.message.channel.id}/{new_message.id}.')
     await ctx.message.delete()
 
 
 @client.command()
 async def test(ctx):
     print(ctx.message.reference)
+
 
 #   overwrite = discord.PermissionOverwrite()
 #   overwrite.send_messages = True
