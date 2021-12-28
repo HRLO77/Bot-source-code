@@ -872,10 +872,11 @@ async def file_mute(ctx, member: discord.Member, *, reason='None'):
 
 @client.command(aliases=('channel_clear', 'channel_clean'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
-async def channel_purge(ctx):
-    async for i in ctx.channel.history(limit=9999999999999999999999):
-        await ctx.channel.purge(limit=1)
-    await ctx.send(f'**{ctx.message.author.mention}** purged **{ctx.message.channel}**')
+async def channel_purge(ctx, *, reason):
+    channel = ctx.channel
+    new_channel = await channel.clone(name=channel.name, reason=reason)
+    await channel.delete()
+    await new_channel.send(f'**{ctx.message.author.mention}** purged **{ctx.message.channel}**')
 
 
 @client.command(aliases=('alert', 'notify', 'inform'))
