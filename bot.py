@@ -13,7 +13,7 @@ from datetime import datetime
 import secrets
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
-# Remember to enter intgers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
+# Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
 reacting = {('guild_id', 'reacting_message_id'):('default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
