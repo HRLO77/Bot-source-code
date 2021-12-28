@@ -878,7 +878,7 @@ async def channel_purge(ctx):
 
 
 @client.command(aliases=('alert', 'notify', 'inform'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(moderate_members=True, manage_messages=True, view_audit_log=True)
 async def warn(ctx, member: discord.Member, *, reason='None'):
     with open('Warns.txt', 'a') as file:
         file = file.write(
@@ -1521,7 +1521,7 @@ async def restart(ctx):
 
 
 @client.command(aliases=('get_warns', 'pull_warns'))
-@commands.has_permissions(manage_messages=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True, manage_messages=True, view_audit_log=True)
 async def fetch_warns(ctx):
     file = discord.File(r'filepath_to_Warns.txt')
     await ctx.send(content='Warns:', file=file)
