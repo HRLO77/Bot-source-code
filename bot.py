@@ -500,7 +500,7 @@ async def kick(ctx, member: discord.Member, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+@commands.has_permissions(moderate_members=True)
 async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None'):
     duration = (time * 60)
     await member.timeout(duration=duration, reason=reason)
@@ -515,7 +515,7 @@ async def timeout(ctx, member: discord.Member, time: float=None, *, reason='None
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+@commands.has_permissions(moderate_members=True)
 async def un_timeout(ctx, member: discord.Member, *, reason='None'):
     await member.timeout(duration=None, reason=reason)
     try:
@@ -529,7 +529,7 @@ async def un_timeout(ctx, member: discord.Member, *, reason='None'):
 
 
 @client.command(aliases=('un_timeout_users', 'un_timeout_people'))
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True)
 async def un_timeout_members(ctx, member_ids, *, reason='None'):
     try:
         tuple(member_ids)
@@ -551,7 +551,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
 
 
 @client.command(aliases=('timeout_users', 'timeout_people'))
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True)
 async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
     duration = (time * 60)
     try:
@@ -574,7 +574,7 @@ async def timeout_members(ctx, member_ids, time: float=None, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+@commands.has_permissions(moderate_members=True)
 async def timeout_hush(ctx, time: float=None, *, reason='None'):
     duration = (time * 60)
     for member in ctx.guild.members:
@@ -594,7 +594,7 @@ async def timeout_hush(ctx, time: float=None, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True)
+@commands.has_permissions(moderate_members=True)
 async def timeout_un_hush(ctx, *, reason='None'):
     for member in ctx.guild.members:
         if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
