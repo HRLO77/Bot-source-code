@@ -1,5 +1,6 @@
 import random
 import disnake as discord
+import replit
 from disnake.ext import commands
 import Functions
 import datetime
@@ -12,11 +13,46 @@ import ctypes
 from datetime import datetime
 import secrets
 from discord.utils import get
+import json
+
+
+def check_user_is_admin(user):
+    admin_data = {'HRLO77', 'Sniperfirst21', 'Nvm!', 'bruisedbeans',
+                  'Trismo', 'GlitchBotGaming', 'Zain.W', 'Jiyaa', 'E-BAG', 'Jilal'}
+    if any(i in user for i in admin_data):
+        return True
+    else:
+        return False
+
+
+def get_memory(memory):
+    return ctypes.cast(memory, ctypes.py_object).value
+
+
+def convert_to_memory(value):
+    return id(value)
+
+
+def convert_to_list(str):
+    cache = ''
+    data = []
+    for i in str.replace(' ', ''):
+        if i == ',':
+            data.append(cache)
+            cache = ''
+        else:
+            cache = f'{cache}{i}'
+    data.append(cache)
+    return data
+
+# json_data = json.load((open("reacting_data.json", 'r')))
+# for i in convert_to_list(list(json_data.keys())):
+#     for val in i:
 
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'): ('on_reaction_role_id', 'emoji_to_react')}
+reacting = {('guild_id', 'reacting_message_id'): ('default_role_id', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
@@ -661,7 +697,7 @@ async def unban(ctx, *, member):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, send_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def mute(ctx, member_id: int, *, reason='None'):
     roles = []
     for i in ctx.guild.roles:
@@ -693,6 +729,8 @@ async def mute(ctx, member_id: int, *, reason='None'):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     await member.add_roles(role)
     await ctx.send(f'''**{member.mention}** was muted by **{ctx.message.author.mention}** because:
@@ -706,7 +744,7 @@ async def mute(ctx, member_id: int, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, send_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def unmute(ctx, member_id: int):
     roles = []
     for i in ctx.guild.roles:
@@ -738,6 +776,8 @@ async def unmute(ctx, member_id: int):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     await member.remove_roles(role)
     await ctx.send(f'''**{member.mention}** was unmuted by **{ctx.message.author.mention}**!''')
@@ -749,7 +789,7 @@ async def unmute(ctx, member_id: int):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
 async def role_mute(ctx, role_id, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -759,6 +799,8 @@ async def role_mute(ctx, role_id, *, reason='None'):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     role = get(await ctx.guild.fetch_roles(), id=role_id)
     if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
@@ -768,7 +810,7 @@ async def role_mute(ctx, role_id, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
 async def role_unmute(ctx, role_id: int):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -778,6 +820,8 @@ async def role_unmute(ctx, role_id: int):
     overwrite.create_public_threads = True
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     role = get(await ctx.guild.fetch_roles(), id=role_id)
     if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
@@ -786,7 +830,7 @@ async def role_unmute(ctx, role_id: int):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
 async def role_file_unmute(ctx, role_id: int):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
@@ -802,7 +846,7 @@ async def role_file_unmute(ctx, role_id: int):
 
 
 @client.command()
-@commands.has_permissions(attach_files=True, manage_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
 async def role_file_mute(ctx, role_id: int, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
@@ -819,7 +863,7 @@ async def role_file_mute(ctx, role_id: int, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(attach_files=True, manage_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def file_unmute(ctx, member_id: int):
     roles = []
     for i in ctx.guild.roles:
@@ -859,7 +903,7 @@ async def file_unmute(ctx, member_id: int):
         print(f'Cannot direct message {str(member)}.')
 
 @client.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def file_mute(ctx, member_id: int, *, reason='None'):
     roles = []
     for i in ctx.guild.roles:
@@ -891,9 +935,11 @@ async def file_mute(ctx, member_id: int, *, reason='None'):
     overwrite.add_reactions = True
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     await member.add_roles(role)
-    await ctx.send(f'''**{member.mention}** was file_muted by **{ctx.message.author.mention}**!''')
+    await ctx.send(f'''**{member.mention}** was file_muted by **{ctx.message.author.mention}**:
+**{reason}**''')
     try:
-        await member.send(f'''You were file_muted in **{ctx.guild}** by **{ctx.author}**!''')
+        await member.send(f'''You were file_muted in **{ctx.guild}** by **{ctx.author}**:
+**{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
@@ -961,7 +1007,7 @@ async def fetch_messages(ctx, limit=10, links=False):
 
 
 @client.command(aliases=('silence', 'mute_channel', 'silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_channels=True, manage_guild=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
 async def hush(ctx):
     roles = []
     for i in ctx.guild.roles:
@@ -991,6 +1037,8 @@ async def hush(ctx):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in ctx.guild.members:
         if i.guild_permissions.manage_messages and (i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
@@ -1007,7 +1055,7 @@ async def hush(ctx):
 
 
 @client.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
-@commands.has_permissions(manage_messages=True, manage_channels=True, manage_guild=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
 async def un_hush(ctx):
     roles = []
     for i in ctx.guild.roles:
@@ -1037,6 +1085,8 @@ async def un_hush(ctx):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in ctx.guild.members:
         if i.guild_permissions.manage_messages and (i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
@@ -1069,7 +1119,7 @@ async def get_roles(ctx, ids):
 
 
 @client.command(aliases=('remove_channel', 'end_channel'))
-@commands.has_permissions(manage_channels=True, manage_guild=True)
+@commands.has_permissions(manage_channels=True)
 async def delete_channel(ctx, channel):
     is_channel = await ctx.guild.fetch_channel(int(channel))
     await is_channel.delete()
@@ -1094,7 +1144,7 @@ async def fetch_channels(ctx, links=False):
 
 
 @client.command(aliases=('remove_channels', 'end_channels'))
-@commands.has_permissions(manage_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_channels=True)
 async def delete_channels(ctx, *, channels):
     try:
         list(channels)
@@ -1111,7 +1161,7 @@ async def delete_channels(ctx, *, channels):
 
 
 @client.command(aliases=('remove_members', 'kick_users', 'remove_users'))
-@commands.has_permissions(kick_members=True, moderate_members=True)
+@commands.has_permissions(kick_members=True)
 async def kick_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1132,7 +1182,7 @@ async def kick_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('ban_users', 'ban_people'))
-@commands.has_permissions(ban_members=True, moderate_members=True)
+@commands.has_permissions(ban_members=True)
 async def ban_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1174,7 +1224,7 @@ async def unban_members(ctx, *, user_ids):
 
 
 @client.command(aliases=('mute_users', 'mute_people'))
-@commands.has_permissions(manage_messages=True, send_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1209,6 +1259,8 @@ async def mute_members(ctx, *, member_ids):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in tup:
         member = await ctx.guild.fetch_member(int(i))
@@ -1222,7 +1274,7 @@ async def mute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('unmute_users', 'unmute_people'))
-@commands.has_permissions(manage_messages=True, send_messages=True, manage_guild=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1257,6 +1309,8 @@ async def unmute_members(ctx, *, member_ids):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.speak = False
+    overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in tup:
         member = await ctx.guild.fetch_member(int(i))
@@ -1270,7 +1324,7 @@ async def unmute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('file_mute_users', 'file_mute_people'))
-@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, moderate_members=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def file_mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1316,7 +1370,7 @@ async def file_mute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('file_unmute_users', 'file_unmute_people'))
-@commands.has_permissions(manage_messages=True, attach_files=True, send_messages=True, moderate_members=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def file_unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1362,7 +1416,7 @@ async def file_unmute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
-@commands.has_permissions(manage_messages=True, manage_channels=True)
+@commands.has_permissions(manage_messages=True)
 async def clear_messages(ctx, *, message_ids):
     try:
         list(message_ids)
@@ -1377,7 +1431,7 @@ async def clear_messages(ctx, *, message_ids):
 
 
 @client.command(aliases=('spam_filter', 'spam'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def spam_check(ctx, value):
     global spam
     if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
@@ -1389,7 +1443,7 @@ async def spam_check(ctx, value):
 
 
 @client.command(aliases=('content_filter', 'content', 'swear_check', 'profanity_filter', 'profanity_check'))
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(manage_messages=True, moderate_members=True)
 async def content_check(ctx, value):
     global content
     if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
@@ -1544,36 +1598,6 @@ async def fetch_warns(ctx):
     await ctx.send(content='Warns:', file=file)
 
 
-def check_user_is_admin(user):
-    admin_data = {'HRLO77', 'Sniperfirst21', 'Nvm!', 'bruisedbeans',
-                  'Trismo', 'GlitchBotGaming', 'Zain.W', 'Jiyaa', 'E-BAG', 'Jilal'}
-    if any(i in user for i in admin_data):
-        return True
-    else:
-        return False
-
-
-def get_memory(memory):
-    return ctypes.cast(memory, ctypes.py_object).value
-
-
-def convert_to_memory(value):
-    return id(value)
-
-
-def convert_to_list(str):
-    cache = ''
-    data = []
-    for i in str.replace(' ', ''):
-        if i == ',':
-            data.append(cache)
-            cache = ''
-        else:
-            cache = f'{cache}{i}'
-    data.append(cache)
-    return data
-
-
 @client.command()
 async def print_out(ctx, *, message):
     member = await ctx.guild.fetch_member(ctx.message.author.id)
@@ -1583,9 +1607,24 @@ async def print_out(ctx, *, message):
     await ctx.message.delete()
 
 
-@client.command()
-async def test(ctx):
-    print(ctx.message.reference)
+@client.command(aliases=('update_react', 'add_react'))
+@commands.has_permissions(moderate_members=True, manage_messages=True, manage_channels=True)
+async def set_react(ctx, reacting_message_id: int, default_role_id: int, emoji_to_react: str):
+    reacting[(ctx.guild.id, reacting_message_id)] = (default_role_id, emoji_to_react)
+    await ctx.send(f'{ctx.author.mention} updated reacting object index: **{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}**')
+
+
+@client.command(aliases=('delete_react', 'rm_react', 'del_react'))
+@commands.has_permissions(moderate_members=True, manage_messages=True, manage_channels=True)
+async def remove_react(ctx, reacting_message_id: int):
+    del reacting[(ctx.guild.id, reacting_message_id)]
+    await ctx.send(f'{ctx.author.mention} deleted reacting object index: **{(ctx.guild.id, reacting_message_id)}**')
+
+
+@client.command(aliases=('react_obj', 'react_object', 'react_dictionary'))
+async def react_dict(ctx):
+    await ctx.send(f"Reacting dictionary for RawReactionEvent - **{reacting}**")
+
 
 
 #   overwrite = discord.PermissionOverwrite()
