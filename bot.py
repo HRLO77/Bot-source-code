@@ -452,7 +452,7 @@ async def on_message(message: discord.Message):
             await message.channel.send(f'{message.author.mention} please do not swear.')
     if client.user in message.mentions:
         for i in message.guild.members:
-            if i.guild_permissions.manage_messages and i.guild_permissions.kick_members and i.guild_permissions.ban_members:
+            if i.guild_permissions.manage_messages and i.guild_permissions.moderate_members:
                 try:
                     await i.send(
                         f'{i.mention} **{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
@@ -542,17 +542,18 @@ async def _8ball(ctx):
 
 @client.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'))
 @commands.has_permissions(kick_members=True)
-async def kick(ctx, member: discord.Member, *, reason='None'):
+async def kick(ctx, member_id: int, *, reason='None'):
+    user = await client.fetch_user(member_id)
+    member = await ctx.guild.fetch_member(member_id)
     await member.kick(reason=reason)
     await ctx.send(f'''**{ctx.message.author.mention}** kicked **{member.mention}**:
-    **{reason}**.''')
+**{reason}**.''')
     try:
-        await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**:
+        await user.send(f'''{member.mention} you were kicked from **{ctx.guild}** by **{ctx.author}**:
     **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
-    await ctx.send(f'Kicked {member.mention}.')
 
 
 @client.command()
@@ -607,7 +608,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
 
 
 @client.command(aliases=('timeout_users', 'timeout_people'))
-@commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True)
 async def timeout_members(ctx, member_ids, time: float = None, *, reason='None'):
     duration = (time * 60)
     try:
@@ -630,11 +631,11 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
 
 
 @client.command()
-@commands.has_permissions(moderate_members=True)
+@commands.has_permissions(moderate_members=True, manage_channels=True)
 async def timeout_hush(ctx, time: float = None, *, reason='None'):
     duration = (time * 60)
     for member in ctx.guild.members:
-        if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
+        if member.guild_permissions.moderate_members:
             continue
         else:
             pass
@@ -650,10 +651,10 @@ async def timeout_hush(ctx, time: float = None, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(moderate_members=True)
+@commands.has_permissions(moderate_members=True, manage_channels=True)
 async def timeout_un_hush(ctx, *, reason='None'):
     for member in ctx.guild.members:
-        if member.guild_permissions.manage_messages and member.guild_permissions.kick_members and member.guild_permissions.ban_members:
+        if member.guild_permissions.moderate_members:
             continue
         else:
             pass
@@ -670,34 +671,44 @@ async def timeout_un_hush(ctx, *, reason='None'):
 
 @client.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.Member, *, reason='None'):
+async def ban(ctx, member_id: int, *, reason='None'):
+    user = await client.fetch_user(member_id)
+    member = await ctx.guild.fetch_member(member_id)
     await member.ban(reason=reason)
-    await (f'''**{ctx.message.author.mention}** banned **{member.mention}**:
-    **{reason}**.''')
+    await ctx.send(f'''**{ctx.message.author.mention}** banned **{member.mention}**:
+**{reason}**.''')
     try:
-        await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**:
+        await user.send(f'''{user.mention} you were banned from **{ctx.guild}** by **{ctx.author}**:
 **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
-    await ctx.send(f'Banned {member.mention}.')
 
 
 @client.command()
-@commands.has_permissions(ban_members=True, manage_messages=True)
-async def unban(ctx, *, member):
+@commands.has_permissions(ban_members=True)
+async def unban(ctx, user_id: int, *, reason):
     banned_users = await ctx.guild.bans()
-    member_name, member_discriminator = member.split("#")
+    to_unban = await client.fetch_user(user_id)
     for ban_entry in banned_users:
         user = ban_entry.user
-        if (user.name, user.discriminator) == (member_name, member_discriminator):
+        if user.id == to_unban.id:
             await ctx.guild.unban(user)
-            await ctx.send(f'**{ctx.message.author.mention}** unbanned **{member.mention}**')
+            await ctx.send(f'''**{ctx.message.author.mention}** unbanned **{user.mention}** because:
+**{reason}**''')
+            try:
+                await user.send(f'''**{user.mention}** you were unbanned by **{ctx.message.author.mention}** because:
+**{reason}**''')
+            except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                print(f'Cannot direct message {user}.')
             return
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def mute(ctx, member_id: int, *, reason='None'):
     roles = []
     for i in ctx.guild.roles:
@@ -744,7 +755,7 @@ async def mute(ctx, member_id: int, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def unmute(ctx, member_id: int):
     roles = []
     for i in ctx.guild.roles:
@@ -789,7 +800,7 @@ async def unmute(ctx, member_id: int):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
+@commands.has_permissions(moderate_members=True, manage_roles=True)
 async def role_mute(ctx, role_id, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -810,7 +821,7 @@ async def role_mute(ctx, role_id, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
+@commands.has_permissions(moderate_members=True, manage_roles=True)
 async def role_unmute(ctx, role_id: int):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -830,7 +841,7 @@ async def role_unmute(ctx, role_id: int):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
+@commands.has_permissions(moderate_members=True, manage_roles=True)
 async def role_file_unmute(ctx, role_id: int):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = True
@@ -846,7 +857,7 @@ async def role_file_unmute(ctx, role_id: int):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_roles=True)
+@commands.has_permissions(moderate_members=True, manage_roles=True)
 async def role_file_mute(ctx, role_id: int, *, reason='None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
@@ -863,7 +874,7 @@ async def role_file_mute(ctx, role_id: int, *, reason='None'):
 
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def file_unmute(ctx, member_id: int):
     roles = []
     for i in ctx.guild.roles:
@@ -903,7 +914,7 @@ async def file_unmute(ctx, member_id: int):
         print(f'Cannot direct message {str(member)}.')
 
 @client.command()
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def file_mute(ctx, member_id: int, *, reason='None'):
     roles = []
     for i in ctx.guild.roles:
@@ -955,7 +966,7 @@ async def channel_purge(ctx, *, reason):
 
 
 @client.command(aliases=('alert', 'notify', 'inform'))
-@commands.has_permissions(moderate_members=True, manage_messages=True, view_audit_log=True)
+@commands.has_permissions(moderate_members=True, view_audit_log=True)
 async def warn(ctx, member: discord.Member, *, reason='None'):
     with open('Warns.txt', 'a') as file:
         file = file.write(
@@ -971,7 +982,7 @@ async def warn(ctx, member: discord.Member, *, reason='None'):
         print(f'Cannot direct message {str(member)}.')
 
 
-@client.command(aliases=('get_member_histroy', 'pull_member_history'))
+@client.command(aliases=('get_member_history', 'pull_member_history'))
 async def fetch_member_history(ctx, member: discord.Member, limit=10, links=False):
     try:
         bool(links)
@@ -1171,14 +1182,15 @@ async def kick_members(ctx, *, member_ids):
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
+        user = await client.fetch_user(int(i))
         member = await ctx.guild.fetch_member(int(i))
         await member.kick(reason='None')
         try:
-            await member.send(f'''{member.mention} you were kicked from {ctx.guild} by **{ctx.author}**!''')
+            await user.send(f'''{user.mention} you were kicked from **{ctx.guild}** by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {str(member)}.')
-    await ctx.send('Kicked members.')
+            print(f'Cannot direct message {user}.')
+    await ctx.send(f'{ctx.author.mention} kicked members.')
 
 
 @client.command(aliases=('ban_users', 'ban_people'))
@@ -1192,14 +1204,15 @@ async def ban_members(ctx, *, member_ids):
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
+        user = await client.fetch_user(int(i))
         member = await ctx.guild.fetch_member(int(i))
         await member.ban()
         try:
-            await member.send(f'''{member.mention} you were banned from {ctx.guild} by **{ctx.author}**!''')
+            await user.send(f'''{user.mention} you were banned from {ctx.guild} by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {str(member)}.')
-    await ctx.send('Banned members.')
+            print(f'Cannot direct message {user}.')
+    await ctx.send(f'{ctx.author.mention} banned members.')
 
 
 @client.command(aliases=('unban_users', 'unban_people'))
@@ -1216,7 +1229,7 @@ async def unban_members(ctx, *, user_ids):
         user = await client.fetch_user(int(i))
         await ctx.guild.unban(user)
         try:
-            await user.send(f'''{user.mention} you were unbanned from {ctx.guild} by **{ctx.author}**!''')
+            await user.send(f'''{user.mention} you were unbanned from **{ctx.guild}** by **{ctx.author}**!''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {user.display_name}.')
@@ -1224,7 +1237,7 @@ async def unban_members(ctx, *, user_ids):
 
 
 @client.command(aliases=('mute_users', 'mute_people'))
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1274,7 +1287,7 @@ async def mute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('unmute_users', 'unmute_people'))
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1324,7 +1337,7 @@ async def unmute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('file_mute_users', 'file_mute_people'))
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def file_mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1370,7 +1383,7 @@ async def file_mute_members(ctx, *, member_ids):
 
 
 @client.command(aliases=('file_unmute_users', 'file_unmute_people'))
-@commands.has_permissions(manage_messages=True, moderate_members=True)
+@commands.has_permissions(moderate_members=True)
 async def file_unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
@@ -1592,7 +1605,7 @@ async def restart(ctx):
 
 
 @client.command(aliases=('get_warns', 'pull_warns'))
-@commands.has_permissions(moderate_members=True, manage_messages=True, view_audit_log=True)
+@commands.has_permissions(moderate_members=True, view_audit_log=True)
 async def fetch_warns(ctx):
     file = discord.File(r'filepath_to_Warns.txt')
     await ctx.send(content='Warns:', file=file)
@@ -1624,7 +1637,6 @@ async def remove_react(ctx, reacting_message_id: int):
 @client.command(aliases=('react_obj', 'react_object', 'react_dictionary'))
 async def react_dict(ctx):
     await ctx.send(f"Reacting dictionary for RawReactionEvent - **{reacting}**")
-
 
 
 #   overwrite = discord.PermissionOverwrite()
