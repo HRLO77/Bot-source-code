@@ -1,8 +1,6 @@
 import random
 import disnake as discord
-import replit
 from disnake.ext import commands
-import Functions
 import datetime
 import subprocess
 import sys
@@ -13,7 +11,6 @@ import ctypes
 from datetime import datetime
 import secrets
 from discord.utils import get
-import json
 
 
 def check_user_is_admin(user):
@@ -52,7 +49,7 @@ def convert_to_list(str):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'): ('default_role_id', 'emoji_to_react')}
+reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
@@ -343,7 +340,6 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
-    ctx = await client.get_context(message)
     global spam
     global content
     try:
@@ -555,6 +551,14 @@ async def kick(ctx, member_id: int, *, reason='None'):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
 
+
+# @staticmethod
+# def can_timeout(ctx):
+#     async def predicate(ctx):
+#         if ctx.author.guild_permissions.moderate_members or ctx.author.guild_permissions.manage_messages:
+#             return False
+#         return True
+#     return commands.check(predicate)
 
 @client.command()
 @commands.has_permissions(moderate_members=True)
@@ -1637,6 +1641,31 @@ async def remove_react(ctx, reacting_message_id: int):
 @client.command(aliases=('react_obj', 'react_object', 'react_dictionary'))
 async def react_dict(ctx):
     await ctx.send(f"Reacting dictionary for RawReactionEvent - **{reacting}**")
+
+
+@client.command(aliases=('reset_token', 'reset_code', 'refresh_token', 'refresh_code', 'code'))
+@commands.has_permissions(moderate_members=True, view_audit_log=True, manage_messages=True)
+async def token(ctx, Member: int):
+    member = await ctx.guild.fetch_member(Member)
+    author = await ctx.guild.fetch_member(ctx.author.id)
+    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+    try:
+        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.
+    If a staff member asks for your verification code/token, send them a picture of this message.''')
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        await author.send(f'''{author.mention}, cannot direct message {member}. Direct message {member} with this data:
+code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
+        print(f'Cannot direct message {member}.')
+        return
+    try:
+        await author.send(f'''{ctx.author.mention} you reset {member}'s token at  https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}. {member}'s data is now:
+code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
+    except (
+        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f'Cannot direct message {author}.')
 
 
 #   overwrite = discord.PermissionOverwrite()
