@@ -1665,6 +1665,13 @@ code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.gui
         discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {author}.')
+        
+        
+@client.event
+async def on_command_error(ctx, error):
+    embed = discord.Embed(title="An error occurred")
+    embed.set_footer(text=error)
+    await ctx.send(embed=embed)
 
 
 #   overwrite = discord.PermissionOverwrite()
