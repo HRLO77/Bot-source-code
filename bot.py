@@ -1487,13 +1487,12 @@ async def fetch_message(ctx, message_id):
 
 
 @client.command(aliases=('bm', 'mark', 'book'))
-async def bookmark(ctx, message_id):
+async def bookmark(ctx, message_id: int):
     member = await ctx.guild.fetch_member(ctx.author.id)
     message = await ctx.fetch_message(message_id)
-    author = await ctx.guild.fetch_member(message.author.id)
     try:
         await member.send(
-            content=f'''{ctx.author.mention}. You bookmarked a post in **{ctx.guild.name}** within **{ctx.channel.name}** by **{author.name}**.
+            content=f'''{ctx.author.mention}. You bookmarked a post in **{ctx.guild.name}** within **{ctx.channel.name}** by **{message.author}**.
     https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
