@@ -1,4 +1,9 @@
 # Bot-source-code
+
+
+The moderation bot of HRLO77's class and personal discord server
+
+
 You can use this bot and it's code, just dm/contact me first
  
 Discord: HRLO77#3508
