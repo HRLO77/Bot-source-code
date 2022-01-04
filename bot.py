@@ -364,14 +364,10 @@ async def on_message(message: discord.Message):
     else:
         pass
     cache = ''
-    if spam == 1:
+        if spam == 1:
         count = 0
         for index, value in enumerate(test):
             if value == cache:
-                count += 1
-            if value in special_chars:
-                count += 1
-            if not (value in valid_chars):
                 count += 1
             cache = value
         count -= 1
@@ -382,8 +378,6 @@ async def on_message(message: discord.Message):
         count = 0
         for index, value in enumerate(test):
             if value == cache:
-                count += 1
-            if value in special_chars:
                 count += 1
             if not (value in valid_chars):
                 count += 1
