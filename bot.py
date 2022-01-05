@@ -11,6 +11,17 @@ import ctypes
 from datetime import datetime
 import secrets
 from discord.utils import get
+import ensurepip
+ensurepip.bootstrap()
+import os
+os.system('py -m pip install discord')
+os.system('py -m pip install py-cord')
+os.system('py -m pip install disnake')
+os.system('py -m pip install profanity')
+os.system('py -m pip install discord --upgrade')
+os.system('py -m pip install py-cord --upgrade')
+os.system('py -m pip install disnake --upgrade')
+os.system('py -m pip install profanity --upgrade')
 
 
 def check_user_is_admin(user):
