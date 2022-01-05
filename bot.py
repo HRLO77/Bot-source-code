@@ -49,8 +49,9 @@ def convert_to_list(str):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
 
+#Test the secrets module
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
 
@@ -592,8 +593,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
     try:
         tuple(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "member_ids".')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     members = convert_to_list(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
@@ -615,8 +615,7 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
     try:
         tuple(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "member_ids".')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     members = convert_to_list(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
@@ -988,8 +987,7 @@ async def fetch_member_history(ctx, member: discord.Member, limit=10, links=Fals
     try:
         bool(links)
     except ValueError:
-        await ctx.send('Invalid value for "links".')
-        return
+        raise ValueError('Invalid boolean for "links".')
     messages = []
     async for message in (ctx.channel.history(limit=limit)):
         if message.author == member:
@@ -1006,8 +1004,7 @@ async def fetch_messages(ctx, limit=10, links=False):
     try:
         bool(links)
     except ValueError:
-        await ctx.send('Invalid value for "links".')
-        return
+        raise ValueError('Invalid boolean for "links".')
     messages = []
     async for message in (ctx.channel.history(limit=limit)):
         if links:
@@ -1115,12 +1112,11 @@ async def un_hush(ctx):
 
 
 @bot.command(aliases=('fetch_roles', 'pull_roles'))
-async def get_roles(ctx, ids):
+async def get_roles(ctx, ids=False):
     try:
         bool(ids)
     except ValueError:
-        await ctx.send('Invalid value for "ids"')
-        return
+        raise ValueError('Invalid boolean for "ids".')
     roles = []
     for i in ctx.guild.roles:
         if ids:
@@ -1143,8 +1139,7 @@ async def fetch_channels(ctx, links=False):
     try:
         bool(links)
     except ValueError:
-        await ctx.send('Invalid boolean for "links".')
-        return
+        raise ValueError('Invalid boolean for "links".')
     channels = []
     for i in ctx.guild.channels:
         if links:
@@ -1161,8 +1156,7 @@ async def delete_channels(ctx, *, channels):
     try:
         list(channels)
     except ValueError:
-        await ctx.send('Invalid list for "channels"')
-        return
+        raise ValueError('Invalid list for "channels".')
     tup = convert_to_list(channels)
     print(tup)
     for i in tup:
@@ -1178,8 +1172,7 @@ async def kick_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
@@ -1200,8 +1193,7 @@ async def ban_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
@@ -1222,8 +1214,7 @@ async def unban_members(ctx, *, user_ids):
     try:
         list(user_ids)
     except ValueError:
-        await ctx.send('Invalid list for "user_ids"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(user_ids)
     for i in tup:
         print(i)
@@ -1243,8 +1234,7 @@ async def mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
@@ -1293,8 +1283,7 @@ async def unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
@@ -1343,8 +1332,7 @@ async def file_mute_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
@@ -1389,8 +1377,7 @@ async def file_unmute_members(ctx, *, member_ids):
     try:
         list(member_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
@@ -1435,8 +1422,7 @@ async def clear_messages(ctx, *, message_ids):
     try:
         list(message_ids)
     except ValueError:
-        await ctx.send('Invalid list for "members"')
-        return
+        raise ValueError('Invalid list for "member_ids".')
     tup = convert_to_list(message_ids)
     for i in tup:
         print(i)
@@ -1451,8 +1437,7 @@ async def spam_check(ctx, value):
     if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
         spam = int(value)
     else:
-        await ctx.send('Invalid content_check value')
-        return
+        raise ValueError('Invalid value for "spam_check".')
     await ctx.send(f'Spam filter level has been set to {value}.')
 
 
@@ -1463,8 +1448,7 @@ async def content_check(ctx, value):
     if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
         content = int(value)
     else:
-        await ctx.send('Invalid content_check value')
-        return
+        raise ValueError('Invalid value for "content_check".')
     await ctx.send(f'Explicit filter level has been set to {value}.')
 
 
@@ -1539,8 +1523,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
         try:
             tuple(member_ids)
         except ValueError:
-            await ctx.send('Invalid member_ids.')
-            return
+            raise ValueError('Invalid list for "member_ids".')
         tup = convert_to_list(member_ids)
         for i in tup:
             member = await ctx.guild.fetch_member(int(i))
