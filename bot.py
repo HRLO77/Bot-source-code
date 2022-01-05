@@ -1707,6 +1707,16 @@ async def add_swear(ctx, *, string: str):
         explicit_data5.add(string)
     await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
     await ctx.message.delete()
+    
+    
+@bot.command()
+async def print_embed(ctx, title, *, text):
+    author = await ctx.guild.fetch_member(ctx.author.id)
+    embed = discord.Embed(title=title)
+    embed.set_author(name=ctx.author, icon_url=author.avatar.url)
+    embed.set_footer(text=text)
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
 
 
 #   overwrite = discord.PermissionOverwrite()
