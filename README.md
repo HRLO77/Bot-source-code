@@ -25,5 +25,8 @@ Fill in the dictionary in the first few lines after imports if you want to creat
 
 You can comment all the lines of code in the on_ready, except the last print line to stop the bot from direct messaging all the members in all the guilds.
 
+The code now automatically installs and updates the API wrappers and extra modules.
+
+
 
 Here is the documentation for the commands - https://pastebin.com/9w4Fp110
