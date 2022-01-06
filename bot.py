@@ -459,10 +459,10 @@ async def on_message(message: discord.Message):
             await message.channel.send(f'{message.author.mention} please do not swear.')
     if bot.user in message.mentions:
         for i in message.guild.members:
-            if i.guild_permissions.manage_messages and i.guild_permissions.moderate_members:
+            if i.guild_permissions.moderate_members:
                 try:
                     await i.send(
-                        f'{i.mention} **{message.author}** pinged bot at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
+                        f'{i.mention} **{message.author}** needs help in **{message.guild}** in **{message.channel}** at https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}.')
                 except (
                         discord.HTTPException, discord.errors.HTTPException,
                         discord.ext.commands.errors.CommandInvokeError,
@@ -470,7 +470,7 @@ async def on_message(message: discord.Message):
                     print(f'Cannot direct message {str(i)}.')
             else:
                 pass
-        await message.channel.send(f'{message.author.mention} pinged Administrators.')
+        await message.channel.send(f'{message.author.mention} pinged Moderators.')
     await bot.process_commands(message)
 
 
