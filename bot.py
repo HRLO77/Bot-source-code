@@ -9,6 +9,7 @@ os.system('py -m pip install discord --upgrade')
 os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
+import Functions
 import random
 import disnake as discord
 from disnake.ext import commands
@@ -1717,6 +1718,48 @@ async def add_swear(ctx, *, string: str):
         explicit_data4.add(string)
     elif content == 4:
         explicit_data5.add(string)
+    await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
+    await ctx.message.delete()
+    
+    
+@bot.command(aliases=['append_enhanced_swears'])
+@commands.has_permissions(moderate_members=True, manage_messages=True)
+async def add_enhanced_swears(ctx, *, swears):
+    try:
+        list(swears)
+    except ValueError:
+        raise ValueError('Invalid list for "swears"')
+    test = []
+    set = convert_to_list(swears)
+    print(set)
+    for i in set:
+        for index, value in enumerate(str(i).replace(' ', '')):
+            if ' ' in i:
+                dat = Functions.str_to_list(Functions.list_to_str(Functions.spliceOutWords(str(i))))
+                dat[index] = '*'
+                test.insert(0, Functions.list_to_str(dat))
+                test.insert(0, i)
+            else:
+                dat = Functions.str_to_list(str(i))
+                dat[index] = '*'
+                test.insert(0, Functions.list_to_str(dat))
+                test.insert(0, i)
+            if content == 0:
+                await ctx.message.delete()
+                raise IndexError(f"Explicit data check is currently disabled.")
+                return
+            elif content == 1:
+                explicit_data2.add(Functions.list_to_str(dat))
+                explicit_data2.add(i)
+            elif content == 2:
+                explicit_data3.add(Functions.list_to_str(dat))
+                explicit_data3.add(i)
+            elif content == 3:
+                explicit_data5.add(Functions.list_to_str(dat))
+                explicit_data5.add(i)
+            elif content == 4:
+                explicit_data5.add(Functions.list_to_str(dat))
+                explicit_data5.add(i)
     await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
     await ctx.message.delete()
     
