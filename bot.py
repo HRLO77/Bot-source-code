@@ -1,14 +1,21 @@
 import ensurepip
+
 ensurepip.bootstrap()
 import os
+
 os.system('py -m pip install discord')
 os.system('py -m pip install py-cord')
 os.system('py -m pip install disnake')
 os.system('py -m pip install profanity')
+os.system('py -m pip install ast')
 os.system('py -m pip install discord --upgrade')
 os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
+os.system('py -m pip install ast --upgrade')
+
+import ast
+
 import Functions
 import random
 import disnake as discord
@@ -23,7 +30,6 @@ import ctypes
 from datetime import datetime
 import secrets
 from discord.utils import get
-
 
 
 def check_user_is_admin(user):
@@ -43,28 +49,16 @@ def convert_to_memory(value):
     return id(value)
 
 
-def convert_to_list(str):
-    cache = ''
-    data = []
-    for i in str.replace(' ', ''):
-        if i == ',':
-            data.append(cache)
-            cache = ''
-        else:
-            cache = f'{cache}{i}'
-    data.append(cache)
-    return data
-
 # json_data = json.load((open("reacting_data.json", 'r')))
-# for i in convert_to_list(list(json_data.keys())):
+# for i in ast.literal_eval(list(json_data.keys())):
 #     for val in i:
 
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'message_to_react'): ('role_id_to_add', 'emoji_to_react')}
 
-#Test the secrets module
+# Test the secrets module
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
 print(a)
 
@@ -329,26 +323,25 @@ byes = ('Bye', 'Come back soon', 'See you later', 'Have fun')
 
 intents = discord.Intents.all()
 bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
-profanity.load_words(explicit_data2)
 
 
 @bot.event
 async def on_ready():
-    # for i in bot.guilds:
-    #     for channel in i.channels:
-    #         if 'text' in channel.type:
-    #             for member in i.members:
-    #                 secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-    #                 try:
-    #                     await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
-    # If a staff member asks for your verification code/token, send them a picture of this message.''')
-    #                 except (
-    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-    #                     print(f'Cannot direct message {str(i)}.')
-    #         if 'text' in channel.type:
-    #             await channel.send(f'Logged in.')
-    #             break
+    for i in bot.guilds:
+        for channel in i.channels:
+            if 'text' in channel.type:
+                for member in i.members:
+                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+                    try:
+                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
+    If a staff member asks for your verification code/token, send them a picture of this message.''')
+                    except (
+                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                        print(f'Cannot direct message {str(i)}.')
+            if 'text' in channel.type:
+                await channel.send(f'Logged in.')
+                break
     print(f'We have logged in as {bot.user}')
 
 
@@ -493,7 +486,7 @@ async def ping(ctx):
 
 @bot.command(aliases=('delete', 'purge', 'clean'))
 @commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount: int=10):
+async def clear(ctx, amount: int = 10):
     await ctx.channel.purge(limit=amount + 1)
 
 
@@ -607,7 +600,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
         tuple(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    members = convert_to_list(member_ids)
+    members = ast.literal_eval(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
         await i.timeout(duration=None, reason=reason)
@@ -629,7 +622,7 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
         tuple(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    members = convert_to_list(member_ids)
+    members = ast.literal_eval(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
         await i.timeout(duration=duration, reason=reason)
@@ -743,7 +736,8 @@ async def mute(ctx, member_id: int, *, reason='None'):
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
-    if member.guild_permissions.manage_messages and (member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+    if member.guild_permissions.manage_messages and (
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -790,7 +784,8 @@ async def unmute(ctx, member_id: int):
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
-    if member.guild_permissions.manage_messages and (member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+    if member.guild_permissions.manage_messages and (
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -826,7 +821,8 @@ async def role_mute(ctx, role_id, *, reason='None'):
     overwrite.speak = False
     overwrite.stream = False
     role = get(await ctx.guild.fetch_roles(), id=role_id)
-    if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
+    if role.guild_permissions.manage_messages and (
+            role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
     await ctx.send(f'''**{role.mention}** were muted by **{ctx.message.author.mention}**:
@@ -847,7 +843,8 @@ async def role_unmute(ctx, role_id: int):
     overwrite.speak = False
     overwrite.stream = False
     role = get(await ctx.guild.fetch_roles(), id=role_id)
-    if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
+    if role.guild_permissions.manage_messages and (
+            role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
     await ctx.send(f'''**{role.mention}** were unmuted by **{ctx.message.author.mention}**!''')
@@ -863,7 +860,8 @@ async def role_file_unmute(ctx, role_id: int):
     overwrite.external_stickers = False
     overwrite.add_reactions = True
     role = get(await ctx.guild.fetch_roles(), id=role_id)
-    if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
+    if role.guild_permissions.manage_messages and (
+            role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
     await ctx.send(f'''**{role.mention}** were file_unmuted by **{ctx.message.author.mention}**!''')
@@ -879,7 +877,8 @@ async def role_file_mute(ctx, role_id: int, *, reason='None'):
     overwrite.external_stickers = False
     overwrite.add_reactions = True
     role = get(await ctx.guild.fetch_roles(), id=role_id)
-    if role.guild_permissions.manage_messages and (role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
+    if role.guild_permissions.manage_messages and (
+            role.guild_permissions.manage_channels or role.guild_permissions.moderate_members):
         return
     await ctx.message.channel.set_permissions(role, overwrite=overwrite)
     await ctx.send(f'''**{role.mention}** were file_muted by **{ctx.message.author.mention}**:
@@ -909,7 +908,8 @@ async def file_unmute(ctx, member_id: int):
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
-    if member.guild_permissions.manage_messages and (member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+    if member.guild_permissions.manage_messages and (
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
@@ -925,6 +925,7 @@ async def file_unmute(ctx, member_id: int):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
+
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
@@ -949,7 +950,8 @@ async def file_mute(ctx, member_id: int, *, reason='None'):
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
-    if member.guild_permissions.manage_messages and (member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+    if member.guild_permissions.manage_messages and (
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.attach_files = False
@@ -1063,7 +1065,8 @@ async def hush(ctx):
     overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in ctx.guild.members:
-        if i.guild_permissions.manage_messages and (i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
+        if i.guild_permissions.manage_messages and (
+                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
             continue
         else:
             await i.add_roles(role)
@@ -1111,7 +1114,8 @@ async def un_hush(ctx):
     overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
     for i in ctx.guild.members:
-        if i.guild_permissions.manage_messages and (i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
+        if i.guild_permissions.manage_messages and (
+                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
             continue
         else:
             await i.remove_roles(role)
@@ -1170,7 +1174,7 @@ async def delete_channels(ctx, *, channels):
         list(channels)
     except ValueError:
         raise ValueError('Invalid list for "channels".')
-    tup = convert_to_list(channels)
+    tup = ast.literal_eval(channels)
     print(tup)
     for i in tup:
         print(i)
@@ -1186,7 +1190,7 @@ async def kick_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1207,7 +1211,7 @@ async def ban_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1228,7 +1232,7 @@ async def unban_members(ctx, *, user_ids):
         list(user_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(user_ids)
+    tup = ast.literal_eval(user_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1248,7 +1252,7 @@ async def mute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1297,7 +1301,7 @@ async def unmute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1346,7 +1350,7 @@ async def file_mute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1391,7 +1395,7 @@ async def file_unmute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(member_ids)
+    tup = ast.literal_eval(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1436,7 +1440,7 @@ async def clear_messages(ctx, *, message_ids):
         list(message_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = convert_to_list(message_ids)
+    tup = ast.literal_eval(message_ids)
     for i in tup:
         print(i)
         message = await ctx.fetch_message(int(i))
@@ -1537,7 +1541,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             tuple(member_ids)
         except ValueError:
             raise ValueError('Invalid list for "member_ids".')
-        tup = convert_to_list(member_ids)
+        tup = ast.literal_eval(member_ids)
         for i in tup:
             member = await ctx.guild.fetch_member(int(i))
             try:
@@ -1622,7 +1626,8 @@ async def print_out(ctx, *, message):
 @commands.has_permissions(moderate_members=True, manage_messages=True, manage_channels=True)
 async def set_react(ctx, reacting_message_id: int, default_role_id: int, emoji_to_react: str):
     reacting[(ctx.guild.id, reacting_message_id)] = (default_role_id, emoji_to_react)
-    await ctx.send(f'{ctx.author.mention} updated reacting object index: **{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}**')
+    await ctx.send(
+        f'{ctx.author.mention} updated reacting object index: **{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}**')
 
 
 @bot.command(aliases=('delete_react', 'rm_react', 'del_react'))
@@ -1644,21 +1649,23 @@ async def token(ctx, Member: int):
     author = await ctx.guild.fetch_member(ctx.author.id)
     secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
     try:
-        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.
+        await member.send(
+            f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.
     If a staff member asks for your verification code/token, send them a picture of this message.''')
     except (
-        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await author.send(f'''{author.mention}, cannot direct message {member}. Direct message {member} with this data:
 code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
         print(f'Cannot direct message {member}.')
         return
     try:
-        await author.send(f'''{ctx.author.mention} you reset {member}'s token at  https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}. {member}'s data is now:
+        await author.send(
+            f'''{ctx.author.mention} you reset {member}'s token at  https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}. {member}'s data is now:
 code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
     except (
-        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {author}.')
 
 
@@ -1671,7 +1678,7 @@ async def on_command_error(ctx, error):
 
 @bot.command(aliases=('rm_swear', 'delete_swear', 'remove_swear'))
 @commands.has_permissions(moderate_members=True, manage_messages=True)
-async def del_swear(ctx, *,string: str):
+async def del_swear(ctx, *, string: str):
     if content == 0:
         await ctx.message.delete()
         raise IndexError(f"Explicit data check is currently disabled.")
@@ -1703,7 +1710,7 @@ async def del_swear(ctx, *,string: str):
     await ctx.message.delete()
 
 
-@bot.command(aliases=('append_swear', None))
+@bot.command(aliases=['append_swear'])
 @commands.has_permissions(moderate_members=True, manage_messages=True)
 async def add_swear(ctx, *, string: str):
     if content == 0:
@@ -1720,8 +1727,8 @@ async def add_swear(ctx, *, string: str):
         explicit_data5.add(string)
     await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
     await ctx.message.delete()
-    
-    
+
+
 @bot.command(aliases=['append_enhanced_swears'])
 @commands.has_permissions(moderate_members=True, manage_messages=True)
 async def add_enhanced_swears(ctx, *, swears):
@@ -1730,7 +1737,7 @@ async def add_enhanced_swears(ctx, *, swears):
     except ValueError:
         raise ValueError('Invalid list for "swears"')
     test = []
-    set = convert_to_list(swears)
+    set = ast.literal_eval(swears)
     print(set)
     for i in set:
         for index, value in enumerate(str(i).replace(' ', '')):
@@ -1762,8 +1769,8 @@ async def add_enhanced_swears(ctx, *, swears):
                 explicit_data5.add(i)
     await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
     await ctx.message.delete()
-    
-    
+
+
 @bot.command()
 async def print_embed(ctx, title, *, text):
     author = await ctx.guild.fetch_member(ctx.author.id)
@@ -1772,6 +1779,40 @@ async def print_embed(ctx, title, *, text):
     embed.set_footer(text=text)
     await ctx.send(embed=embed)
     await ctx.message.delete()
+
+
+@bot.command()
+@commands.has_permissions(manage_channels=True)
+async def create_text_channel(ctx, name, *, reason):
+    await ctx.guild.create_text_channel(name=name, reason=reason)
+    await ctx.send(f"{ctx.author.mention} create a text channel {name}.")
+
+
+@bot.command()
+@commands.has_permissions(manage_channels=True)
+async def create_vc(ctx, name, *, reason):
+    await ctx.guild.create_voice_channel(name=name, reason=reason)
+    await ctx.send(f"{ctx.author.mention} create a vc {name}.")
+
+
+@bot.command()
+@commands.has_permissions(manage_roles=True)
+async def create_role(ctx, name, *, reason):
+    await ctx.guild.create_role(name=name, reason=reason)
+    await ctx.send(f"{ctx.author.mention} created role {name}.")
+
+
+@bot.command(aliases=('del_role', 'rm_role', 'remove_role'))
+@commands.has_permissions(manage_roles=True)
+async def delete_role(ctx, role_id: int, *, reason):
+    try:
+        role = get(await ctx.guild.fetch_roles(), id=role_id)
+    except (
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        raise discord.HTTPException("Could not fetch role.")
+    await ctx.send(f'{ctx.author.mention} deleted role {role.name}.')
+    await role.delete(reason=reason)
 
 
 #   overwrite = discord.PermissionOverwrite()
