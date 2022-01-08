@@ -339,21 +339,21 @@ bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
 
 @bot.event
 async def on_ready():
-    # for i in bot.guilds:
-    #     for channel in i.channels:
-    #         if 'text' in channel.type:
-    #             for member in i.members:
-    #                 secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-    #                 try:
-    #                     await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
-    # If a staff member asks for your verification code/token, send them a picture of this message.''')
-    #                 except (
-    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-    #                     print(f'Cannot direct message {str(i)}.')
-    #         if 'text' in channel.type:
-    #             await channel.send(f'Logged in.')
-    #             break
+    for i in bot.guilds:
+        for channel in i.channels:
+            if 'text' in channel.type:
+                for member in i.members:
+                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+                    try:
+                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
+    If a staff member asks for your verification code/token, send them a picture of this message.''')
+                    except (
+                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                        print(f'Cannot direct message {str(i)}.')
+            if 'text' in channel.type:
+                await channel.send(f'Logged in.')
+                break
     print(f'We have logged in as {bot.user}')
 
 
