@@ -29,4 +29,4 @@ The code now automatically installs and updates the API wrappers and extra modul
 
 
 
-Here is the documentation for the commands - https://pastebin.com/9w4Fp110
+Here is the documentation for the commands of my discord moderation bot - https://pastebin.com/9w4Fp110
