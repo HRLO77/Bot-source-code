@@ -13,7 +13,6 @@ os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
 os.system('py -m pip install ast --upgrade')
-
 import ast
 
 import Functions
@@ -49,14 +48,27 @@ def convert_to_memory(value):
     return id(value)
 
 
+def convert_to_list(string):
+    cache = ''
+    data = []
+    for i in string.replace(' ', ''):
+        if i == ',':
+            data.append(cache)
+            cache = ''
+        else:
+            cache = f'{cache}{i}'
+    data.append(cache)
+    return data
+
+
 # json_data = json.load((open("reacting_data.json", 'r')))
-# for i in ast.literal_eval(list(json_data.keys())):
+# for i in convert_to_list(list(json_data.keys())):
 #     for val in i:
 
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'message_to_react'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'message_id_to_react'): ('default_role_id_to_add', 'emoji_to_react')}
 
 # Test the secrets module
 a = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
@@ -327,21 +339,21 @@ bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
 
 @bot.event
 async def on_ready():
-    for i in bot.guilds:
-        for channel in i.channels:
-            if 'text' in channel.type:
-                for member in i.members:
-                    secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
-                    try:
-                        await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
-    If a staff member asks for your verification code/token, send them a picture of this message.''')
-                    except (
-                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                        print(f'Cannot direct message {str(i)}.')
-            if 'text' in channel.type:
-                await channel.send(f'Logged in.')
-                break
+    # for i in bot.guilds:
+    #     for channel in i.channels:
+    #         if 'text' in channel.type:
+    #             for member in i.members:
+    #                 secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
+    #                 try:
+    #                     await member.send(f'''{member.mention} your code is: __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{str(i)}**.
+    # If a staff member asks for your verification code/token, send them a picture of this message.''')
+    #                 except (
+    #                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+    #                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+    #                     print(f'Cannot direct message {str(i)}.')
+    #         if 'text' in channel.type:
+    #             await channel.send(f'Logged in.')
+    #             break
     print(f'We have logged in as {bot.user}')
 
 
@@ -600,7 +612,7 @@ async def un_timeout_members(ctx, member_ids, *, reason='None'):
         tuple(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    members = ast.literal_eval(member_ids)
+    members = convert_to_list(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
         await i.timeout(duration=None, reason=reason)
@@ -622,7 +634,7 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
         tuple(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    members = ast.literal_eval(member_ids)
+    members = convert_to_list(member_ids)
     for member in members:
         i = await ctx.guild.fetch_member(int(member))
         await i.timeout(duration=duration, reason=reason)
@@ -1174,7 +1186,7 @@ async def delete_channels(ctx, *, channels):
         list(channels)
     except ValueError:
         raise ValueError('Invalid list for "channels".')
-    tup = ast.literal_eval(channels)
+    tup = convert_to_list(channels)
     print(tup)
     for i in tup:
         print(i)
@@ -1190,7 +1202,7 @@ async def kick_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1211,7 +1223,7 @@ async def ban_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1232,7 +1244,7 @@ async def unban_members(ctx, *, user_ids):
         list(user_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(user_ids)
+    tup = convert_to_list(user_ids)
     for i in tup:
         print(i)
         user = await bot.fetch_user(int(i))
@@ -1252,7 +1264,7 @@ async def mute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1301,7 +1313,7 @@ async def unmute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1350,7 +1362,7 @@ async def file_mute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1395,7 +1407,7 @@ async def file_unmute_members(ctx, *, member_ids):
         list(member_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(member_ids)
+    tup = convert_to_list(member_ids)
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -1440,7 +1452,7 @@ async def clear_messages(ctx, *, message_ids):
         list(message_ids)
     except ValueError:
         raise ValueError('Invalid list for "member_ids".')
-    tup = ast.literal_eval(message_ids)
+    tup = convert_to_list(message_ids)
     for i in tup:
         print(i)
         message = await ctx.fetch_message(int(i))
@@ -1541,7 +1553,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             tuple(member_ids)
         except ValueError:
             raise ValueError('Invalid list for "member_ids".')
-        tup = ast.literal_eval(member_ids)
+        tup = convert_to_list(member_ids)
         for i in tup:
             member = await ctx.guild.fetch_member(int(i))
             try:
@@ -1553,7 +1565,8 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 print(f'Cannot direct message {str(member)}.')
                 pass
-        await ctx.send(f'{ctx.author.mention} Messaged people in dms.')
+        await ctx.send(f'{ctx.author.mention} direct messaged people in dms.')
+        await ctx.ctx.author.send(f'{ctx.author.mention} you direct messaged people in dms in **{ctx.guild}**.')
         return
     for i in ctx.guild.members:
         try:
@@ -1566,14 +1579,54 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {str(i)}.')
             pass
-    await ctx.send(f'{ctx.author.mention} Messaged everyone in dms.')
+    await ctx.send(f'{ctx.author.mention} direct messaged everyone in dms.')
+    await ctx.ctx.author.send(f'{ctx.author.mention} you direct messaged everyone in dms in **{ctx.guild}**.')
 
+
+@bot.command(aliases=('silent_direct_message_members', 'silent_dm', 'silent_direct_message' ,'silent_direct_message_users', 'silent_message_users', 'silent_dm_members', 'silent_dm_users'))
+@commands.has_permissions(administrator=True)
+async def silent_message_members(ctx, member_ids='all', *, content='None'):
+    
+    if member_ids.lower() == 'all':
+        pass
+    else:
+        try:
+            tuple(member_ids)
+        except ValueError:
+            raise ValueError('Invalid list for "member_ids".')
+        tup = convert_to_list(member_ids)
+        for i in tup:
+            member = await ctx.guild.fetch_member(int(i))
+            try:
+                await member.send(
+                    f'''{member.mention}, {content}''')
+            except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                print(f'Cannot direct message {str(member)}.')
+                pass
+        await ctx.author.send(f'{ctx.author.mention} you silent direct messaged members from **{ctx.guild}**.')
+        await ctx.message.delete()
+        return
+    for i in ctx.guild.members:
+        try:
+            await i.send(
+                f'''{i.mention} **{ctx.author}** said in https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}:
+**{content}**''')
+        except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                ValueError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'Cannot direct message {str(i)}.')
+            pass
+    await ctx.author.send(f'{ctx.author.mention} you silent direct messaged everyone from **{ctx.guild}**.')
+    await ctx.message.delete()
 
 @bot.command(aliases=('terminate_bot', 'kill_bot', 'cut_bot'))
 @commands.has_permissions(administrator=True)
 async def close_bot(ctx):
     await ctx.send('Bot terminating...')
-    sys.exit()
+    await bot.close()
 
 
 @bot.command(aliases=('e', 'eval'))
@@ -1646,7 +1699,7 @@ async def react_dict(ctx):
 @commands.has_permissions(moderate_members=True, view_audit_log=True, manage_messages=True)
 async def token(ctx, Member: int):
     member = await ctx.guild.fetch_member(Member)
-    author = await ctx.guild.fetch_member(ctx.author.id)
+    
     secret = [secrets.token_bytes(), secrets.token_hex(), secrets.token_urlsafe()]
     try:
         await member.send(
@@ -1655,18 +1708,18 @@ async def token(ctx, Member: int):
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        await author.send(f'''{author.mention}, cannot direct message {member}. Direct message {member} with this data:
+        await ctx.author.send(f'''{ctx.author.mention}, cannot direct message {member}. Direct message {member} with this data:
 code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
         print(f'Cannot direct message {member}.')
         return
     try:
-        await author.send(
+        await ctx.author.send(
             f'''{ctx.author.mention} you reset {member}'s token at  https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}. {member}'s data is now:
 code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.guild}**.''')
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {author}.')
+        print(f'Cannot direct message {ctx.author}.')
 
 
 @bot.event
@@ -1737,7 +1790,7 @@ async def add_enhanced_swears(ctx, *, swears):
     except ValueError:
         raise ValueError('Invalid list for "swears"')
     test = []
-    set = ast.literal_eval(swears)
+    set = convert_to_list(swears)
     print(set)
     for i in set:
         for index, value in enumerate(str(i).replace(' ', '')):
@@ -1773,9 +1826,9 @@ async def add_enhanced_swears(ctx, *, swears):
 
 @bot.command()
 async def print_embed(ctx, title, *, text):
-    author = await ctx.guild.fetch_member(ctx.author.id)
+    
     embed = discord.Embed(title=title)
-    embed.set_author(name=ctx.author, icon_url=author.avatar.url)
+    embed.set_author(name=ctx.author, icon_url=ctx.author.avatar.url)
     embed.set_footer(text=text)
     await ctx.send(embed=embed)
     await ctx.message.delete()
@@ -1813,6 +1866,20 @@ async def delete_role(ctx, role_id: int, *, reason):
         raise discord.HTTPException("Could not fetch role.")
     await ctx.send(f'{ctx.author.mention} deleted role {role.name}.')
     await role.delete(reason=reason)
+
+
+# @bot.command()
+# async def write(ctx, member_id: int, to_dict: str):
+#     perms = convert_to_list(to_dict)
+#     if "dict" in type(perms):
+#         pass
+#     else:
+#         raise ValueError("Invalid dict for overwrite permissions")
+#     member = await ctx.guild.fetch_member(member_id)
+#     overwrite = discord.PermissionOverwrite()
+#     for i in perms.keys():
+#         overwrite[i] = perms.get(i)
+#     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
 
 
 #   overwrite = discord.PermissionOverwrite()
