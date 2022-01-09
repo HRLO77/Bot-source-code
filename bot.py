@@ -985,7 +985,7 @@ async def file_mute(ctx, member_id: int, *, reason='None'):
 
 @bot.command(aliases=('channel_clear', 'channel_clean'))
 @commands.has_permissions(manage_messages=True, manage_channels=True)
-async def channel_purge(ctx, *, reason):
+async def channel_purge(ctx, *, reason='None'):
     channel = ctx.channel
     new_channel = await channel.clone(name=channel.name, reason=reason)
     await channel.delete()
