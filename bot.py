@@ -76,8 +76,8 @@ print(a)
 
 muted_channel = False
 tracemalloc.start()
-spam = 1
-content = 1
+spam = 2
+content = 2
 
 explicit_data5 = {'s x', 's*', 's x', '*x', 'd!ck', 'd!c*', 'd!ck', 'd!*k', 'd!ck', 'd*ck', 'd!ck', '*!ck', 'n * g g a',
                   'n*gg*', 'n * g g a', 'n*g*a', 'n * g g a', 'n**ga', 'n * g g a', 'n*gga', 'n * g g a', '**gga',
