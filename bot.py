@@ -1836,28 +1836,28 @@ async def print_embed(ctx, title, *, text):
 
 @bot.command()
 @commands.has_permissions(manage_channels=True)
-async def create_text_channel(ctx, name, *, reason):
+async def create_text_channel(ctx, name, *, reason='None'):
     await ctx.guild.create_text_channel(name=name, reason=reason)
     await ctx.send(f"{ctx.author.mention} create a text channel {name}.")
 
 
 @bot.command()
 @commands.has_permissions(manage_channels=True)
-async def create_vc(ctx, name, *, reason):
+async def create_vc(ctx, name, *, reason='None'):
     await ctx.guild.create_voice_channel(name=name, reason=reason)
     await ctx.send(f"{ctx.author.mention} create a vc {name}.")
 
 
 @bot.command()
 @commands.has_permissions(manage_roles=True)
-async def create_role(ctx, name, *, reason):
+async def create_role(ctx, name, *, reason='None'):
     await ctx.guild.create_role(name=name, reason=reason)
     await ctx.send(f"{ctx.author.mention} created role {name}.")
 
 
 @bot.command(aliases=('del_role', 'rm_role', 'remove_role'))
 @commands.has_permissions(manage_roles=True)
-async def delete_role(ctx, role_id: int, *, reason):
+async def delete_role(ctx, role_id: int, *, reason='None'):
     try:
         role = get(await ctx.guild.fetch_roles(), id=role_id)
     except (
