@@ -1482,11 +1482,12 @@ async def fetch_message(ctx, message_id):
 
 
 @bot.command(aliases=('bm', 'mark', 'book'))
-async def bookmark(ctx, message_id: int):
-    member = await ctx.guild.fetch_member(ctx.author.id)
+async def bookmark(ctx, message_id: int=-1):
+    if message_id == -1:
+        message_id = int(ctx.message.reference.message_id)
     message = await ctx.fetch_message(message_id)
     try:
-        await member.send(
+        await ctx.author.send(
             content=f'''{ctx.author.mention}, you bookmarked a post in **{ctx.guild.name}** within **{ctx.channel.name}** by **{message.author}**:
 ```
 {message.content}
@@ -1495,8 +1496,8 @@ async def bookmark(ctx, message_id: int):
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             ValueError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        await ctx.send(f'Cannot direct message {member.mention}.')
-        print(f'Cannot direct message {member}.')
+        await ctx.send(f'Cannot direct message {ctx.author.mention}.')
+        print(f'Cannot direct message {ctx.author}.')
 
 
 @bot.command(aliases=('members', 'member#'))
