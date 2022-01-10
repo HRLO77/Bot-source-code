@@ -1889,7 +1889,7 @@ async def purge_ban(ctx, member_id: int, limit: int = 10):
         if message.author.id == member_id:
             await message.delete()
         else:
-            pass
+            continue
     await ctx.send(f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}")
 
 
