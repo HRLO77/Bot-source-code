@@ -1501,13 +1501,7 @@ async def bookmark(ctx, message_id: int):
 
 @bot.command(aliases=('members', 'member#'))
 async def member_count(ctx):
-    members = 0
-    for i in ctx.guild.members:
-        if i.bot:
-            continue
-        else:
-            members += 1
-    await ctx.send(f'{members} members are in the guild.')
+    await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
 
 
 @bot.command(aliases=('online_members', 'online_member#'))
