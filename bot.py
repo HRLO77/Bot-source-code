@@ -1882,6 +1882,17 @@ async def delete_role(ctx, role_id: int, *, reason='None'):
 #     await ctx.message.channel.set_permissions(member, overwrite=overwrite)
 
 
+@bot.command(aliases=['purgeban'])
+@commands.has_permissions(moderate_members=True, manage_messages=True)
+async def purge_ban(ctx, member_id: int, limit: int = 10):
+    async for message in ctx.channel.history(limit=limit):
+        if message.author.id == member_id:
+            await message.delete()
+        else:
+            pass
+    await ctx.send(f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}")
+
+
 #   overwrite = discord.PermissionOverwrite()
 #   overwrite.send_messages = True
 #   overwrite.read_messages = True
