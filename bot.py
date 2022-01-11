@@ -7,12 +7,10 @@ os.system('py -m pip install discord')
 os.system('py -m pip install py-cord')
 os.system('py -m pip install disnake')
 os.system('py -m pip install profanity')
-os.system('py -m pip install ast')
 os.system('py -m pip install discord --upgrade')
 os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
-os.system('py -m pip install ast --upgrade')
 import ast
 
 import Functions
