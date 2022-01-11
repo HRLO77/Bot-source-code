@@ -1427,7 +1427,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
                 print(f'Cannot direct message {str(member)}.')
                 pass
         await ctx.send(f'{ctx.author.mention} direct messaged people in dms.')
-        await ctx.ctx.author.send(f'{ctx.author.mention} you direct messaged people in dms in **{ctx.guild}**.')
+        await ctx.author.send(f'{ctx.author.mention} you direct messaged people in dms in **{ctx.guild}**.')
         return
     for i in ctx.guild.members:
         try:
@@ -1441,7 +1441,7 @@ async def direct_message_members(ctx, member_ids='all', *, content='None'):
             print(f'Cannot direct message {str(i)}.')
             pass
     await ctx.send(f'{ctx.author.mention} direct messaged everyone in dms.')
-    await ctx.ctx.author.send(f'{ctx.author.mention} you direct messaged everyone in dms in **{ctx.guild}**.')
+    await ctx.author.send(f'{ctx.author.mention} you direct messaged everyone in dms in **{ctx.guild}**.')
 
 
 @bot.command(aliases=(
@@ -1819,6 +1819,41 @@ async def add_extra_enhanced_swears(ctx, *, swears):
                     explicit_data5.add(Functions.list_to_str(moveable_cache))
     await ctx.send(f'{ctx.author.mention}, swears was added to the filter.')
     await ctx.message.delete()
+    
+    
+@bot.command(aliases=('add_role', 'append_role'))
+@commands.has_permissions(manage_roles=True)
+async def push_role(ctx, role_id: int, *, member_ids='all'):
+    role = get((await ctx.guild.fetch_roles()), id=role_id)
+    if member_ids.lower() == 'all':
+        pass
+    else:
+        try:
+            tuple(member_ids)
+        except ValueError:
+            raise ValueError('Invalid list for "member_ids".')
+        tup = convert_to_list(member_ids)
+        for i in tup:
+            member = await ctx.guild.fetch_member(int(i))
+            try:
+                await member.add_roles(role)
+            except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                print(f'An error occurred while pushing role {role.name} onto {str(member)}.')
+                pass
+        await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto members.')
+        return
+    for i in ctx.guild.members:
+        try:
+            await i.add_roles(role)
+        except (
+                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                ValueError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            print(f'An error occurred while pushing role {role.name} onto {str(i)}.')
+            pass
+    await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
 
 
 bot.run('token')
