@@ -7,7 +7,7 @@ def check(cache):
     for index, value in enumerate(cache):
         if value == '*':
             length += 1
-    if length > len(cache) / 3 + 2:
+    if length > len(cache) / 3 + 1:
         return False
     return True
 
