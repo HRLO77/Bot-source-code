@@ -78,7 +78,7 @@ def check(cache):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'message_in_channel_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
 
 muted_channel = False
 tracemalloc.start()
@@ -368,7 +368,7 @@ async def clear(ctx, amount: int = 10):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    data = reacting.get((payload.guild_id, (bot.get_message(payload.message_id)).channel.id, payload.message_id))
+    data = reacting.get((payload.guild_id, payload.message_id))
     if type(data) == tuple:
         pass
     else:
@@ -387,7 +387,7 @@ async def on_raw_reaction_add(payload):
 
 @bot.event
 async def on_raw_reaction_remove(payload):
-    data = reacting.get((payload.guild_id, (bot.get_message(payload.message_id)).channel.id, payload.message_id))
+    data = reacting.get((payload.guild_id, payload.message_id))
     if type(data) == tuple:
         pass
     else:
