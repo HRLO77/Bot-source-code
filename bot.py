@@ -1745,14 +1745,28 @@ async def delete_role(ctx, role_id: int, *, reason='None'):
 
 @bot.command(aliases=['purgeban'])
 @commands.has_permissions(moderate_members=True, manage_messages=True)
-async def purge_ban(ctx, member_id: int, limit: int = 10):
-    async for message in ctx.channel.history(limit=limit):
+async def purge_ban(ctx, member_id: int, limit: int = 10, bulk: bool= False):
+    list_messages = []
+    messages = 0
+    async for message in ctx.channel.history(limit=99999999999999999):
+        if messages >= limit:
+            if not(bulk):
+                await ctx.send(
+f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}")
+            elif bulk:
+                await ctx.channel.delete_messages(list_messages)
+                await ctx.send(
+f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention} in bulk")
+            return
         if message.author.id == member_id:
-            await message.delete()
+            if not(bulk):
+                messages += 1
+                await message.delete()
+            elif bulk:
+                messages += 1
+                list_messages.append(message)
         else:
             continue
-    await ctx.send(
-        f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}")
 
 
 @bot.command(aliases=('hello', 'greetings'))
