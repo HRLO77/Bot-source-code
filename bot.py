@@ -1754,11 +1754,11 @@ async def purge_ban(ctx, member_id: int, limit: int = 10, bulk: bool= False):
         if messages >= limit:
             if not(bulk):
                 await ctx.send(
-f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}")
+f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}.")
             elif bulk:
                 await ctx.channel.delete_messages(list_messages)
                 await ctx.send(
-f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention} in bulk")
+f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention} in bulk.")
             return
         if message.author.id == member_id:
             if not(bulk):
