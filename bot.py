@@ -178,7 +178,7 @@ explicit_data3 = {'nazi', 'dick', 'bitch', 'vagina', 'cunt', 'pis', 'dumb',
                   'xxx', 'clusterfuc', 'puss', 'idg', 'mutil', 'sht', 'piss', 'frick', 'stup', 'prod', 'bang',
                   'sx', 'idit', 'nigger', 'rupe', 'danm', 'fk', 'pussy', 'asre', 'peg', 'pus', 'trash',
                   'p!s', 'hitler', 'idiot', 'tit', 'thot', 'segs', 'sh!t', 'nigga', 'bastard', 'fuk',
-                  'porn', 'cu', 'crud', 'blowjob', 'handy', 'handjob', 'breast'}
+                  'porn', 'cu', 'crud', 'blowjob', 'handy', 'handjob', 'breast', 'rtfm'}
 
 
 explicit_data2 = {'cock', 'vagina', 'sex', 'anal', 'fuck',
