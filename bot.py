@@ -12,7 +12,8 @@ os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
 import ast
-
+import importlib as ilib
+import time
 import Functions
 import random
 import disnake as discord
@@ -1516,12 +1517,17 @@ async def evaluate(ctx, *, command):
 ```''')
 
 
-@bot.command(aliases=('restart_bot', 'reset', 'reset_bot'))
-@commands.has_permissions(administrator=True)
-async def restart(ctx):
-    await ctx.send('Restarting bot...')
-    exec(open('restart.py').read())
-    sys.exit()
+@bot.command(aliases=('reset', 'reload'))
+@commands.has_permissions(view_audit_log=True)
+async def restart(ctx, ping: bool=False):
+    await ctx.send('Reloading module...')
+    time.sleep(1)
+    ilib.reload(discord)
+    time.sleep(2)
+    await ctx.send('Done reloading API wrapper!')
+    if ping:
+        time.sleep(3)
+        await ctx.send(f"{round(bot.latency * 1000)} ms ping.")
 
 
 @bot.command(aliases=('get_warns', 'pull_warns'))
@@ -1644,6 +1650,8 @@ async def add_swear(ctx, *, string: str):
         explicit_data5.add(string)
     await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
     await ctx.message.delete()
+                  
+                  
 
 
 @bot.command(aliases=['append_enhanced_swears'])
