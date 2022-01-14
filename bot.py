@@ -1,17 +1,17 @@
-# import ensurepip
-#
-# ensurepip.bootstrap()
-# import os
-#
-# os.system('py -m pip install discord')
-# os.system('py -m pip install py-cord')
-# os.system('py -m pip install disnake')
-# os.system('py -m pip install profanity')
-# os.system('py -m pip install discord --upgrade')
-# os.system('py -m pip install py-cord --upgrade')
-# os.system('py -m pip install disnake --upgrade')
-# os.system('py -m pip install profanity --upgrade')
-# import ast
+import ensurepip
+
+ensurepip.bootstrap()
+import os
+
+os.system('py -m pip install discord')
+os.system('py -m pip install py-cord')
+os.system('py -m pip install disnake')
+os.system('py -m pip install profanity')
+os.system('py -m pip install discord --upgrade')
+os.system('py -m pip install py-cord --upgrade')
+os.system('py -m pip install disnake --upgrade')
+os.system('py -m pip install profanity --upgrade')
+import ast
 import asyncio
 import importlib as ilib
 import Functions
@@ -70,11 +70,6 @@ def check(cache):
     if length > len(cache) / 3 + 1:
         return False
     return True
-#shakeb, jiyaa, zain
-with open("reacting_data.json", 'r') as json_file:
-    json_data = json.load(json_file)
-length_of_messages = {"total": json_data["total"], 879807617260716143: json_data["879807617260716143"], 712663279973171211: json_data["712663279973171211"], 574363548315287562: json_data["574363548315287562"]}
-
 
 # json_data = json.load((open("reacting_data.json", 'r')))
 # for i in convert_to_list(list(json_data.keys())):
@@ -85,7 +80,6 @@ length_of_messages = {"total": json_data["total"], 879807617260716143: json_data
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
 reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
-testing_dict = {885170029824450580: (712663279973171211, 879807617260716143, 574363548315287562)}
 
 muted_channel = False
 tracemalloc.start()
@@ -232,16 +226,6 @@ async def on_ready():
 
 @bot.event
 async def on_message(message: discord.Message):
-    global testing_dict
-    global length_of_messages
-    data = testing_dict.get(message.guild.id)
-    if 'tuple' in str(type(data)):
-        if message.author.id in data:
-            length_of_messages["total"] += 1
-            length_of_messages[message.author.id] += 1
-    if message.content.startswith(">>>"):
-        await bot.process_commands(message)
-        return
     global spam
     global content
     try:
@@ -259,6 +243,9 @@ async def on_message(message: discord.Message):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Log error.')
+    if message.content.startswith(">>>"):
+        await bot.process_commands(message)
+        return
     test = str(str(message.content).replace(' ', '')).lower()
     if message.author.bot:
         await bot.process_commands(message)
@@ -1944,55 +1931,6 @@ async def push_role(ctx, role_id: int, *, member_ids='all'):
             print(f'An error occurred while pushing role {role.name} onto {str(i)}.')
             pass
     await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
-
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def messages(ctx):
-    global length_of_messages
-    await ctx.send(f'''{ctx.author.mention} ! Zain.W, Jiyaa, and HRLO77 all sent **{length_of_messages["total"]}** messages so far!
-Jiyaa has sent **{length_of_messages[712663279973171211]}** messages,
-HRLO77 has sent **{length_of_messages[879807617260716143]}** messages and
-! Zain.W has sent **{length_of_messages[574363548315287562]}** messages!''')
-
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def update_json_cache(ctx):
-    global length_of_messages
-    json_restart.main(length_of_messages)
-    file = discord.File(r"C:\Users\shake\AppData\Local\Programs\Python\reacting_data.json")
-    await ctx.send(content=f"{ctx.author.mention} the json_message_cache was updated:", file=file)
-
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def reset_json_cache(ctx):
-    global length_of_messages
-    length_of_messages["total"] = 0
-    length_of_messages[879807617260716143] = 0
-    length_of_messages[574363548315287562] = 0
-    length_of_messages[712663279973171211] = 0
-    json_restart.main(length_of_messages)
-    await ctx.send(f'{ctx.author.mention} updated the json_message_cache to: {length_of_messages}')
-
-
-@bot.event
-async def on_disconnect():
-    global length_of_messages
-    print(dict(length_of_messages))
-    json_restart.main(length_of_messages)
-    # json_file = open("reacting_data.json", 'r+')
-    # json_data = json.load(json_file)
-    # json_data["879807617260716143"] = length_of_messages[879807617260716143]
-    # json_data["712663279973171211"] = length_of_messages[712  663279973171211]
-    # json_data["574363548315287562"] = length_of_messages[574363548315287562]
-    # json_data["total"] = length_of_messages["total"]
-    # json_file = ''
-    # json_file.close()
-    # json_file = open("reacting_data.json", 'o')
-    # json_file.write(json_data)
-    # print('dual')
-
+    
 
 bot.run('token')
