@@ -170,15 +170,16 @@ explicit_data4 = {'rtfm', 'rtf*', 'rtfm', 'rt*m', 'rtfm', 'r*fm', 'rtfm', '*tfm'
                   'naz*', 'naz*', 'naz*', 'na**', 'naz*', 'n*z*', 'naz*', '*az*', 'puss', 'pus*', 'puss', 'pu*s',
                   'puss', 'p*ss', 'puss', '*uss'}
 
-explicit_data3 = {'nazi', 'd!ck', 'slap', 'bitch', 'stick', 'idoit', 'vagina', 'cunt', 'hac', 'dip', 'pis', 'dumb',
-                  'dam', 'sex', 'dick', 'fruck', 'prn', 'dump', 'stfu', 'rod', 'blo', 'p!ss', 'suc', 'dummy', 'hit',
-                  'n!gga', 'anal', 'rape', 'fuc', 'fac', 'geno', 'fu', 'rob', 'robl', 'suck', 'sta', 'fack', 'damn',
-                  'cock', 't!t', 'crap', 'fuke', 'lmb', 'lma', 'dum', 'nite', 'dayum', 'fck', 'btch', 'seggs', 'kil',
-                  'shit', 'lana', 'shut', 'flip', 'ass', 'come', 'butt', 'arse', 'gai', 'c!ck', 'fuck', 'pok', 'gay',
-                  'xxx', 'fort', 'clusterfuc', 'puss', 'idg', 'mutil', 'sht', 'piss', 'frick', 'stup', 'prod', 'bang',
-                  'sx', 'idit', 'nigger', 'rupe', 'danm', 'fk', 'pussy', 'asre', 'peg', 'pus', 'neo', 'mur', 'trash',
-                  'p!s', 'hitler', 'idiot', 'tit', 'thot', 'segs', 'sh!t', 'nigga', 'job', 'bastard', 'fuk', 'n!gger',
-                  'porn', 'cu', 'crud'}
+explicit_data3 = {'nazi', 'dick', 'bitch', 'vagina', 'cunt', 'pis', 'dumb',
+                  'dam', 'sex', 'dick', 'fruck', 'prn', 'stfu', 'suc', 'dummy',
+                  'anal', 'rape', 'fuc', 'suck', 'fack', 'damn',
+                  'cock', 'crap', 'fuke', 'lmb', 'lma', 'dum', 'dayum', 'fck', 'btch', 'seggs', 'kil',
+                  'shit', 'shut', 'flip', 'ass', 'come', 'butt', 'arse', 'c!ck', 'fuck', 'gay',
+                  'xxx', 'clusterfuc', 'puss', 'idg', 'mutil', 'sht', 'piss', 'frick', 'stup', 'prod', 'bang',
+                  'sx', 'idit', 'nigger', 'rupe', 'danm', 'fk', 'pussy', 'asre', 'peg', 'pus', 'trash',
+                  'p!s', 'hitler', 'idiot', 'tit', 'thot', 'segs', 'sh!t', 'nigga', 'bastard', 'fuk',
+                  'porn', 'cu', 'crud', 'blowjob', 'handy', 'handjob', 'breast'}
+
 
 explicit_data2 = {'cock', 'vagina', 'sex', 'anal', 'fuck',
                   'shit', 'nigga', 'piss', 'cunt', 'pussy', 'dick', 'nigger'}
