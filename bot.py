@@ -12,6 +12,7 @@ os.system('py -m pip install py-cord --upgrade')
 os.system('py -m pip install disnake --upgrade')
 os.system('py -m pip install profanity --upgrade')
 import ast
+import asyncio
 import importlib as ilib
 import time
 import Functions
@@ -1521,12 +1522,12 @@ async def evaluate(ctx, *, command):
 @commands.has_permissions(view_audit_log=True)
 async def restart(ctx, ping: bool=False):
     await ctx.send('Reloading module...')
-    time.sleep(1)
+    await asyncio.sleep(1)
     ilib.reload(discord)
-    time.sleep(2)
+    await asyncio.sleep(2)
     await ctx.send('Done reloading API wrapper!')
     if ping:
-        time.sleep(3)
+        await asynio.sleep(3)
         await ctx.send(f"{round(bot.latency * 1000)} ms ping.")
 
 
