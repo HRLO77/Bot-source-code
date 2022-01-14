@@ -358,7 +358,7 @@ async def on_member_remove(member: discord.Member):
 
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
-    await ctx.send(f'{bot.latency * 1000} ms.')
+    await ctx.send(f'{round(bot.latency * 1000)} ms ping.')
 
 
 @bot.command(aliases=('delete', 'purge', 'clean'))
