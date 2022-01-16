@@ -519,8 +519,8 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
 @commands.has_permissions(moderate_members=True, manage_channels=True)
 async def timeout_hush(ctx, time: float = None, *, reason='None'):
     duration = (time * 60)
-    for member in ctx.guild.members:
-        if member.guild_permissions.moderate_members:
+    for member in ctx.message.channel.members:
+        if member.guild_permissions.moderate_members  or (member.guild_permissions.send_messages == False):
             continue
         else:
             pass
@@ -538,7 +538,7 @@ async def timeout_hush(ctx, time: float = None, *, reason='None'):
 @bot.command()
 @commands.has_permissions(moderate_members=True, manage_channels=True)
 async def timeout_un_hush(ctx, *, reason='None'):
-    for member in ctx.guild.members:
+    for member in ctx.message.channel.members:
         if member.guild_permissions.moderate_members:
             continue
         else:
@@ -616,7 +616,7 @@ async def mute(ctx, member_id: int, time: float = None, *, reason='None'):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
     if member.guild_permissions.manage_messages and (
-            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members)  or (i.guild_permissions.send_messages == False):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -670,7 +670,7 @@ async def unmute(ctx, member_id: int):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         await ctx.send('An error occurred.')
     if member.guild_permissions.manage_messages and (
-            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members):
+            member.guild_permissions.manage_channels or member.guild_permissions.moderate_members) or (i.guild_permissions.send_messages == False):
         return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -785,6 +785,7 @@ async def role_file_mute(ctx, role_id: int, *, reason='None'):
     await ctx.send(f'''**{role.mention}** were file_muted by **{ctx.message.author.mention}**:
 **{reason}**''')
 
+discord.Member
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
@@ -965,9 +966,9 @@ async def hush(ctx, time: float = None):
     overwrite.speak = False
     overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
-    for i in ctx.guild.members:
+    for i in ctx.message.channel.members:
         if i.guild_permissions.manage_messages and (
-                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
+                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members) or (i.guild_permissions.send_messages == False):
             continue
         else:
             await i.add_roles(role)
@@ -1031,7 +1032,7 @@ async def un_hush(ctx):
     overwrite.speak = False
     overwrite.stream = False
     await ctx.channel.set_permissions(role, overwrite=overwrite)
-    for i in ctx.guild.members:
+    for i in ctx.message.channel:
         if i.guild_permissions.manage_messages and (
                 i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
             continue
@@ -1550,6 +1551,7 @@ async def close_bot(ctx):
 
 
 @bot.command(aliases=('e', 'eval'))
+@commands.has_permissions(moderate_members=True)
 async def evaluate(ctx, *, command):
     f = open('compile_user_code.py', 'w')
     f = f.writelines(str(command).strip('```py').strip('```').strip('```python'))
@@ -1559,7 +1561,7 @@ async def evaluate(ctx, *, command):
     if len(result.stdout) > 45:
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
-        file = discord.File(r'filepath_to_out.txt')
+        file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
