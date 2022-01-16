@@ -515,45 +515,6 @@ async def timeout_members(ctx, member_ids, time: float = None, *, reason='None')
 **{reason}**.''')
 
 
-@bot.command()
-@commands.has_permissions(moderate_members=True, manage_channels=True)
-async def timeout_hush(ctx, time: float = None, *, reason='None'):
-    duration = (time * 60)
-    for member in ctx.message.channel.members:
-        if member.guild_permissions.moderate_members  or (member.guild_permissions.send_messages == False):
-            continue
-        else:
-            pass
-        await member.timeout(duration=duration, reason=reason)
-        try:
-            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
-**{reason}**.''')
-        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {str(member)}.')
-    await ctx.send(f'''{ctx.author.mention} put the channel in the timeout chair for {time} minutes, because:
-**{reason}**.''')
-
-
-@bot.command()
-@commands.has_permissions(moderate_members=True, manage_channels=True)
-async def timeout_un_hush(ctx, *, reason='None'):
-    for member in ctx.message.channel.members:
-        if member.guild_permissions.moderate_members:
-            continue
-        else:
-            pass
-        await member.timeout(duration=None, reason=reason)
-        try:
-            await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
-**{reason}**.''')
-        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print(f'Cannot direct message {str(member)}.')
-    await ctx.send(f'''{ctx.author.mention} took the channel out of the timeout chair, because:
-**{reason}**.''')
-
-
 @bot.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(ban_members=True)
 async def ban(ctx, member_id: int, *, reason='None'):
@@ -934,27 +895,7 @@ async def fetch_messages(ctx, limit=10, links=False):
 
 @bot.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
-async def hush(ctx, time: float = None):
-    roles = []
-    for i in ctx.guild.roles:
-        roles.append(i.name)
-        if i.name == 'muted':
-            role_id = i.id
-            break
-    if 'muted' in roles:
-        pass
-    else:
-        await ctx.guild.create_role(name='muted')
-        await ctx.send('"muted" role error')
-        return
-    try:
-        role = get(await ctx.guild.fetch_roles(), id=role_id)
-    except (
-            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            ValueError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        await ctx.send('An error occurred.')
-        return
+async def hush(ctx, time: float = 5, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
     overwrite.read_messages = True
@@ -965,85 +906,38 @@ async def hush(ctx, time: float = None):
     overwrite.add_reactions = True
     overwrite.speak = False
     overwrite.stream = False
-    await ctx.channel.set_permissions(role, overwrite=overwrite)
-    for i in ctx.message.channel.members:
-        if i.guild_permissions.manage_messages and (
-                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members) or (i.guild_permissions.send_messages == False):
-            continue
-        else:
-            await i.add_roles(role)
-            try:
-                await i.send(f'''{i.mention} you were muted in **{ctx.guild}** by **{ctx.author}**!''')
-            except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {str(i)}.')
-    await ctx.send(f'{ctx.author.mention} has hushed the channel.')
-    if time is None:
-        return
-    else:
-        await asyncio.sleep(time * 60)
-    for i in ctx.guild.members:
-        if i.guild_permissions.manage_messages and (
-                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
-            continue
-        else:
-            await i.remove_roles(role)
-            try:
-                await i.send(f'''{i.mention} you can now send messages in **{ctx.guild}**''')
-            except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {str(i)}.')
-    await ctx.send(f'{ctx.author.mention} channel has been unhushed.')
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+    await ctx.send(f'''{ctx.author.mention} has hushed the channel for **{time}** minutes because:
+**{reason}**''')
+    await asyncio.sleep(time * 60)
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = True
+    overwrite.read_messages = True
+    overwrite.send_messages_in_threads = True
+    overwrite.read_message_history = True
+    overwrite.create_public_threads = True
+    overwrite.create_private_threads = False
+    overwrite.add_reactions = True
+    overwrite.speak = True
+    overwrite.stream = True
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send(f'{ctx.author.mention}, channel has been unhushed.')
 
 
-@bot.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel'))
+@bot.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
 @commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
-async def un_hush(ctx):
-    roles = []
-    for i in ctx.guild.roles:
-        roles.append(i.name)
-        if i.name == 'muted':
-            role_id = i.id
-            break
-    if 'muted' in roles:
-        pass
-    else:
-        await ctx.guild.create_role(name='muted')
-        await ctx.send('"muted" role error')
-        return
-    try:
-        role = get(await ctx.guild.fetch_roles(), id=role_id)
-    except (
-            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            ValueError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        await ctx.send('An error occurred.')
-        return
+async def un_hush(ctx, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
-    overwrite.send_messages = False
+    overwrite.send_messages = True
     overwrite.read_messages = True
-    overwrite.send_messages_in_threads = False
+    overwrite.send_messages_in_threads = True
     overwrite.read_message_history = True
-    overwrite.create_public_threads = False
+    overwrite.create_public_threads = True
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
-    overwrite.speak = False
-    overwrite.stream = False
-    await ctx.channel.set_permissions(role, overwrite=overwrite)
-    for i in ctx.message.channel:
-        if i.guild_permissions.manage_messages and (
-                i.guild_permissions.manage_channels or i.guild_permissions.moderate_members):
-            continue
-        else:
-            await i.remove_roles(role)
-            try:
-                await i.send(f'''{i.mention} You were unmuted in **{ctx.guild}** by **{ctx.author}**!''')
-            except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(f'Cannot direct message {str(i)}.')
+    overwrite.speak = True
+    overwrite.stream = True
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
     await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
 
 
