@@ -217,10 +217,7 @@ bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
 
 @bot.event
 async def on_ready():
-    members = 0
-    for server in bot.guilds:
-        members += server.member_count
-    print(f'There are {members} users.')
+    print(f'There are {len(bot.users)} users.')
     print(f'We have logged in as {bot.user}')
 
 
