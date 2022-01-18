@@ -364,8 +364,8 @@ async def ping(ctx):
 
 @bot.command(aliases=('delete', 'purge', 'clean'))
 @commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount: int = 10):
-    await ctx.channel.purge(limit=amount + 1)
+async def clear(ctx, amount: int = 10, bulk: bool = False):
+    await ctx.channel.purge(limit=amount + 1, bulk=bulk)
 
 
 @bot.event
