@@ -1070,13 +1070,27 @@ async def member_count(ctx):
 async def online_member_count(ctx):
     members = 0
     for i in ctx.guild.members:
-        if i.bot:
-            continue
-        elif str(i.status) == 'offline':
+        if str(i.status) == 'offline':
             continue
         else:
             members += 1
     await ctx.send(f'{members} members are online in the guild.')
+    
+
+@bot.command(aliases=('channel_member_count', 'channel_member#'))
+async def channel_members(ctx):
+    await ctx.send(f'{len(ctx.message.channel.members)} members are in the channel.')
+
+
+@bot.command(aliases=('online_channel_members', 'online_channel_member#'))
+async def online_channel_member_count(ctx):
+    members = 0
+    for i in ctx.message.channel.members:
+        if str(i.status) == 'offline':
+            continue
+        else:
+            members += 1
+    await ctx.send(f'{members} members are online in the channel.')
 
 
 @bot.command(aliases=('get_member', 'pull_member'))
