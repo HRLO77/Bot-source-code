@@ -445,6 +445,20 @@ async def kick(ctx, member_id: int, *, reason='None'):
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
+async def unmute(ctx, member: discord.Member, *, reason='None'):
+    await member.timeout(duration=None, reason=reason)
+    try:
+        await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
+**{reason}**.''')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f'Cannot direct message {str(member)}.')
+    await ctx.send(f'''{ctx.author.mention} took {member.mention} out of  the timeout chair, because:
+**{reason}**.''')
+
+    
+@bot.command()
+@commands.has_permissions(moderate_members=True)
 async def mute(ctx, member: discord.Member, time: float = None, *, reason='None'):
     duration = (time * 60)
     await member.timeout(duration=duration, reason=reason)
