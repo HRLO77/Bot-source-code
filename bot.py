@@ -228,15 +228,13 @@ async def on_message(message: discord.Message):
     global spam
     global content
     try:
-        print('Full log: ')
-        print(datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+        print('Full log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
               message.channel, message.author, message.content,
               message.author.bot, spam, content,
               f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Direct message log: ')
-        print(datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
+        print('Direct message log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
               message.content, message.author.bot, spam, content,
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -344,6 +342,24 @@ async def on_message(message: discord.Message):
         await message.channel.send(f'{message.author.mention} pinged Moderators.')
     await bot.process_commands(message)
 
+
+@bot.event
+async def on_message_edit(old_message: discord.Message, message: discord.Message):
+    global spam
+    global content
+    try:
+        print('Full edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+              message.channel, message.author, message.content,
+              message.author.bot, spam, content,
+              f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Direct message edit log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
+              message.content, message.author.bot, spam, content,
+              f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Edit log error.')
 
 @bot.event
 async def on_member_join(member: discord.Member):
