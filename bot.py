@@ -461,21 +461,9 @@ async def kick(ctx, member_id: int, *, reason='None'):
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def unmute(ctx, member: discord.Member, *, reason='None'):
-    await member.timeout(duration=None, reason=reason)
-    try:
-        await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
-**{reason}**.''')
-    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print(f'Cannot direct message {str(member)}.')
-    await ctx.send(f'''{ctx.author.mention} took {member.mention} out of  the timeout chair, because:
-**{reason}**.''')
-
-    
-@bot.command()
-@commands.has_permissions(moderate_members=True)
-async def mute(ctx, member: discord.Member, time: float = None, *, reason='None'):
+async def mute(ctx, memberid: int, time: float = 10, *, reason='None'):
+    print(memberid, time, reason)
+    member = await ctx.guild.fetch_member(memberid)
     duration = (time * 60)
     await member.timeout(duration=duration, reason=reason)
     try:
@@ -485,6 +473,21 @@ async def mute(ctx, member: discord.Member, time: float = None, *, reason='None'
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f'Cannot direct message {str(member)}.')
     await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {time} minutes, because:
+**{reason}**.''')
+    
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def unmute(ctx, memberid: int, *, reason='None'):
+    member = await ctx.guild.fetch_member(memberid)
+    await member.timeout(duration=None, reason=reason)
+    try:
+        await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
+**{reason}**.''')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f'Cannot direct message {str(member)}.')
+    await ctx.send(f'''{ctx.author.mention} took {member.mention} out of  the timeout chair, because:
 **{reason}**.''')
 
 
@@ -718,7 +721,8 @@ async def channel_purge(ctx, *, reason='None'):
 
 @bot.command(aliases=('alert', 'notify', 'inform'))
 @commands.has_permissions(moderate_members=True, view_audit_log=True)
-async def warn(ctx, member: discord.Member, *, reason='None'):
+async def warn(ctx, memberid: int, *, reason='None'):
+    member = await ctx.guild.fetch_member(memberid)
     with open('Warns.txt', 'a') as file:
         file = file.write(
             f'**{member.mention}** you were warned by **{ctx.author}**:**{reason}**\n')
@@ -734,7 +738,8 @@ async def warn(ctx, member: discord.Member, *, reason='None'):
 
 
 @bot.command(aliases=('get_member_history', 'pull_member_history'))
-async def fetch_member_history(ctx, member: discord.Member, limit=10, links=False):
+async def fetch_member_history(ctx, memberid: int, limit=10, links=False):
+    member = await ctx.guild.fetch_member(memberid)
     try:
         bool(links)
     except ValueError:
