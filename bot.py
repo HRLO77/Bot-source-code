@@ -1479,7 +1479,7 @@ async def delete_role(ctx, role_id: int, *, reason='None'):
 
 
 @bot.command(aliases=['purgeban'])
-@commands.has_permissions(moderate_members=True, manage_messages=True)
+@commands.has_permissions(manage_messages=True)
 async def purge_ban(ctx, member_id: int, limit: int = 10, bulk: bool= False):
     list_messages = []
     messages = 0
