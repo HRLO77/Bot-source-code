@@ -1422,12 +1422,15 @@ async def add_enhanced_swears(ctx, *, swears):
 
 
 @bot.command()
-async def print_embed(ctx, title, *, text):
+async def print_embed(ctx, title: str, *, text: str):
     embed = discord.Embed(title=title)
     embed.set_author(name=ctx.author, icon_url=ctx.author.avatar.url)
     embed.set_footer(text=text)
     await ctx.send(embed=embed)
     await ctx.message.delete()
+    if 'rule' in title.lower() and 'rule' in str(ctx.message.channel).lower():
+        with open('rules.txt', 'w+') as rules:
+            rules.writelines(text)
 
 
 @bot.command()
@@ -1598,6 +1601,25 @@ async def push_role(ctx, role_id: int, *, member_ids='all'):
             print(f'An error occurred while pushing role {role.name} onto {str(i)}.')
             pass
     await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
+    
+    
+@bot.command()
+async def rule(ctx, rule_int: int = None):
+    if rule_int is None:
+        await ctx.send('This server follows discord TOS and guidelines, be sure to follow them too!')
+        return
+    with open("rules.txt", 'r+') as rules:
+        await ctx.send(rules.readlines()[rule_int - 1])
+
+@bot.command()
+async def rules(ctx):
+    bot_author = await ctx.guild.fetch_member(bot.application_id)
+    with open("rules.txt", 'r+') as rules:
+        embed = discord.Embed()
+        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        embed.title = 'RULES:'
+        embed.set_footer(text=rules.read())
+        await ctx.send(embed=embed)
 
 
 bot.run('token')
