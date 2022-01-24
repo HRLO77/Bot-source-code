@@ -1613,7 +1613,7 @@ async def rule(ctx, rule_int: int = None):
 
 @bot.command()
 async def rules(ctx):
-    bot_author = await ctx.guild.fetch_member(bot.application_id)
+    bot_author = await ctx.guild.fetch_member(bot.user.id)
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed()
         embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
