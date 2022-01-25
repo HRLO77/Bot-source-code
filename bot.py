@@ -228,7 +228,7 @@ async def on_message(message: discord.Message):
     global spam
     global content
     try:
-        print('Full log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+        print('Full message log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
               message.channel, message.author, message.content,
               message.author.bot, spam, content,
               f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
@@ -239,7 +239,7 @@ async def on_message(message: discord.Message):
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print('Log error.')
+        print('Message log error.')
     if message.content.startswith(">>>"):
         await bot.process_commands(message)
         return
@@ -348,7 +348,7 @@ async def on_message_edit(old_message: discord.Message, message: discord.Message
     global spam
     global content
     try:
-        print('Full edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+        print('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
               message.channel, message.author, message.content,
               message.author.bot, spam, content,
               f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
@@ -359,7 +359,23 @@ async def on_message_edit(old_message: discord.Message, message: discord.Message
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print('Edit log error.')
+        print('Message edit log error.')
+        
+        
+@bot.event
+async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
+    guild = await bot.fetch_guild(payload.guild_id)
+    global spam
+    global content
+    try:
+        print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, payload.message_id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content,)
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Direct message delete log: \n', datetime.now(), guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content,)
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Message delete log error.')
+        
 
 @bot.event
 async def on_member_join(member: discord.Member):
