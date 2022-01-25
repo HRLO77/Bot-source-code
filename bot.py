@@ -789,7 +789,7 @@ async def fetch_messages(ctx, limit=10, links=False):
 
 @bot.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
-async def hush(ctx, time: float = 5, reason: str = 'None'):
+async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
     overwrite.read_messages = True
@@ -820,7 +820,7 @@ async def hush(ctx, time: float = 5, reason: str = 'None'):
 
 @bot.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
 @commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
-async def un_hush(ctx, reason: str = 'None'):
+async def un_hush(ctx, *, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
     overwrite.read_messages = True
@@ -831,8 +831,9 @@ async def un_hush(ctx, reason: str = 'None'):
     overwrite.add_reactions = True
     overwrite.speak = True
     overwrite.stream = True
-    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-    await ctx.send(f'{ctx.author.mention} has unhushed the channel.')
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+    await ctx.send(f'''{ctx.author.mention} has unhushed the channel because:
+**{reason}**''')
 
 
 @bot.command(aliases=('fetch_roles', 'pull_roles'))
