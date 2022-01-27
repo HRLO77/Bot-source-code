@@ -222,6 +222,25 @@ async def on_ready():
 
 @bot.event
 async def on_message(message: discord.Message):
+    async def syspurgeban(member_id, limit = 10, bulk: bool= False):
+        list_messages = []
+        messages = 0
+        async for i in message.channel.history(limit=99999999999999999):
+            if messages >= limit:
+                if bulk:
+                    await message.channel.delete_messages(list_messages)
+                return
+            if i.author.id == member_id:
+                if not(bulk):
+                    messages += 1
+                    await i.delete()
+                elif bulk:
+                    messages += 1
+                    list_messages.append(i)
+            else:
+                continue
+    def check_for_spam(m):
+        return m.author == message.author
     if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'rick', 'astley')) and not(message.author.bot):
         await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
         await message.author.send(f'{message.author.mention} bruh why?')
@@ -340,7 +359,86 @@ async def on_message(message: discord.Message):
             else:
                 pass
         await message.channel.send(f'{message.author.mention} pinged Moderators.')
+    words = Functions.spliceOutWords(str(message.content))
+    for word in words:
+        try:
+            requests.get(word)
+        except (requests.ConnectionError, requests.HTTPError, requests.ConnectTimeout, requests.exceptions.MissingSchema):
+            pass
+        else:
+            res = await vt_client.scan_url_async(word, True)
+            print(f'{res} done!')
+            url = await vt_client.get_json_async(f"/urls/{vt.url_id(word)}")
+            print(f'{url} done..')
+            result_int = 0
+            length = len((url["data"]["attributes"]["last_analysis_results"]).keys())
+            result_int += (url["data"]["attributes"]["last_analysis_stats"])["suspicious"]
+            result_int += 2 * ((url["data"]["attributes"]["last_analysis_stats"])["malicious"])
+            result_int += 0.5 * ((url["data"]["attributes"]["last_analysis_stats"])["undetected"])
+            if result_int < length / 4 or ((url["data"]["attributes"])["reputation"]) < 0:
+                pass
+            else:
+                await message.delete()
+                for i in message.channel.members:
+                    if i.guild_permissions.moderate_members:
+                        try:
+                            await i.send(
+                                f'{i.mention} **{message.author}** send a phishing URL **{message.guild}** in **{message.channel}** at https://discord.com/channels/{message.guild.id}/{message.channel.id}. Come help!')
+                        except (
+                                discord.HTTPException, discord.errors.HTTPException,
+                                discord.ext.commands.errors.CommandInvokeError,
+                                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                            print(f'Cannot direct message {str(i)}.')
+                    else:
+                        pass
+                await message.author.timeout(duration=600, reason=f'{message.author} sent a phishing link.')
+                await message.channel.send(f'''{message.author.mention} sent a phishing link and has been put in timeout for **10** minutes.''')
+                return
+    # syspurgeban(message.author.id, 10, 1)
+    # await message.author.timeout(duration=60.0, reason='Spam')
+    # await message.author.send(
+    #     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
+    # await message.channel.send(f'{message.author.mention} please do not spam.')
+    if spam == 1:
+        try:
+            await bot.wait_for('message', timeout=1, check=check_for_spam)
+        except asyncio.exceptions.TimeoutError:
+            pass
+        else:
+            await syspurgeban(message.author.id, 4, 1)
+            await message.channel.send(f'{message.author.mention} please do not spam.')
+    elif spam == 2:
+        try:
+            await bot.wait_for('message', timeout=2, check=check_for_spam)
+        except asyncio.exceptions.TimeoutError:
+            pass
+        else:
+            await syspurgeban(message.author.id, 11, 1)
+            await message.channel.send(f'{message.author.mention} please do not spam.')
+    elif spam == 3:
+        try:
+            await bot.wait_for('message', timeout=8.5, check=check_for_spam)
+        except asyncio.exceptions.TimeoutError:
+            pass
+        else:
+            await syspurgeban(message.author.id, 21, 1)
+            await message.author.timeout(duration=30.0, reason='Spam')
+            await message.author.send(
+f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **30** seconds.')
+            await message.channel.send(f'{message.author.mention} please do not spam.')
+    elif spam == 4:
+        try:
+            await bot.wait_for('message', timeout=15, check=check_for_spam)
+        except asyncio.exceptions.TimeoutError:
+            pass
+        else:
+            await syspurgeban(message.author.id, 51, 1)
+            await message.author.timeout(duration=60.0, reason='Spam')
+            await message.author.send(
+f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
+            await message.channel.send(f'{message.author.mention} please do not spam.')
     await bot.process_commands(message)
+
 
 
 @bot.event
