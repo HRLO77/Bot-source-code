@@ -886,7 +886,7 @@ async def fetch_messages(ctx, limit=10, links=False):
 
 
 @bot.command(aliases=('silence', 'mute_channel', 'silence_channel'))
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True)
 async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
@@ -896,6 +896,7 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.create_public_threads = False
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.connect = False
     overwrite.speak = False
     overwrite.stream = False
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
@@ -910,6 +911,7 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.create_public_threads = True
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.connect = True
     overwrite.speak = True
     overwrite.stream = True
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
@@ -917,7 +919,7 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
 
 
 @bot.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
-@commands.has_permissions(manage_messages=True, moderate_members=True, manage_channels=True)
+@commands.has_permissions(moderate_members=True)
 async def un_hush(ctx, *, reason: str = 'None'):
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
@@ -927,11 +929,67 @@ async def un_hush(ctx, *, reason: str = 'None'):
     overwrite.create_public_threads = True
     overwrite.create_private_threads = False
     overwrite.add_reactions = True
+    overwrite.connect = True
     overwrite.speak = True
     overwrite.stream = True
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'''{ctx.author.mention} has unhushed the channel because:
 **{reason}**''')
+
+
+
+@bot.command(aliases=('server_lockdown', 'lock', 'server_lock', 'server_hush'))
+@commands.has_permissions(manage_channels=True, moderate_members=True)
+async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = False
+    overwrite.read_messages = True
+    overwrite.send_messages_in_threads = False
+    overwrite.read_message_history = True
+    overwrite.create_public_threads = False
+    overwrite.create_private_threads = False
+    overwrite.add_reactions = True
+    overwrite.connect = False
+    overwrite.speak = False
+    overwrite.stream = False
+    for channel in ctx.guild.channels:
+        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+    await ctx.send(f'''{ctx.author.mention} has hushed the server for **{time}** minutes because:
+**{reason}**''')
+    await asyncio.sleep(time * 60)
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = True
+    overwrite.read_messages = True
+    overwrite.send_messages_in_threads = True
+    overwrite.read_message_history = True
+    overwrite.create_public_threads = True
+    overwrite.create_private_threads = False
+    overwrite.add_reactions = True
+    overwrite.connect = True
+    overwrite.speak = True
+    overwrite.stream = True
+    for channel in ctx.guild.channels:
+        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+    await ctx.send(f'{ctx.author.mention} server has been unlocked.')
+
+
+@bot.command(aliases=('server_unlock', 'server_unhush', 'server_un_hush'))
+@commands.has_permissions(manage_channels=True, moderate_members=True)
+async def unlock(ctx, *, reason: str = 'None'):
+    overwrite = discord.PermissionOverwrite()
+    overwrite.send_messages = True
+    overwrite.read_messages = True
+    overwrite.send_messages_in_threads = True
+    overwrite.read_message_history = True
+    overwrite.create_public_threads = True
+    overwrite.create_private_threads = False
+    overwrite.add_reactions = True
+    overwrite.connect = True
+    overwrite.speak = True
+    overwrite.stream = True
+    for channel in ctx.guild.channels:
+        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+    await ctx.send(f'{ctx.author.mention} server has been unlocked.')
 
 
 @bot.command(aliases=('fetch_roles', 'pull_roles'))
