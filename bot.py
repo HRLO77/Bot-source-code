@@ -954,7 +954,7 @@ async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.stream = False
     for channel in ctx.guild.channels:
         await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
-    await ctx.send(f'''{ctx.author.mention} has hushed the server for **{time}** minutes because:
+    await ctx.send(f'''{ctx.author.mention} has locked the server for **{time}** minutes because:
 **{reason}**''')
     await asyncio.sleep(time * 60)
     overwrite = discord.PermissionOverwrite()
