@@ -1793,6 +1793,47 @@ async def rules(ctx):
         embed.title = 'RULES:'
         embed.set_footer(text=rules.read())
         await ctx.send(embed=embed)
+        
+        
+@bot.command(aliases=['rule_append'])
+async def rule_add(ctx, *, text: str = 'None'):
+    bot_author = await ctx.guild.fetch_member(bot.user.id)
+    with open("rules.txt", 'a') as rules:
+        rules.writelines(f'\n{text}')
+    with open("rules.txt", 'r+') as rules:
+        embed = discord.Embed(title='RULES:', description=rules.read())
+        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        await ctx.send(embed=embed)
 
+
+@bot.command(aliases=['rule_change'])
+async def rule_replace(ctx, rule_ind: int, *, read: str):
+    bot_author = await ctx.guild.fetch_member(bot.user.id)
+    with open("rules.txt", 'r+') as rules:
+        text = rules.readlines()
+    text[rule_ind - 1] = read
+    with open('rules.txt', 'a') as rules:
+        for rule in text:
+            rules.writelines(rule)
+    with open("rules.txt", 'r+') as rules:
+        embed = discord.Embed(title='RULES:', description=rules.read())
+        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        await ctx.send(embed=embed)
+
+
+@bot.command(aliases=('rule_rm', 'rule_delete', 'rule_del'))
+async def rule_remove(ctx, rule_ind: int = 0):
+    bot_author = await ctx.guild.fetch_member(bot.user.id)
+    with open("rules.txt", 'r+') as rules:
+        text = rules.readlines()
+    text.pop(rule_ind - 1)
+    with open('rules.txt', 'a') as rules:
+        for rule in text:
+            rules.writelines(rule)
+    with open("rules.txt", 'r+') as rules:
+        embed = discord.Embed(title='RULES:', description=rules.read())
+        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        await ctx.send(embed=embed)
+        
 
 bot.run('token')
