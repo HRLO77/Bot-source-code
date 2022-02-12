@@ -888,6 +888,10 @@ async def fetch_messages(ctx, limit=10, links=False):
 @bot.command(aliases=('silence', 'mute_channel', 'silence_channel'))
 @commands.has_permissions(moderate_members=True)
 async def hush(ctx, time: float = 5, *, reason: str = 'None'):
+    if ((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel and ((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages or (((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+        pass
+    else:
+        return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = False
     overwrite.read_messages = True
@@ -899,6 +903,9 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.connect = False
     overwrite.speak = False
     overwrite.stream = False
+    overwrite.external_emojis = False
+    overwrite.external_stickers = False
+    overwrite.embed_links = False
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'''{ctx.author.mention} has hushed the channel for **{time}** minutes because:
 **{reason}**''')
@@ -921,6 +928,10 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
 @bot.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
 @commands.has_permissions(moderate_members=True)
 async def un_hush(ctx, *, reason: str = 'None'):
+    if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+        pass
+    else:
+        return
     overwrite = discord.PermissionOverwrite()
     overwrite.send_messages = True
     overwrite.read_messages = True
@@ -932,6 +943,9 @@ async def un_hush(ctx, *, reason: str = 'None'):
     overwrite.connect = True
     overwrite.speak = True
     overwrite.stream = True
+    overwrite.external_emojis = False
+    overwrite.external_stickers = False
+    overwrite.embed_links = False
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'''{ctx.author.mention} has unhushed the channel because:
 **{reason}**''')
@@ -952,8 +966,12 @@ async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.connect = False
     overwrite.speak = False
     overwrite.stream = False
+    overwrite.external_emojis = False
+    overwrite.external_stickers = False
+    overwrite.embed_links = False
     for channel in ctx.guild.channels:
-        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        if ((channel.overwrites)[ctx.guild.default_role]).view_channel and ((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages or (((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'''{ctx.author.mention} has locked the server for **{time}** minutes because:
 **{reason}**''')
     await asyncio.sleep(time * 60)
@@ -968,8 +986,12 @@ async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.connect = True
     overwrite.speak = True
     overwrite.stream = True
+    overwrite.external_emojis = False
+    overwrite.external_stickers = False
+    overwrite.embed_links = False
     for channel in ctx.guild.channels:
-        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'{ctx.author.mention} server has been unlocked.')
 
 
@@ -987,8 +1009,12 @@ async def unlock(ctx, *, reason: str = 'None'):
     overwrite.connect = True
     overwrite.speak = True
     overwrite.stream = True
+    overwrite.external_emojis = False
+    overwrite.external_stickers = False
+    overwrite.embed_links = False
     for channel in ctx.guild.channels:
-        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'{ctx.author.mention} server has been unlocked.')
 
 
@@ -1269,22 +1295,6 @@ async def bookmark(ctx, message_id: int=-1):
         print(f'Cannot direct message {ctx.author}.')
 
 
-@bot.command(aliases=('members', 'member#'))
-async def member_count(ctx):
-    await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
-
-
-@bot.command(aliases=('online_members', 'online_member#'))
-async def online_member_count(ctx):
-    members = 0
-    for i in ctx.guild.members:
-        if str(i.status) == 'offline':
-            continue
-        else:
-            members += 1
-    await ctx.send(f'{members} members are online in the guild.')
-    
-
 @bot.command(aliases=('channel_member_count', 'channel_member#'))
 async def channel_members(ctx):
     await ctx.send(f'{len(ctx.message.channel.members)} members are in the channel.')
@@ -1299,6 +1309,22 @@ async def online_channel_member_count(ctx):
         else:
             members += 1
     await ctx.send(f'{members} members are online in the channel.')
+
+
+@bot.command(aliases=('members', 'member#'))
+async def member_count(ctx):
+    await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
+
+
+@bot.command(aliases=('online_members', 'online_member#'))
+async def online_member_count(ctx):
+    members = 0
+    for i in ctx.guild.members:
+        if str(i.status) == 'offline':
+            continue
+        else:
+            members += 1
+    await ctx.send(f'{members} members are online in the guild.')
 
 
 @bot.command(aliases=('get_member', 'pull_member'))
@@ -1398,14 +1424,14 @@ async def close_bot(ctx):
 @commands.has_permissions(moderate_members=True)
 async def evaluate(ctx, *, command):
     f = open('compile_user_code.py', 'w')
-    f = f.writelines(str(command).strip('```py').strip('```').strip('```python'))
+    f = f.writelines(str(command).strip('```py').strip('```python').strip('`'))
     result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```').strip('```python')}"],
                             input=f,
                             capture_output=True, text=True, timeout=5)
     if len(result.stdout) > 45:
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
-        file = discord.File(r'filepath_to_out.txt')
+        file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
@@ -1431,9 +1457,9 @@ async def restart(ctx, ping: bool= False):
 
 
 @bot.command(aliases=('get_warns', 'pull_warns'))
-@commands.has_permissions(moderate_members=True, view_audit_log=True)
+@commands.has_permissions(view_audit_log=True)
 async def fetch_warns(ctx):
-    file = discord.File(r'filepath_to_Warns.txt')
+    file = discord.File(r'C:\Users\shake\AppData\Local\Programs\Python\Warns.txt')
     await ctx.send(content='Warns:', file=file)
 
 
@@ -1495,7 +1521,7 @@ code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.gui
 @bot.event
 async def on_command_error(ctx, error):
     embed = discord.Embed(title="An error occurred")
-    embed.set_footer(text=error)
+    embed.description = error
     await ctx.send(embed=embed)
 
 
@@ -1596,14 +1622,17 @@ async def add_enhanced_swears(ctx, *, swears):
 
 @bot.command()
 async def print_embed(ctx, title: str, *, text: str):
-    embed = discord.Embed(title=title)
+    embed = discord.Embed(title=title, description=text)
     embed.set_author(name=ctx.author, icon_url=ctx.author.avatar.url)
-    embed.set_footer(text=text)
     await ctx.send(embed=embed)
     await ctx.message.delete()
     if 'rule' in title.lower() and 'rule' in str(ctx.message.channel).lower():
-        with open('rules.txt', 'w+') as rules:
-            rules.writelines(text)
+        with open('dates.json', 'r') as json_file:
+            data = json.load(json_file)
+        data[str(ctx.guild.id)] = text
+        print(data)
+        with open('dates.json', 'w') as json_file:
+            json.dump(data, json_file)
 
 
 @bot.command()
@@ -1774,32 +1803,59 @@ async def push_role(ctx, role_id: int, *, member_ids='all'):
             print(f'An error occurred while pushing role {role.name} onto {str(i)}.')
             pass
     await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
-    
-    
+
+@bot.event
+async def on_disconnect():
+    await vt_client.close_async()
+    print(f'Closed async API endpoint session.')
+
 @bot.command()
 async def rule(ctx, rule_int: int = None):
-    if rule_int is None:
-        await ctx.send('This server follows discord TOS and guidelines, be sure to follow them too!')
-        return
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+    with open("rules.txt", 'w') as rules:
+            rules.writelines(data[str(ctx.guild.id)])
     with open("rules.txt", 'r+') as rules:
         await ctx.send(rules.readlines()[rule_int - 1])
+
 
 @bot.command()
 async def rules(ctx):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+        return
+    with open("rules.txt", 'w') as rules:
+        rules.writelines(data[str(ctx.guild.id)])
     with open("rules.txt", 'r+') as rules:
-        embed = discord.Embed()
+        embed = discord.Embed(title='RULES:', description=rules.read())
         embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
-        embed.title = 'RULES:'
-        embed.set_footer(text=rules.read())
         await ctx.send(embed=embed)
-        
-        
+
+
 @bot.command(aliases=['rule_append'])
 async def rule_add(ctx, *, text: str = 'None'):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
-    with open("rules.txt", 'a') as rules:
-        rules.writelines(f'\n{text}')
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+        return
+    data[str(ctx.guild.id)] = f'{data[str(ctx.guild.id)]}\n{text}'
+    with open('dates.json', 'w') as json_file:
+        json.dump(data, json_file)
+    with open("rules.txt", 'w') as rules:
+        rules.writelines(data[str(ctx.guild.id)])
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
         embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
@@ -1809,12 +1865,27 @@ async def rule_add(ctx, *, text: str = 'None'):
 @bot.command(aliases=['rule_change'])
 async def rule_replace(ctx, rule_ind: int, *, read: str):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
-    with open("rules.txt", 'r+') as rules:
-        text = rules.readlines()
-    text[rule_ind - 1] = read
-    with open('rules.txt', 'a') as rules:
-        for rule in text:
-            rules.writelines(rule)
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+        return
+    listed = str(data[str(ctx.guild.id)]).rsplit('\n')
+    listed[rule_ind] = read
+    text = ''
+    for index, value in enumerate(listed):
+        if index != len(listed) - 1:
+            text = f'{text}{value}\n'
+        else:
+            text = f'{text}{value}'
+    data[str(ctx.guild.id)] = text
+    with open('dates.json', 'w') as json_file:
+        json.dump(data, json_file)
+    with open("rules.txt", 'w') as rules:
+        for i in listed:
+            rules.writelines(f'{i}\n')
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
         embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
@@ -1824,12 +1895,27 @@ async def rule_replace(ctx, rule_ind: int, *, read: str):
 @bot.command(aliases=('rule_rm', 'rule_delete', 'rule_del'))
 async def rule_remove(ctx, rule_ind: int = 0):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
-    with open("rules.txt", 'r+') as rules:
-        text = rules.readlines()
-    text.pop(rule_ind - 1)
-    with open('rules.txt', 'a') as rules:
-        for rule in text:
-            rules.writelines(rule)
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
+        return
+    listed = str(data[str(ctx.guild.id)]).rsplit('\n')
+    listed.pop(rule_ind)
+    text = ''
+    for index, value in enumerate(listed):
+        if index != len(listed) - 1:
+            text = f'{text}{value}\n'
+        else:
+            text = f'{text}{value}'
+    data[str(ctx.guild.id)] = text
+    with open('dates.json', 'w') as json_file:
+        json.dump(data, json_file)
+    with open("rules.txt", 'w') as rules:
+        for i in listed:
+            rules.writelines(f'{i}\n')
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
         embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
