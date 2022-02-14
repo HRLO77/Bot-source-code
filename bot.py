@@ -466,10 +466,10 @@ async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
     global spam
     global content
     try:
-        print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, payload.message_id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content,)
+        print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content,)
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        print('Direct message delete log: \n', datetime.now(), guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.message_id, spam, content,)
+        print('Direct message delete log: \n', datetime.now(), guild.name, (await guild.fetch_channel(payload.channel_id)).name, spam, content,)
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Message delete log error.')
