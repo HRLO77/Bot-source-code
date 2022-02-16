@@ -1402,11 +1402,13 @@ async def bookmark(ctx, message_id: int = -1):
         message_id = int(ctx.message.reference.message_id)
     message = await ctx.fetch_message(message_id)
     try:
-        await ctx.author.send(
-            content=f'''{ctx.author.mention}, you bookmarked a post in **{ctx.guild.name}** within **{ctx.channel.name}** by **{message.author}**:
-```
-{message.content}
-```https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}''')
+        embed = discord.Embed(
+            title=f'Bookmark in {message.guild} by {message.author}:')
+        embed.set_author(name=message.author, icon_url=message.author.avatar.url)
+        embed.add_field(name='**Bookmark**', value=message.content, inline=False)
+        embed.add_field(name='Original message',
+                        value=message.jump_url, inline=False)
+        await ctx.author.send(embed=embed)
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             ValueError,
