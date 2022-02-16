@@ -2033,7 +2033,7 @@ async def rule_replace(ctx, rule_ind: int, *, read: str):
         await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
         return
     listed = str(data[str(ctx.guild.id)]).rsplit('\n')
-    listed[rule_ind] = read
+    listed[rule_ind - 1] = read
     text = ''
     for index, value in enumerate(listed):
         if index != len(listed) - 1:
@@ -2063,7 +2063,7 @@ async def rule_remove(ctx, rule_ind: int = 0):
         await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
         return
     listed = str(data[str(ctx.guild.id)]).rsplit('\n')
-    listed.pop(rule_ind)
+    listed.pop(rule_ind - 1)
     text = ''
     for index, value in enumerate(listed):
         if index != len(listed) - 1:
