@@ -75,6 +75,12 @@ def log(to_log: tuple, guild):
     text = f'{text}\n'
     for i in to_log:
         text = f'{text}{i} '
+    try:
+        json.loads(text)
+    except (json.JSONDecodeError, TypeError, UnicodeDecodeError, UnicodeEncodeError, UnicodeError, UnicodeTranslateError, UnicodeWarning, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print(f"Couldn't log data for guild {guild}")
+        return
     json_data[str(guild)] = text
     with open('logs.json', 'w') as json_file:
         json.dump(json_data, json_file)
@@ -2126,7 +2132,7 @@ async def logs(ctx):
     with (open('logs.json', 'r')) as json_file:
         data = json.load(json_file)
     with open('logs.txt', 'w') as file:
-        file.write(data[str(ctx.guild.id)])
+        file.write(str(data[str(ctx.guild.id)]))
     await ctx.author.send(content=f'{ctx.author.mention} logs from the current bot session for **{ctx.guild}**:', file=discord.File(r'./logs.txt'))
 
 
