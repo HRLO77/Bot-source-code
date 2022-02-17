@@ -76,7 +76,15 @@ def log(to_log: tuple, guild):
     for i in to_log:
         text = f'{text}{i} '
     try:
-        json.loads(text)
+        json.loads(json.dumps(text))
+        with open('logs.txt', 'r') as txt:
+            file_state = txt.read()
+        with open('logs.txt', 'w') as file:
+            file.writelines(text)
+        with open('logs.txt', 'r') as txt:
+            txt.read()
+        with open('logs.txt', 'w') as file:
+            file.writelines(file_state)
     except (json.JSONDecodeError, TypeError, UnicodeDecodeError, UnicodeEncodeError, UnicodeError, UnicodeTranslateError, UnicodeWarning, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print(f"Couldn't log data for guild {guild}")
@@ -84,6 +92,7 @@ def log(to_log: tuple, guild):
     json_data[str(guild)] = text
     with open('logs.json', 'w') as json_file:
         json.dump(json_data, json_file)
+
 
 
 # json_data = json.load((open("reacting_data.json", 'r')))
