@@ -431,6 +431,7 @@ async def on_message(message: discord.Message):
         except asyncio.exceptions.TimeoutError:
             pass
         else:
+            await syspurgeban(bot.user.id, 4, 1)
             await syspurgeban(message.author.id, 4, 1)
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
@@ -439,6 +440,7 @@ async def on_message(message: discord.Message):
         except asyncio.exceptions.TimeoutError:
             pass
         else:
+            await syspurgeban(bot.user.id, 4, 1)
             await syspurgeban(message.author.id, 11, 1)
             await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
@@ -447,6 +449,7 @@ async def on_message(message: discord.Message):
         except asyncio.exceptions.TimeoutError:
             pass
         else:
+            await syspurgeban(bot.user.id, 4, 1)
             await syspurgeban(message.author.id, 21, 1)
             await message.author.timeout(duration=30.0, reason='Spam')
             await message.author.send(
@@ -458,6 +461,7 @@ async def on_message(message: discord.Message):
         except asyncio.exceptions.TimeoutError:
             pass
         else:
+            await syspurgeban(bot.user.id, 4, 1)
             await syspurgeban(message.author.id, 51, 1)
             await message.author.timeout(duration=60.0, reason='Spam')
             await message.author.send(
