@@ -273,7 +273,7 @@ def reset_logs(guild_id):
 async def on_ready():
     print(f'There are {len(bot.users)} users.')
     print(f'We have logged in as {bot.user}')
-    await bot.change_presence(activity=discord.Game('>>>fetch_docs'))
+    await bot.change_presence(activity=discord.Game(f'{bot.command_prefix}fetch_docs'))
     full_delete()
     with open('warns.json', 'r') as json_file:
         try:
