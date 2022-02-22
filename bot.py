@@ -357,7 +357,6 @@ async def on_message(message: discord.Message):
         count -= 1
         if len(test) > 950 or count > 27:
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 2:
         count = 0
         for index, value in enumerate(test):
@@ -369,7 +368,6 @@ async def on_message(message: discord.Message):
         count -= 1
         if len(test) > 450 or count > 15:
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 3:
         count = 0
         for index, value in enumerate(test):
@@ -383,7 +381,6 @@ async def on_message(message: discord.Message):
         count -= 1
         if len(test) > 195 or count > 11:
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
         count = 0
         for index, value in enumerate(test):
@@ -397,33 +394,26 @@ async def on_message(message: discord.Message):
         count -= 1
         if len(test) > 90 or count > 5:
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     if content == 1:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 2:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data3):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 3:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
         for i in filter4:
             test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
     elif content == 4:
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
         for i in filter5:
             test = test.replace(i, '*')
         if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
             await message.delete()
-            await message.channel.send(f'{message.author.mention} please do not swear.')
     # syspurgeban(message.author.id, 10, 1)
     # await message.author.timeout(duration=60.0, reason='Spam')
     # await message.author.send(
@@ -435,42 +425,34 @@ async def on_message(message: discord.Message):
         except asyncio.exceptions.TimeoutError:
             pass
         else:
-            await syspurgeban(bot.user.id, 4, 1)
-            await syspurgeban(message.author.id, 4, 1)
-            await message.channel.send(f'{message.author.mention} please do not spam.')
+            await syspurgeban(message.author.id, 5, 1)
     elif spam == 2:
         try:
             await bot.wait_for('message', timeout=2, check=check_for_spam)
         except asyncio.exceptions.TimeoutError:
             pass
         else:
-            await syspurgeban(bot.user.id, 4, 1)
-            await syspurgeban(message.author.id, 11, 1)
-            await message.channel.send(f'{message.author.mention} please do not spam.')
+            await syspurgeban(message.author.id, 15, 1)
     elif spam == 3:
         try:
             await bot.wait_for('message', timeout=8.5, check=check_for_spam)
         except asyncio.exceptions.TimeoutError:
             pass
         else:
-            await syspurgeban(bot.user.id, 4, 1)
-            await syspurgeban(message.author.id, 21, 1)
+            await syspurgeban(message.author.id, 25, 1)
             await message.author.timeout(duration=30.0, reason='Spam')
             await message.author.send(
                 f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **30** seconds.')
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     elif spam == 4:
         try:
             await bot.wait_for('message', timeout=15, check=check_for_spam)
         except asyncio.exceptions.TimeoutError:
             pass
         else:
-            await syspurgeban(bot.user.id, 4, 1)
-            await syspurgeban(message.author.id, 51, 1)
+            await syspurgeban(message.author.id, 30, 1)
             await message.author.timeout(duration=60.0, reason='Spam')
             await message.author.send(
                 f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
-            await message.channel.send(f'{message.author.mention} please do not spam.')
     await bot.process_commands(message)
 
 
