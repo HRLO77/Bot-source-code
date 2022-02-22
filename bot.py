@@ -250,8 +250,9 @@ def full_delete():
 
 
 def reset_logs(guild_id):
-    data = {}
-    data[str(guild_id)] = 0
+    with open('logs.json', 'r') as file:
+        data = json.load(file)
+    data[str(guild_id)] = ""
     with open('logs.json', 'w') as file:
         json.dump(data, file)
     with open('warns.json', 'r') as json_file:
@@ -261,12 +262,15 @@ def reset_logs(guild_id):
             data = {}
             for guild in bot.guilds:
                 data[str(guild.id)] = {"0": 0}
+            with open('warns.json', 'w') as json_file:
+                json.dump(data, json_file)
         else:
-            for guild in bot.guilds:
-                if str(guild.id) in data.keys():
-                    pass
-                else:
-                    data[str(guild.id)] = {"0": 0}
+            if str(guild_id) in data.keys():
+                pass
+            else:
+                data[str(guild_id)] = {"0": 0}
+            with open('warns.json', 'w') as json_file:
+                json.dump(data, json_file)
 
 
 @bot.event
@@ -281,13 +285,13 @@ async def on_ready():
         except (json.JSONDecodeError):
             data = {}
             for guild in bot.guilds:
-                data[str(guild.id)] = {"0": 0}
+                data[str(guild.id)] = {"0": ""}
         else:
             for guild in bot.guilds:
                 if str(guild.id) in data.keys():
                     pass
                 else:
-                    data[str(guild.id)] = {"0": 0}
+                    data[str(guild.id)] = {"0": ""}
 
 
 @bot.event
