@@ -978,21 +978,27 @@ async def warn(ctx, memberid: int, *, reason='None'):
 
 
 @bot.command(aliases=('get_member_history', 'pull_member_history'))
-async def fetch_member_history(ctx, memberid: int, limit=10, links=False):
+async def fetch_member_history(ctx, memberid: int, limit: int=10, links=False):
     member = await ctx.guild.fetch_member(memberid)
     try:
         bool(links)
     except ValueError:
         raise ValueError('Invalid boolean for "links".')
+    member = await ctx.guild.fetch_member(memberid)
     messages = []
-    async for message in (ctx.channel.history(limit=limit)):
+    count = 0
+    async for message in (ctx.channel.history(limit=99999999999999999)):
+        if count >= limit:
+            embed = discord.Embed(title=f'Last {limit} messages from {member}.')
+            embed.description = f'{messages}'
+            await ctx.send(embed=embed)
+            return
         if message.author == member:
+            count += 1
             if links:
-                messages.insert(
-                    0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+                messages.append(f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
             else:
-                messages.insert(0, message.id)
-    await ctx.send(messages)
+                messages.append(message.id)
 
 
 @bot.command(aliases=('get_messages', 'pull_messages'))
@@ -1002,13 +1008,16 @@ async def fetch_messages(ctx, limit=10, links=False):
     except ValueError:
         raise ValueError('Invalid boolean for "links".')
     messages = []
-    async for message in (ctx.channel.history(limit=limit)):
+    async for message in (ctx.channel.history(limit=99999999999999999)):
+        if count >= limit:
+            embed = discord.Embed(title=f'Last {limit} messages in {ctx.channel}.')
+            embed.description = f'{messages}'
+            await ctx.send(embed=embed)
+            return
         if links:
-            messages.insert(
-                0, f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
+            messages.append(f'https://discord.com/channels/{ctx.guild.id}/{message.channel.id}/{message.id}')
         else:
-            messages.insert(0, {message.id})
-    await ctx.send(messages)
+            messages.append(message.id)
 
 
 @bot.command(aliases=('silence', 'mute_channel', 'silence_channel'))
@@ -1408,9 +1417,23 @@ async def bookmark(ctx, message_id: int = -1):
     message = await ctx.fetch_message(message_id)
     try:
         embed = discord.Embed(
-            title=f'Bookmark in {message.guild} by {message.author}:')
-        embed.set_author(name=message.author, icon_url=message.author.avatar.url)
-        embed.add_field(name='**Bookmark**', value=message.content, inline=False)
+            title=f'Bookmark in {message.guild} by {message.author}')
+        embed.set_author(name=message.author,
+                         icon_url=message.author.avatar.url)
+        embed.add_field(name='Bookmark',
+                        value=message.content, inline=False)
+        embed.add_field(name='Original message',
+                        value=message.jump_url, inline=False)
+        await ctx.author.send(embed=embed)
+    except (
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            ValueError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        embed = discord.Embed(
+            title=f'Bookmark in {message.guild} by {message.author}')
+        embed.set_author(name=message.author,
+                         icon_url=message.author.avatar.url)
+        embed.description = f'{ctx.author.mention} an error occurred while fetching the message.'
         embed.add_field(name='Original message',
                         value=message.jump_url, inline=False)
         await ctx.author.send(embed=embed)
@@ -1551,15 +1574,15 @@ async def close_bot(ctx):
 @commands.has_permissions(moderate_members=True)
 async def evaluate(ctx, *, command):
     f = open('compile_user_code.py', 'w')
-    f = f.writelines(str(command).strip('```py').strip('```python').strip('`'))
-    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('```py').strip('```').strip('```python')}"],
+    f = f.writelines(str(command).strip('`').strip('python').strip('py'))
+    result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
                             input=f,
                             capture_output=True, text=True, timeout=5)
     if len(result.stdout) > 45:
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
         file = discord.File(
-            r'./out.txt')
+            r'C:\Users\shake\AppData\Local\Programs\Python\out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
@@ -1601,12 +1624,12 @@ async def fetch_warns(ctx, member_id: int = None):
                     with open('Warns.txt', 'w') as file:
                         file.writelines(f'{(await ctx.guild.fetch_member(int(member)))} has {dictionary[str(member)]} warns.')
                 except (
-                discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                ValueError,
-                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                        ValueError,
+                        commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                     print(f'Cannot fetch {member}')
             file = discord.File(
-            r'./Warns.txt')
+                r'C:\Users\shake\AppData\Local\Programs\Python\Warns.txt')
             await ctx.author.send(content=f'{ctx.author.mention} warns from current bot session in **{ctx.guild}**:', file=file)
         else:
             member = await ctx.guild.fetch_member(int(member_id))
@@ -1675,8 +1698,9 @@ code - __{random.choice(secret[0:2])}__ and token is *{secret[2]}* in **{ctx.gui
 
 @bot.event
 async def on_command_error(ctx, error):
-    embed = discord.Embed(title="An error occurred")
-    embed.description = error
+    print(error)
+    embed = discord.Embed(title="An error occurred:")
+    embed.description = f'{error}'
     await ctx.send(embed=embed)
 
 
