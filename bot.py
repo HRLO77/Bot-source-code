@@ -1024,7 +1024,7 @@ async def fetch_messages(ctx, limit=10, links=False):
 @commands.has_permissions(moderate_members=True)
 async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     try:
-        if ((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel and ((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages or (((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+        if (ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel and (ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages and isinstance(ctx.channel, discord.TextChannel) or (ctx.channel.overwrites_for(ctx.guild.default_role)).connect and (((ctx.channel.overwrites_for(ctx.guild.default_role)).speak or (ctx.channel.overwrites_for(ctx.guild.default_role)).video) and isinstance(ctx.channel, discord.VoiceChannel)):
             pass
         else:
             return
@@ -1060,9 +1060,9 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.speak = True
     overwrite.stream = True
     try:
-        if not (((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not (
-        ((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not (
-        ((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+        if (not(
+        (ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages) and (ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel and isinstance(ctx.channel, discord.TextChannel)) or (not(
+        (ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
             pass
         else:
             return
@@ -1076,7 +1076,7 @@ async def hush(ctx, time: float = 5, *, reason: str = 'None'):
 @commands.has_permissions(moderate_members=True)
 async def un_hush(ctx, *, reason: str = 'None'):
     try:
-        if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+        if (((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel) and not((ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(ctx.channel, discord.TextChannel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
             pass
         else:
             return
@@ -1120,8 +1120,15 @@ async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.embed_links = False
     for channel in ctx.guild.channels:
         try:
-            if ((channel.overwrites)[ctx.guild.default_role]).view_channel and ((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages or (((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
+            if (channel.overwrites_for(ctx.guild.default_role)).view_channel and (
+            channel.overwrites_for(ctx.guild.default_role)).send_messages and isinstance(channel,
+                                                                                             discord.TextChannel) or (
+            channel.overwrites_for(ctx.guild.default_role)).connect and (((channel.overwrites_for(
+                    ctx.guild.default_role)).speak or (channel.overwrites_for(
+                    ctx.guild.default_role)).video) and isinstance(channel, discord.VoiceChannel)):
                 await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+            else:
+                continue
         except KeyError:
             await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
     await ctx.send(f'''{ctx.author.mention} has locked the server for **{time}** minutes because:
@@ -1143,8 +1150,14 @@ async def lockdown(ctx, time: float = 5, *, reason: str = 'None'):
     overwrite.embed_links = False
     for channel in ctx.guild.channels:
         try:
-            if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
-                await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+            if (((channel.overwrites_for(ctx.guild.default_role)).view_channel) and not (
+            (channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(channel,
+                                                                                               discord.TextChannel)) or (
+                    not ((channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(channel,
+                                                                                                      discord.VoiceChannel)):
+                pass
+            else:
+                continue
         except KeyError:
             continue
     await ctx.send(f'{ctx.author.mention} server has been unlocked.')
@@ -1169,8 +1182,14 @@ async def unlock(ctx, *, reason: str = 'None'):
     overwrite.embed_links = False
     for channel in ctx.guild.channels:
         try:
-            if not(((ctx.channel.overwrites)[ctx.guild.default_role]).view_channel) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).send_messages) or not(((ctx.channel.overwrites)[ctx.guild.default_role]).connect):
-                await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+            if (((channel.overwrites_for(ctx.guild.default_role)).view_channel) and not (
+            (channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(channel,
+                                                                                               discord.TextChannel)) or (
+                    not ((channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(channel,
+                                                                                                      discord.VoiceChannel)):
+                pass
+            else:
+                continue
         except KeyError:
             continue
     await ctx.send(f'{ctx.author.mention} server has been unlocked.')
