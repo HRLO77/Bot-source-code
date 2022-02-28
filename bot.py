@@ -1702,11 +1702,11 @@ async def react_dict(ctx):
     await ctx.send(f"Reacting dictionary for RawReactionEvent - **{reacting}**")
 
 
-# @bot.event
-# async def on_command_error(ctx, error):
-#     embed = discord.Embed(title=f"An error occurred:")
-#     embed.description = f'{error}'
-#     await ctx.send(embed=embed)
+@bot.event
+async def on_command_error(ctx, error):
+    embed = discord.Embed(title=f"An error occurred:")
+    embed.description = f'{error}'
+    await ctx.send(embed=embed)
 
 
 @bot.command(aliases=('rm_swear', 'delete_swear', 'remove_swear'))
@@ -2223,12 +2223,27 @@ async def snipe(ctx):
     except KeyError:
         await ctx.author.send(f'{ctx.author.mention} no deleted messages in **{ctx.guild}** in the current session.')
     else:
-        embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
-        embed.set_author(icon_url=payload.cached_message.author.avatar.url, name=payload.cached_message.author)
-        embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
-        embed.add_field(name='Extra data', value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}', inline=False)
-        embed.set_footer(text=f'{payload.cached_message.author} sent a message at {str(payload.cached_message.created_at).rsplit(".")[0]}', icon_url=payload.cached_message.author.avatar.url)
-        await ctx.author.send(embed=embed)
+        try:
+            embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
+            embed.set_author(icon_url=payload.cached_message.author.avatar.url, name=payload.cached_message.author)
+            embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
+            embed.add_field(name='Extra data', value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}', inline=False)
+            embed.set_footer(text=f'{payload.cached_message.author} sent a message at {str(payload.cached_message.created_at).rsplit(".")[0]}', icon_url=payload.cached_message.author.avatar.url)
+        except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            try:
+                await ctx.author.send(f'{ctx.author.mention} could not retrieve the last sent message.')
+            except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                await ctx.send(f'{ctx.author.mention} could not retrieve the last sent message.')
+        try:
+            await ctx.author.send(embed=embed)
+        except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            await ctx.send(f'Could not DM {ctx.author.mention}')
 
 
 bot.run(TOKEN)
