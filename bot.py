@@ -88,6 +88,7 @@ reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_re
 muted_channel = False
 tracemalloc.start()
 filtering = dict()
+sniped_messages = dict()
 spam = 1
 content = 1
 
@@ -627,22 +628,24 @@ async def kick(ctx, member: discord.Member, *, reason='None'):
 
 @bot.event
 async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
+    global sniped_messages
     guild = None
     if payload.guild_id is not None:
         guild = await bot.fetch_guild(payload.guild_id)
-    global spam
-    global content
+        sniped_messages[str(guild.id)] = payload
     try:
-        print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content)
-        log(('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot, spam, content), payload.guild_id)
+        print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot)
+        log(('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot), payload.guild_id)
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-        try:
+        if not(payload.cached_message is None):
             print('Direct message delete log: \n', datetime.now(), payload.channel_id, payload.cached_message.author.id,
-                  payload.cached_message.channel, payload.cached_message.author, payload.cached_message.content)
-        except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                      payload.cached_message.channel, payload.cached_message.author, payload.cached_message.content)
+        else:
             print('Message delete log error.')
+    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        print('Message delete log error.')
 
 # @staticmethod
 # def can_timeout(ctx):
@@ -2209,6 +2212,23 @@ async def unwarn(ctx, memberid: int, count: int = 1):
     with open('warns.json', 'w') as file:
         json.dump(data, file)
     await ctx.send(f'{ctx.author.mention} {member.mention} has been unwarned **{count}** times.')
+    
+    
+@bot.command()
+@commands.has_permissions(view_audit_log=True)
+async def snipe(ctx):
+    global sniped_messages
+    try:
+        payload = sniped_messages[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.author.send(f'{ctx.author.mention} no deleted messages in **{ctx.guild}** in the current session.')
+    else:
+        embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
+        embed.set_author(icon_url=payload.cached_message.author.avatar.url, name=payload.cached_message.author)
+        embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
+        embed.add_field(name='Extra data', value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}', inline=False)
+        embed.set_footer(text=f'{payload.cached_message.author} sent a message at {str(payload.cached_message.created_at).rsplit(".")[0]}', icon_url=payload.cached_message.author.avatar.url)
+        await ctx.author.send(embed=embed)
 
 
 bot.run(TOKEN)
