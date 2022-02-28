@@ -2229,6 +2229,7 @@ async def snipe(ctx):
             embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
             embed.add_field(name='Extra data', value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}', inline=False)
             embed.set_footer(text=f'{payload.cached_message.author} sent a message at {str(payload.cached_message.created_at).rsplit(".")[0]}', icon_url=payload.cached_message.author.avatar.url)
+            await ctx.author.send(embed=embed)
         except (
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
@@ -2238,12 +2239,6 @@ async def snipe(ctx):
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 await ctx.send(f'{ctx.author.mention} could not retrieve the last sent message.')
-        try:
-            await ctx.author.send(embed=embed)
-        except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            await ctx.send(f'Could not DM {ctx.author.mention}')
 
 
 bot.run(TOKEN)
