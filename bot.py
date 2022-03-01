@@ -1518,7 +1518,10 @@ async def fetch_member(ctx, member: discord.Member):
     if not(icon is None):
         icon = icon.url
     else:
-        icon = member.avatar.url
+        if not(member.avatar is None):
+            icon = member.avatar.url
+        else:
+            icon = member.default_avatar.url
         embed = discord.Embed(title=f'Info on {member} in {ctx.guild}')
     embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}.'
     embed.color = member.color
