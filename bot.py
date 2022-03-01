@@ -206,7 +206,7 @@ special_chars = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'"
                  '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 
 intents = discord.Intents.all()
-bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents)
+bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents, case_insensitive=True)
 
 
 def full_delete():
@@ -1510,9 +1510,39 @@ async def online_member_count(ctx):
     await ctx.send(f'{members} members are online in the guild.')
 
 
-@bot.command(aliases=('get_member', 'pull_member'))
-async def fetch_member(ctx, member_id: discord.Member):
-    await ctx.send(member_id.mention)
+@bot.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on'))
+async def fetch_member(ctx, member: discord.Member):
+    icon = member.guild_avatar
+    if not(icon is None):
+        icon = icon.url
+    else:
+        icon = member.avatar.url
+        embed = discord.Embed(title=f'Info on {member} in {ctx.guild}')
+    embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}'
+    embed.color = member.color
+    embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}.')
+    if member.nick is None:
+        embed.set_author(name=f'{member}', icon_url=icon)
+    else:
+        embed.set_author(name=f'{member} A.K.A {member.nick}', icon_url=icon)
+    embed.add_field(name='Roles', value=f'Has **{len(member.roles)}** roles, highest role is **{member.top_role}**.')
+    embed.add_field(name='Verified', value=member.pending)
+    print(member.premium_since)
+    if not(member.premium_since is None):
+        embed.add_field(name='Premium since', value=f'Subscribed since **{str(member.premium_since).rsplit(" ")[0]}**')
+    embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}')
+    if not(member.current_timeout is None):
+        embed.add_field(name='Timeout ends on', value=f'{str(member.current_timeout).rsplit(".")[0]}.')
+    flags = member.public_flags.all()
+    if 'hype' in str(flags).lower():
+        if 'bravery' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **bravery**.', inline=True)
+        elif 'brilliance' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **brilliance**.', inline=True)
+        elif 'balance' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **balance**.', inline=True)
+    embed.add_field(name='Guilds', value=f'Shares **{len(member.mutual_guilds)}** guild{(len(member.mutual_guilds) > 1) * "s"} with me.')
+    await ctx.author.send(embed=embed)
 
 
 @bot.command(aliases=('dm_members', 'dm_users', 'direct_message_users'))
