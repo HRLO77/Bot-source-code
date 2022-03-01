@@ -1512,27 +1512,38 @@ async def online_member_count(ctx):
 
 @bot.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on'))
 async def fetch_member(ctx, member: discord.Member):
+    def is_author(payload: discord.RawReactionActionEvent):
+        return (payload.guild_id is None) and ('👋' in str(payload.emoji)) and (payload.user_id == ctx.author.id)
     icon = member.guild_avatar
     if not(icon is None):
         icon = icon.url
     else:
         icon = member.avatar.url
         embed = discord.Embed(title=f'Info on {member} in {ctx.guild}')
-    embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}'
+    embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}.'
     embed.color = member.color
-    embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}.')
+    embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}. \n *{member.activity}*.')
     if member.nick is None:
         embed.set_author(name=f'{member}', icon_url=icon)
     else:
         embed.set_author(name=f'{member} A.K.A {member.nick}', icon_url=icon)
     embed.add_field(name='Roles', value=f'Has **{len(member.roles)}** roles, highest role is **{member.top_role}**.')
-    embed.add_field(name='Verified', value=member.pending)
-    print(member.premium_since)
+    embed.add_field(name='Verified', value=not member.pending)
     if not(member.premium_since is None):
         embed.add_field(name='Premium since', value=f'Subscribed since **{str(member.premium_since).rsplit(" ")[0]}**')
-    embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}')
+    embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}.')
     if not(member.current_timeout is None):
-        embed.add_field(name='Timeout ends on', value=f'{str(member.current_timeout).rsplit(".")[0]}.')
+        embed.add_field(name='Timeout ends at', value=f'{str(member.current_timeout).rsplit(".")[0]}.')
+    else:
+        permissions = list()
+        for key, value in member.guild_permissions:
+            if value:
+                permissions.append(key)
+        perms = []
+        for i in permissions[-1: -0: -1]:
+            if len(str(i)) < 20:
+                perms.insert(0, i)
+        embed.add_field(name='Permissions', value=f'*{", ".join(perms[-1: -5: -1]).capitalize()}* and **{len(permissions) - 4}** more.')
     flags = member.public_flags.all()
     if 'hype' in str(flags).lower():
         if 'bravery' in str(flags).lower():
@@ -1542,7 +1553,26 @@ async def fetch_member(ctx, member: discord.Member):
         elif 'balance' in str(flags).lower():
             embed.add_field(name='Hypesquad', value=f'Hypesquad **balance**.', inline=True)
     embed.add_field(name='Guilds', value=f'Shares **{len(member.mutual_guilds)}** guild{(len(member.mutual_guilds) > 1) * "s"} with me.')
-    await ctx.author.send(embed=embed)
+    dm = await member.create_dm()
+    embed.add_field(name='Extra', value=f'Hash: {hash(member)} \n ID: {member.id} \n Guild color: {member.color}')
+    context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {member}!', embed=embed)
+    await context.add_reaction('👋')
+    try:
+        await bot.wait_for('raw_reaction_add', timeout=60, check=is_author)
+    except asyncio.exceptions.TimeoutError:
+        await context.remove_reaction(emoji='👋', member=bot.user)
+        return
+    else:
+        await context.remove_reaction(emoji='👋', member=bot.user)
+        try:
+            await dm.send(f'{ctx.author.mention} said hi from **{ctx.guild}**!')
+            await dm.send(f':wave:')
+        except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            await ctx.author.send(f'{ctx.author.mention} failed to send message to {member.mention}.')
+        else:
+            await ctx.author.send(f'{ctx.author.mention} successfully sent the message!')
 
 
 @bot.command(aliases=('dm_members', 'dm_users', 'direct_message_users'))
