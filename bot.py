@@ -1522,7 +1522,7 @@ async def fetch_member(ctx, member: discord.Member):
         embed = discord.Embed(title=f'Info on {member} in {ctx.guild}')
     embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}.'
     embed.color = member.color
-    embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}. \n *{member.activity}*.')
+    embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}. \n {int(not(member.activity is None)) * str("*" + str(member.activity) + "*")}.')
     if member.nick is None:
         embed.set_author(name=f'{member}', icon_url=icon)
     else:
@@ -1531,7 +1531,10 @@ async def fetch_member(ctx, member: discord.Member):
     embed.add_field(name='Verified', value=not member.pending)
     if not(member.premium_since is None):
         embed.add_field(name='Premium since', value=f'Subscribed since **{str(member.premium_since).rsplit(" ")[0]}**')
-    embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}.')
+    if ctx.guild.owner_id != member.id:
+        embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}.')
+    else:
+        embed.set_footer(icon_url=icon, text=f'Created {ctx.guild} on {str(ctx.guild.created_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0]}.')
     if not(member.current_timeout is None):
         embed.add_field(name='Timeout ends at', value=f'{str(member.current_timeout).rsplit(".")[0]}.')
     else:
