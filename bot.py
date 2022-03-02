@@ -1447,6 +1447,7 @@ async def bookmark(ctx, message_id: int = -1):
     try:
         embed = discord.Embed(
             title=f'You bookmarked a message in {message.guild}')
+        embed.color = message.author.color
         embed.description = ctx.author.mention
         embed.set_author(name=message.author,
                          icon_url=icon)
@@ -1463,6 +1464,7 @@ async def bookmark(ctx, message_id: int = -1):
             embed = discord.Embed(
                 title=f'You bookmarked a message in {message.guild}')
             embed.description = ctx.author.mention
+            embed.color = message.author.color
             embed.set_author(name=message.author,
                              icon_url=icon)
             embed.add_field(name='Bookmarked message', value=(message.embeds[0]).description, inline=False)
@@ -1476,6 +1478,7 @@ async def bookmark(ctx, message_id: int = -1):
                 title=f'You bookmarked a message in {message.guild}')
             embed.set_author(name=message.author,
                              icon_url=icon)
+            embed.color = message.author.color
             embed.description = ctx.author.mention
             embed.set_image(url=message.attachments[0].url)
             print(message.content)
@@ -1492,6 +1495,7 @@ async def bookmark(ctx, message_id: int = -1):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         embed = discord.Embed(
             title=f'You bookmarked a message in {message.guild}')
+        embed.color = message.author.color
         embed.set_author(name=message.author,
                          icon_url=icon)
         embed.add_field(name="Error", value=f'{ctx.author.mention} an error occurred while fetching the message.',
