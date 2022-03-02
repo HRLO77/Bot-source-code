@@ -1438,15 +1438,22 @@ async def bookmark(ctx, message_id: int = -1):
     if message_id == -1:
         message_id = int(ctx.message.reference.message_id)
     message = await ctx.fetch_message(message_id)
+    icon = message.author.avatar
+    if not(icon is None):
+        icon = icon.url
+    else:
+        icon = message.author.default_avatar.url
+    color = message.author.color
     try:
         embed = discord.Embed(
-            title=f'Bookmark in {message.guild} by {message.author}')
+            title=f'You bookmarked a message in {message.guild}')
+        embed.description = ctx.author.mention
         embed.set_author(name=message.author,
-                         icon_url=message.author.avatar.url)
-        embed.add_field(name='Bookmark',
-                        value=f'{message.content}', inline=False)
+                         icon_url=icon)
+        embed.add_field(name='Bookmarked message', value=message.content, inline=False)
         embed.add_field(name='Original message',
                         value=f'[Original message]({message.jump_url})', inline=False)
+        embed.set_footer(icon_url=icon, text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0]} in the {message.channel} channel within {message.guild} by {message.author}.')
         await ctx.author.send(embed=embed)
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1454,22 +1461,45 @@ async def bookmark(ctx, message_id: int = -1):
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         if len(message.embeds) == 1:
             embed = discord.Embed(
-                title=f'Bookmark in {message.guild} by {message.author}')
+                title=f'You bookmarked a message in {message.guild}')
+            embed.description = ctx.author.mention
             embed.set_author(name=message.author,
-                             icon_url=message.author.avatar.url)
-            embed.add_field(name='Bookmark', value=(message.embeds[0]).description, inline=False)
+                             icon_url=icon)
+            embed.add_field(name='Bookmarked message', value=(message.embeds[0]).description, inline=False)
             embed.add_field(name='Original message',
                             value=f'[Original message]({message.jump_url})', inline=False)
+            embed.set_footer(icon_url=icon,
+                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0]} in the {message.channel} channel within {message.guild} by {message.author}.')
             await ctx.author.send(embed=embed)
         else:
             embed = discord.Embed(
-                title=f'Bookmark in {message.guild} by {message.author}')
+                title=f'You bookmarked a message in {message.guild}')
             embed.set_author(name=message.author,
-                             icon_url=message.author.avatar.url)
-            embed.description = f'{ctx.author.mention} an error occurred while fetching the message.'
+                             icon_url=icon)
+            embed.set_image(url=message.attachments[0].url)
+            print(message.content)
+            if len(message.content) > 0:
+                embed.add_field(name="Bookmarked message", value=f'{message.content}', inline=False)
             embed.add_field(name='Original message',
                             value=f'[Original message]({message.jump_url})', inline=False)
+            embed.set_footer(icon_url=icon,
+                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0]} in the {message.channel} channel within {message.guild} by {message.author}.')
             await ctx.author.send(embed=embed)
+    except (
+            discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            ValueError,
+            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+        embed = discord.Embed(
+            title=f'You bookmarked a message in {message.guild}')
+        embed.set_author(name=message.author,
+                         icon_url=icon)
+        embed.add_field(name="Error", value=f'{ctx.author.mention} an error occurred while fetching the message.',
+                        inline=False)
+        embed.add_field(name='Original message',
+                        value=f'[Original message]({message.jump_url})', inline=False)
+        embed.set_footer(icon_url=icon,
+                         text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0]} in the {message.channel} channel within {message.guild} by {message.author}.')
+        await ctx.author.send(embed=embed)
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             ValueError,
