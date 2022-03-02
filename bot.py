@@ -1510,7 +1510,7 @@ async def online_member_count(ctx):
     await ctx.send(f'{members} members are online in the guild.')
 
 
-@bot.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on'))
+@bot.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on', 'member_info', 'member_data'))
 async def fetch_member(ctx, member: discord.Member):
     def is_author(payload: discord.RawReactionActionEvent):
         return (payload.guild_id is None) and ('👋' in str(payload.emoji)) and (payload.user_id == ctx.author.id)
@@ -1523,7 +1523,10 @@ async def fetch_member(ctx, member: discord.Member):
         else:
             icon = member.default_avatar.url
         embed = discord.Embed(title=f'Info on {member} in {ctx.guild}')
-    embed.description = f'{member.mention} {int(member.bot) * "is a bot user"}.'
+    if not(member.public_flags.system):
+        embed.description = f'{member.mention}{int((member.bot or member.public_flags.verified_bot)) * " is a bot user"}.'
+    else:
+        embed.description = f'{member.mention}{int((member.public_flags.system)) * " is a system user"}.'
     embed.color = member.color
     embed.add_field(name='Status', value=str(member.status).capitalize() + f'{int(member.is_on_mobile()) * " on mobile"}. \n {int(not(member.activity is None)) * str("*" + str(member.activity) + "*")}.')
     if member.nick is None:
@@ -1558,9 +1561,10 @@ async def fetch_member(ctx, member: discord.Member):
             embed.add_field(name='Hypesquad', value=f'Hypesquad **brilliance**.', inline=True)
         elif 'balance' in str(flags).lower():
             embed.add_field(name='Hypesquad', value=f'Hypesquad **balance**.', inline=True)
-    embed.add_field(name='Guilds', value=f'Shares **{len(member.mutual_guilds)}** guild{(len(member.mutual_guilds) > 1) * "s"} with me.')
+    embed.add_field(name='Guilds', value=f'Shares **{len(member.mutual_guilds)}** guild{(len(member.mutual_guilds) != 1) * "s"} with me.')
     dm = await member.create_dm()
-    embed.add_field(name='Extra', value=f'Hash: {hash(member)} \n ID: {member.id} \n Guild color: {member.color}')
+    embed.add_field(name='Extra',
+                    value=f'Hash: {hash(member)}\nID: {member.id}\nColor: {member.color}\n{int(member.public_flags.early_supporter) * "Early supporter"}\n{int(member.public_flags.verified_bot_developer) * "Verified developer"}\n{int(member.public_flags.partner) * "Discord partner"} \n{int(member.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not (member.public_flags.bug_hunter_level_2) and member.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(member.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(member.public_flags.staff and not (member.public_flags.partner)) * "Discord employee"}\n{int(member.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
     context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {member}!', embed=embed)
     await context.add_reaction('👋')
     try:
@@ -1577,6 +1581,51 @@ async def fetch_member(ctx, member: discord.Member):
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             await ctx.author.send(f'{ctx.author.mention} failed to send message to {member.mention}.')
+        else:
+            await ctx.author.send(f'{ctx.author.mention} successfully sent the message!')
+
+
+@bot.command(aliases=('get_user', 'pull_user', 'user', 'user_info', 'info_on_user', 'user_data'))
+async def fetch_user(ctx, User: discord.User):
+    def is_author(payload: discord.RawReactionActionEvent):
+        return (payload.guild_id is None) and ('👋' in str(payload.emoji)) and (payload.user_id == ctx.author.id)
+    icon = User.avatar
+    if not(icon is None):
+        icon = icon.url
+    else:
+        icon = User.default_avatar.url
+    embed = discord.Embed(title=f'Info on {User}')
+    embed.description = f'{User.mention}{int(User.bot) * " is a bot user."}'
+    embed.color = User.color
+    embed.set_author(name=f'{User}', icon_url=icon)
+    embed.set_footer(icon_url=icon, text=f'Account created on {str(User.created_at).rsplit(" ")[0]}.')
+    flags = User.public_flags.all()
+    if 'hype' in str(flags).lower():
+        if 'bravery' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **bravery**.', inline=True)
+        elif 'brilliance' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **brilliance**.', inline=True)
+        elif 'balance' in str(flags).lower():
+            embed.add_field(name='Hypesquad', value=f'Hypesquad **balance**.', inline=True)
+    embed.add_field(name='Guilds', value=f'Shares **{len(User.mutual_guilds)}** guild{(len(User.mutual_guilds) != 1) * "s"} with me.')
+    dm = await User.create_dm()
+    embed.add_field(name='Extra', value=f'Hash: {hash(User)}\nID: {User.id}\nColor: {User.color}\n{int(User.public_flags.early_supporter) * "Early supporter"}\n{int(User.public_flags.verified_bot_developer) * "Verified developer"}\n{int(User.public_flags.partner) * "Discord partner"} \n{int(User.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not(User.public_flags.bug_hunter_level_2) and User.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(User.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(User.public_flags.staff and not(User.public_flags.partner)) * "Discord employee"}\n{int(User.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
+    context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {User}!', embed=embed)
+    await context.add_reaction('👋')
+    try:
+        await bot.wait_for('raw_reaction_add', timeout=60, check=is_author)
+    except asyncio.exceptions.TimeoutError:
+        await context.remove_reaction(emoji='👋', member=bot.user)
+        return
+    else:
+        await context.remove_reaction(emoji='👋', member=bot.user)
+        try:
+            await dm.send(f'{ctx.author.mention} said hi from **{ctx.guild}**!')
+            await dm.send(f':wave:')
+        except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+            await ctx.author.send(f'{ctx.author.mention} failed to send message to {User.mention}.')
         else:
             await ctx.author.send(f'{ctx.author.mention} successfully sent the message!')
 
