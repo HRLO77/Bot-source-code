@@ -1476,6 +1476,7 @@ async def bookmark(ctx, message_id: int = -1):
                 title=f'You bookmarked a message in {message.guild}')
             embed.set_author(name=message.author,
                              icon_url=icon)
+            embed.description = ctx.author.mention
             embed.set_image(url=message.attachments[0].url)
             print(message.content)
             if len(message.content) > 0:
