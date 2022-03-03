@@ -7,6 +7,7 @@
 # os.system('py -m pip install profanity')
 # os.system('py -m pip install disnake --upgrade')
 # os.system('py -m pip install profanity --upgrade')
+from disnake.ext import tasks
 from disnake.utils import get
 import secrets
 import tracemalloc
