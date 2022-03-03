@@ -2420,7 +2420,7 @@ async def snipe(ctx):
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 await ctx.send(f'{ctx.author.mention} could not retrieve the last sent message.')
 
-@tasks.loop(seconds=10)
+@tasks.loop(minutes=10)
 async def ping():
     await bot.wait_until_ready()
     user = await bot.fetch_user(bot.user.id)
