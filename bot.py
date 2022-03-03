@@ -2405,7 +2405,7 @@ async def snipe(ctx):
                 icon = icon.url
             else:
                 icon = payload.cached_message.author.default_avatar.url
-            color = message.author.color
+            color = payload.cached_message.author.color
             embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
             embed.set_author(icon_url=icon, name=payload.cached_message.author)
             embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
