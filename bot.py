@@ -1,12 +1,14 @@
-# import ensurepip
-#
-# ensurepip.bootstrap()
-# import os
-#
-# os.system('py -m pip install disnake')
-# os.system('py -m pip install profanity')
-# os.system('py -m pip install disnake --upgrade')
-# os.system('py -m pip install profanity --upgrade')
+import ensurepip
+
+ensurepip.bootstrap()
+import os
+
+os.system('py -m pip install disnake')
+os.system('py -m pip install profanity')
+os.system('py -m pip install pip')
+os.system('py -m pip install disnake --upgrade')
+os.system('py -m pip install profanity --upgrade')
+os.system('py -m pip install pip --upgrade')
 from disnake.ext import tasks
 from disnake.utils import get
 import secrets
