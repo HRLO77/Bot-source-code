@@ -2393,7 +2393,6 @@ async def unwarn(ctx, member: discord.Member, count: int = 1):
 @commands.has_permissions(view_audit_log=True)
 async def snipe(ctx):
     global sniped_messages
-    color = message.author.color
     try:
         payload = sniped_messages[str(ctx.guild.id)]
     except KeyError:
