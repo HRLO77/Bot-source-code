@@ -206,7 +206,7 @@ special_chars = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '.', ',', "'"
                  '+', '\\', '|', '[', ']', '{', '}', '`', '~', ':', ';', '<', '>', '|', ' '}
 
 intents = discord.Intents.all()
-bot = discord.ext.commands.Bot(command_prefix='>>>', intents=intents, case_insensitive=True)
+bot = discord.ext.commands.Bot(command_prefix=['>>>', '>'], intents=intents, case_insensitive=True)
 
 
 def full_delete():
@@ -246,7 +246,7 @@ async def on_ready():
     global filtering
     print(f'There are {len(bot.users)} users.')
     print(f'We have logged in as {bot.user}')
-    await bot.change_presence(activity=discord.Game(f'{bot.command_prefix}fetch_docs'))
+    await bot.change_presence(activity=discord.Game(f'{bot.command_prefix[-1]}fetch_docs'))
     full_delete()
     with open('warns.json', 'r') as json_file:
         try:
@@ -268,10 +268,11 @@ async def on_ready():
 @bot.event
 async def on_message(message: discord.Message):
     global filtering
-    try:
-        filtering[str(message.guild.id)]
-    except KeyError:
-        filtering[str(message.guild.id)] = (1, 1)
+    if not(message.guild is None):
+        try:
+            filtering[str(message.guild.id)]
+        except KeyError:
+            filtering[str(message.guild.id)] = (1, 1)
     async def syspurgeban(member_id, limit=10, bulk: bool = False):
         list_messages = []
         messages = 0
@@ -307,11 +308,11 @@ async def on_message(message: discord.Message):
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Direct message log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
-              message.content, message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
+              message.content, message.author.bot,
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
         return
-    except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-            commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+    except (AttributeError, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+            commands.CommandInvokeError, commands.CommandError, discord.Forbidden):
         print('Message log error.')
     if message.content.startswith(">>>"):
         await bot.process_commands(message)
@@ -445,20 +446,17 @@ async def on_message_edit(old_message: discord.Message, message: discord.Message
               f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
         log(('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
              message.channel, message.author, message.content,
-             message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
+             message.author.bot,
              f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}'), message.guild.id)
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Direct message edit log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
-              message.content, message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
+              message.content, message.author.bot,
               f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
         return
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Message edit log error.')
-    if message.content.startswith(">>>"):
-        await bot.process_commands(message)
-        return
     if message.content.startswith(">>>"):
         await bot.process_commands(message)
         return
@@ -647,6 +645,7 @@ async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
         print('Message delete log error.')
 
+
 # @staticmethod
 # def can_timeout(ctx):
 #     async def predicate(ctx):
@@ -658,9 +657,8 @@ async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def mute(ctx, memberid: int, time: float = 10, *, reason='None'):
-    print(memberid, time, reason)
-    member = await ctx.guild.fetch_member(memberid)
+async def mute(ctx, member: discord.Member, time: float = 10, *, reason='None'):
+    print(member, time, reason)
     duration = (time * 60)
     await member.timeout(duration=duration, reason=reason)
     try:
@@ -675,8 +673,7 @@ async def mute(ctx, memberid: int, time: float = 10, *, reason='None'):
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def unmute(ctx, memberid: int, *, reason='None'):
-    member = await ctx.guild.fetch_member(memberid)
+async def unmute(ctx, member: discord.Member, *, reason='None'):
     await member.timeout(duration=None, reason=reason)
     try:
         await member.send(f'''{member.mention} you were taken out of the timeout chair by **{ctx.author}**, because:
@@ -690,14 +687,12 @@ async def unmute(ctx, memberid: int, *, reason='None'):
 
 @bot.command(aliases=('ban_user', 'ban_member'))
 @commands.has_permissions(ban_members=True)
-async def ban(ctx, member_id: int, *, reason='None'):
-    user = await bot.fetch_user(member_id)
-    member = await ctx.guild.fetch_member(member_id)
+async def ban(ctx, member: discord.Member, *, reason='None'):
     await member.ban(reason=reason)
     await ctx.send(f'''**{ctx.message.author.mention}** banned **{member.mention}**:
 **{reason}**.''')
     try:
-        await user.send(f'''{user.mention} you were banned from **{ctx.guild}** by **{ctx.author}**:
+        await member.send(f'''{member.mention} you were banned from **{ctx.guild}** by **{ctx.author}**:
 **{reason}**''')
     except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
@@ -824,7 +819,7 @@ discord.Member
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def file_unmute(ctx, member_id: int):
+async def file_unmute(ctx, member: discord.Member):
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -839,7 +834,6 @@ async def file_unmute(ctx, member_id: int):
         return
     try:
         role = get(await ctx.guild.fetch_roles(), id=role_id)
-        member = await ctx.guild.fetch_member(member_id)
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             ValueError,
@@ -866,7 +860,7 @@ async def file_unmute(ctx, member_id: int):
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def file_mute(ctx, member_id: int, *, reason='None'):
+async def file_mute(ctx, member: discord.Member, *, reason='None'):
     roles = []
     for i in ctx.guild.roles:
         roles.append(i.name)
@@ -881,7 +875,6 @@ async def file_mute(ctx, member_id: int, *, reason='None'):
         return
     try:
         role = get(await ctx.guild.fetch_roles(), id=role_id)
-        member = await ctx.guild.fetch_member(member_id)
     except (
             discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
             ValueError,
@@ -919,8 +912,7 @@ async def channel_purge(ctx, *, reason='None'):
 
 @bot.command(aliases=('alert', 'notify', 'inform'))
 @commands.has_permissions(view_audit_log=True)
-async def warn(ctx, memberid: int, *, reason='None'):
-    member = await ctx.guild.fetch_member(memberid)
+async def warn(ctx, member: discord.Member, *, reason='None'):
     with open('warns.json', 'r') as json_file:
         data = json.load(json_file)
     try:
@@ -950,8 +942,7 @@ async def warn(ctx, memberid: int, *, reason='None'):
 
 
 @bot.command(aliases=('get_member_history', 'pull_member_history'))
-async def fetch_member_history(ctx, memberid: int, limit: int=10, links=False):
-    member = await ctx.guild.fetch_member(memberid)
+async def fetch_member_history(ctx, member: discord.Member, limit: int=10, links=False):
     try:
         bool(links)
     except ValueError:
@@ -1447,8 +1438,8 @@ async def bookmark(ctx, message_id: int = -1):
     try:
         embed = discord.Embed(
             title=f'You bookmarked a message in {message.guild}')
-        embed.color = message.author.color
         embed.description = ctx.author.mention
+        embed.color = message.author.color
         embed.set_author(name=message.author,
                          icon_url=icon)
         embed.add_field(name='Bookmarked message', value=message.content, inline=False)
@@ -1476,9 +1467,9 @@ async def bookmark(ctx, message_id: int = -1):
         else:
             embed = discord.Embed(
                 title=f'You bookmarked a message in {message.guild}')
+            embed.color = message.author.color
             embed.set_author(name=message.author,
                              icon_url=icon)
-            embed.color = message.author.color
             embed.description = ctx.author.mention
             embed.set_image(url=message.attachments[0].url)
             print(message.content)
@@ -1765,7 +1756,7 @@ async def evaluate(ctx, *, command):
         o = open('out.txt', 'w')
         o = o.writelines(str(result.stdout))
         file = discord.File(
-            r'filepath_to_out.txt')
+            r'./out.txt')
         await ctx.send(content='Program output too long, full output in text document:', file=file)
         o = ''
         return
@@ -1792,7 +1783,7 @@ async def restart(ctx, ping: bool = False):
 
 @bot.command(aliases=('get_warns', 'pull_warns', 'warns'))
 @commands.has_permissions(view_audit_log=True)
-async def fetch_warns(ctx, member_id: int = None):
+async def fetch_warns(ctx, member: discord.Member = None):
     with open('warns.json', 'r') as json_file:
         data = json.load(json_file)
     try:
@@ -1801,7 +1792,7 @@ async def fetch_warns(ctx, member_id: int = None):
         await ctx.send(f'{ctx.author.mention} no warns from this server.')
         return
     else:
-        if member_id is None:
+        if member is None:
             for member in dictionary.keys():
                 try:
                     with open('Warns.txt', 'w') as file:
@@ -1812,10 +1803,9 @@ async def fetch_warns(ctx, member_id: int = None):
                         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                     print(f'Cannot fetch {member}')
             file = discord.File(
-                r'filepath_to_Warns.txt')
+                r'./Warns.txt')
             await ctx.author.send(content=f'{ctx.author.mention} warns from current bot session in **{ctx.guild}**:', file=file)
         else:
-            member = await ctx.guild.fetch_member(int(member_id))
             try:
                 await ctx.send(f'{ctx.author.mention}, {member.mention} has **{dictionary[str(member_id)]}** warns.')
             except KeyError:
@@ -2031,18 +2021,18 @@ async def delete_role(ctx, role_id: int, *, reason='None'):
 
 @bot.command(aliases=['purgeban'])
 @commands.has_permissions(manage_messages=True)
-async def purge_ban(ctx, member_id: int, limit: int = 10, bulk: bool = False):
+async def purge_ban(ctx, member: discord.Member, limit: int = 10, bulk: bool = False):
     list_messages = []
     messages = 0
-    async for message in ctx.channel.history(limit=99999999999999999):
-        if messages >= limit:
+    async for index, message in enumerate(ctx.channel.history(limit=99999999999999999)):
+        if messages >= limit or index > limit:
             if not(bulk):
                 await ctx.send(
-                    f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention}.")
+                    f"{ctx.author.mention} deleted the last {limit} messages from {member.mention}.")
             elif bulk:
                 await ctx.channel.delete_messages(list_messages)
                 await ctx.send(
-                    f"{ctx.author.mention} deleted the last {limit} messages from {(await ctx.guild.fetch_member(member_id)).mention} in bulk.")
+                    f"{ctx.author.mention} deleted the last {limit} messages from {member.mention} in bulk.")
             return
         if message.author.id == member_id:
             if not(bulk):
@@ -2156,12 +2146,7 @@ async def push_role(ctx, role_id: int, *, member_ids='all'):
 
 @bot.event
 async def on_disconnect():
-    await vt_client.close_async()
     print(f'Closed async API endpoint session.')
-    print(f'Attempting to ping bot...')
-    user = await bot.fetch_user(bot.user.id)
-    ilib.reload(disnake)
-    print(f'{round(bot.latency) * 1000} ms ping.')
 
 
 @bot.command()
@@ -2308,36 +2293,6 @@ async def rule_remove(ctx, rule_ind: int = 0):
         await ctx.send(embed=embed)
 
 
-@bot.command(aliases=('rule_rm', 'rule_delete', 'rule_del'))
-async def rule_remove(ctx, rule_ind: int = 0):
-    bot_author = await ctx.guild.fetch_member(bot.user.id)
-    with open('dates.json', 'r') as json_file:
-        data = json.load(json_file)
-    try:
-        data[str(ctx.guild.id)]
-    except KeyError:
-        await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
-        return
-    listed = str(data[str(ctx.guild.id)]).rsplit('\n')
-    listed.pop(rule_ind - 1)
-    text = ''
-    for index, value in enumerate(listed):
-        if index != len(listed) - 1:
-            text = f'{text}{value}\n'
-        else:
-            text = f'{text}{value}'
-    data[str(ctx.guild.id)] = text
-    with open('dates.json', 'w') as json_file:
-        json.dump(data, json_file)
-    with open("rules.txt", 'w') as rules:
-        for i in listed:
-            rules.writelines(f'{i}\n')
-    with open("rules.txt", 'r+') as rules:
-        embed = discord.Embed(title='RULES:', description=rules.read())
-        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
-        await ctx.send(embed=embed)
-
-
 @bot.event
 async def on_shard_connect(id):
     print(f'Shard {id} has connected.')
@@ -2378,7 +2333,7 @@ async def logs(ctx):
         data = json.load(json_file)
     with open('logs.txt', 'w') as file:
         file.write(str(data[str(ctx.guild.id)]))
-    await ctx.author.send(content=f'{ctx.author.mention} logs from the current bot session for **{ctx.guild}**:', file=discord.File(r'filepath_to_logs.txt'))
+    await ctx.author.send(content=f'{ctx.author.mention} logs from the current bot session for **{ctx.guild}**:', file=discord.File(r'./logs.txt'))
 
 
 @bot.command(aliases=('delete_logs', 'del_logs', 'rm_logs', 'remove_logs'))
@@ -2404,9 +2359,8 @@ async def on_guild_remove(guild):
 
 @bot.command()
 @commands.has_permissions(view_audit_log=True)
-async def unwarn(ctx, memberid: int, count: int = 1):
+async def unwarn(ctx, member: discord.Member, count: int = 1):
     count = abs(count)
-    member = await ctx.guild.fetch_member(memberid)
     with open('warns.json', 'r') as json_file:
         data = json.load(json_file)
     try:
@@ -2430,8 +2384,8 @@ async def unwarn(ctx, memberid: int, count: int = 1):
     with open('warns.json', 'w') as file:
         json.dump(data, file)
     await ctx.send(f'{ctx.author.mention} {member.mention} has been unwarned **{count}** times.')
-    
-    
+
+
 @bot.command()
 @commands.has_permissions(view_audit_log=True)
 async def snipe(ctx):
@@ -2465,5 +2419,11 @@ async def snipe(ctx):
                     ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
                 await ctx.send(f'{ctx.author.mention} could not retrieve the last sent message.')
 
+@tasks.loop(seconds=10)
+async def ping():
+    await bot.wait_until_ready()
+    user = await bot.fetch_user(bot.user.id)
+
+ping.start()
 
 bot.run(TOKEN)
