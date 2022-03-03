@@ -1961,8 +1961,15 @@ async def add_enhanced_swears(ctx, *, swears):
 
 @bot.command()
 async def print_embed(ctx, title: str, *, text: str):
-    embed = discord.Embed(title=title, description=text)
-    embed.set_author(name=ctx.author, icon_url=ctx.author.avatar.url)
+    icon = ctx.author.avatar
+    if not(icon is None):
+        icon = icon.url
+    else:
+        icon = ctx.author.default_avatar.url
+    color = ctx.author.color
+    embed = discord.Embed(title=title, description=text, color=color)
+    embed.set_author(name=ctx.author, icon_url=icon)
+    embed.set_footer(icon_url=icon, text=f'Message sent by {ctx.author} at {str(ctx.message.created_at).rsplit(".")[0]} in the {ctx.message.channel} channel in {ctx.guild}.')
     await ctx.send(embed=embed)
     await ctx.message.delete()
     if 'rule' in title.lower():
@@ -2185,11 +2192,19 @@ async def rules(ctx):
         rules.writelines(data[str(ctx.guild.id)])
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
-        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        icon = bot_author.avatar
+        if not(icon is None):
+            icon = icon.url
+        else:
+            icon = bot_author.default_avatar.url
+        embed.set_author(name=str(bot_author), icon_url=icon)
+        embed.set_footer(icon_url=icon,
+                         text=f'Message sent by {bot.user} at {str(ctx.message.created_at).rsplit(".")[0]} in the {ctx.message.channel} channel in {ctx.guild}.')
         await ctx.send(embed=embed)
 
 
 @bot.command(aliases=['rule_append'])
+@commands.has_permissions(moderate_members=True, view_audit_log=True)
 async def rule_add(ctx, *, text: str = 'None'):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
     with open('dates.json', 'r') as json_file:
@@ -2206,11 +2221,19 @@ async def rule_add(ctx, *, text: str = 'None'):
         rules.writelines(data[str(ctx.guild.id)])
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
-        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        icon = bot_author.avatar
+        if not(icon is None):
+            icon = icon.url
+        else:
+            icon = bot_author.default_avatar.url
+        embed.set_author(name=str(bot_author), icon_url=icon)
+        embed.set_footer(icon_url=icon,
+                         text=f'Message sent by {bot.user} at {str(ctx.message.created_at).rsplit(".")[0]} in the {ctx.message.channel} channel in {ctx.guild}.')
         await ctx.send(embed=embed)
 
 
 @bot.command(aliases=['rule_change'])
+@commands.has_permissions(moderate_members=True, view_audit_log=True)
 async def rule_replace(ctx, rule_ind: int, *, read: str):
     bot_author = await ctx.guild.fetch_member(bot.user.id)
     with open('dates.json', 'r') as json_file:
@@ -2236,7 +2259,52 @@ async def rule_replace(ctx, rule_ind: int, *, read: str):
             rules.writelines(f'{i}\n')
     with open("rules.txt", 'r+') as rules:
         embed = discord.Embed(title='RULES:', description=rules.read())
-        embed.set_author(name=str(bot_author), icon_url=bot_author.avatar.url)
+        icon = bot_author.avatar
+        if not(icon is None):
+            icon = icon.url
+        else:
+            icon = bot_author.default_avatar.url
+        embed.set_author(name=str(bot_author), icon_url=icon)
+        embed.set_footer(icon_url=icon,
+                         text=f'Message sent by {bot.user} at {str(ctx.message.created_at).rsplit(".")[0]} in the {ctx.message.channel} channel in {ctx.guild}.')
+        await ctx.send(embed=embed)
+
+
+@bot.command(aliases=('rule_rm', 'rule_delete', 'rule_del'))
+@commands.has_permissions(moderate_members=True, view_audit_log=True)
+async def rule_remove(ctx, rule_ind: int = 0):
+    bot_author = await ctx.guild.fetch_member(bot.user.id)
+    with open('dates.json', 'r') as json_file:
+        data = json.load(json_file)
+    try:
+        data[str(ctx.guild.id)]
+    except KeyError:
+        await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
+        return
+    listed = str(data[str(ctx.guild.id)]).rsplit('\n')
+    listed.pop(rule_ind - 1)
+    text = ''
+    for index, value in enumerate(listed):
+        if index != len(listed) - 1:
+            text = f'{text}{value}\n'
+        else:
+            text = f'{text}{value}'
+    data[str(ctx.guild.id)] = text
+    with open('dates.json', 'w') as json_file:
+        json.dump(data, json_file)
+    with open("rules.txt", 'w') as rules:
+        for i in listed:
+            rules.writelines(f'{i}\n')
+    with open("rules.txt", 'r+') as rules:
+        embed = discord.Embed(title='RULES:', description=rules.read())
+        icon = bot_author.avatar
+        if not(icon is None):
+            icon = icon.url
+        else:
+            icon = bot_author.default_avatar.url
+        embed.set_author(name=str(bot_author), icon_url=icon)
+        embed.set_footer(icon_url=icon,
+                         text=f'Message sent by {bot.user} at {str(ctx.message.created_at).rsplit(".")[0]} in the {ctx.message.channel} channel in {ctx.guild}.')
         await ctx.send(embed=embed)
 
 
@@ -2368,17 +2436,24 @@ async def unwarn(ctx, memberid: int, count: int = 1):
 @commands.has_permissions(view_audit_log=True)
 async def snipe(ctx):
     global sniped_messages
+    color = message.author.color
     try:
         payload = sniped_messages[str(ctx.guild.id)]
     except KeyError:
         await ctx.author.send(f'{ctx.author.mention} no deleted messages in **{ctx.guild}** in the current session.')
     else:
         try:
+            icon = payload.cached_message.author.avatar
+            if not (icon is None):
+                icon = icon.url
+            else:
+                icon = payload.cached_message.author.default_avatar.url
+            color = message.author.color
             embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
-            embed.set_author(icon_url=payload.cached_message.author.avatar.url, name=payload.cached_message.author)
+            embed.set_author(icon_url=icon, name=payload.cached_message.author)
             embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
             embed.add_field(name='Extra data', value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}', inline=False)
-            embed.set_footer(text=f'{payload.cached_message.author} sent a message at {str(payload.cached_message.created_at).rsplit(".")[0]}', icon_url=payload.cached_message.author.avatar.url)
+            embed.set_footer(text=f'{payload.cached_message.author} sent the message at {str(payload.cached_message.created_at).rsplit(".")[0]} in the {payload.cached_message.channel} channel in {payload.cached_message.guild}.', icon_url=icon)
             await ctx.author.send(embed=embed)
         except (
                     discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
