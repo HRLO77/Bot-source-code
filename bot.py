@@ -457,7 +457,7 @@ class event_cog(commands.Cog):
             icon = icon.url
         else:
             icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon, text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+        embed.set_footer(icon_url=icon, text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
         await ctx.send(embed=embed)
 
 
@@ -638,7 +638,7 @@ class messages_cog(commands.Cog):
                                 value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}',
                                 inline=False)
                 embed.set_footer(
-                    text=f'{payload.cached_message.author} sent the message at {str(payload.cached_message.created_at).rsplit(".")[0] + "GMT"} in the {payload.cached_message.channel} channel in {payload.cached_message.guild}.',
+                    text=f'{payload.cached_message.author} sent the message at {str(payload.cached_message.created_at).rsplit(".")[0] + " GMT"} in the {payload.cached_message.channel} channel in {payload.cached_message.guild}.',
                     icon_url=icon)
                 await ctx.author.send(embed=embed)
             except (
@@ -1145,7 +1145,7 @@ class fetch_data_cog(commands.Cog):
             embed.add_field(name='Original message',
                             value=f'[Original message]({message.jump_url})', inline=False)
             embed.set_footer(icon_url=icon,
-                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + "GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
+                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + " GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
             await ctx.author.send(embed=embed)
         except (
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1162,7 +1162,7 @@ class fetch_data_cog(commands.Cog):
                 embed.add_field(name='Original message',
                                 value=f'[Original message]({message.jump_url})', inline=False)
                 embed.set_footer(icon_url=icon,
-                                 text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + "GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
+                                 text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + " GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
                 await ctx.author.send(embed=embed)
             else:
                 embed = discord.Embed(
@@ -1178,7 +1178,7 @@ class fetch_data_cog(commands.Cog):
                 embed.add_field(name='Original message',
                                 value=f'[Original message]({message.jump_url})', inline=False)
                 embed.set_footer(icon_url=icon,
-                                 text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + "GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
+                                 text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + " GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
                 await ctx.author.send(embed=embed)
         except (
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1194,7 +1194,7 @@ class fetch_data_cog(commands.Cog):
             embed.add_field(name='Original message',
                             value=f'[Original message]({message.jump_url})', inline=False)
             embed.set_footer(icon_url=icon,
-                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + "GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
+                             text=f'Bookmarked message sent at {str(message.created_at).rsplit(".")[0] + " GMT"} in the {message.channel} channel within {message.guild} by {message.author}.')
             await ctx.author.send(embed=embed)
         except (
                 discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1243,9 +1243,9 @@ class fetch_data_cog(commands.Cog):
         if not(member.premium_since is None):
             embed.add_field(name='Premium since', value=f'Subscribed since **{str(member.premium_since).rsplit(" ")[0]}**')
         if ctx.guild.owner_id != member.id:
-            embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0] + "GMT"}.')
+            embed.set_footer(icon_url=icon, text=f'Joined {ctx.guild} on {str(member.joined_at).rsplit(" ")[0]}, account created on {str(member.created_at).rsplit(" ")[0] + " GMT"}.')
         else:
-            embed.set_footer(icon_url=icon, text=f'Created {ctx.guild} on {str(ctx.guild.created_at).rsplit(" ")[0] + "GMT"}, account created on {str(member.created_at).rsplit(" ")[0] + "GMT"}.')
+            embed.set_footer(icon_url=icon, text=f'Created {ctx.guild} on {str(ctx.guild.created_at).rsplit(" ")[0] + " GMT"}, account created on {str(member.created_at).rsplit(" ")[0] + " GMT"}.')
         if not(member.current_timeout is None):
             embed.add_field(name='Timeout ends at', value=f'{str(member.current_timeout).rsplit(".")[0]}.')
         else:
@@ -1303,7 +1303,7 @@ class fetch_data_cog(commands.Cog):
         embed.description = f'{User.mention}{int(User.bot) * " is a bot user."}'
         embed.color = User.color
         embed.set_author(name=f'{User}', icon_url=icon)
-        embed.set_footer(icon_url=icon, text=f'Account created on {str(User.created_at).rsplit(" ")[0] + "GMT"}.')
+        embed.set_footer(icon_url=icon, text=f'Account created on {str(User.created_at).rsplit(" ")[0] + " GMT"}.')
         flags = User.public_flags.all()
         if 'hype' in str(flags).lower():
             if 'bravery' in str(flags).lower():
@@ -1407,7 +1407,7 @@ class print_cog(commands.Cog):
         color = ctx.author.color
         embed = discord.Embed(title=title, description=text, color=color)
         embed.set_author(name=ctx.author, icon_url=icon)
-        embed.set_footer(icon_url=icon, text=f'Message sent by {ctx.author} at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+        embed.set_footer(icon_url=icon, text=f'Message sent by {ctx.author} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
         await ctx.send(embed=embed)
         await ctx.message.delete()
         if 'rule' in title.lower():
@@ -1820,7 +1820,7 @@ class rules_cog(commands.Cog):
                 icon = bot_author.default_avatar.url
             embed.set_author(name=str(bot_author), icon_url=icon)
             embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
             await ctx.send(embed=embed)
 
 
@@ -1849,7 +1849,7 @@ class rules_cog(commands.Cog):
                 icon = bot_author.default_avatar.url
             embed.set_author(name=str(bot_author), icon_url=icon)
             embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
             await ctx.send(embed=embed)
 
 
@@ -1887,7 +1887,7 @@ class rules_cog(commands.Cog):
                 icon = bot_author.default_avatar.url
             embed.set_author(name=str(bot_author), icon_url=icon)
             embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
             await ctx.send(embed=embed)
 
 
@@ -1925,7 +1925,7 @@ class rules_cog(commands.Cog):
                 icon = bot_author.default_avatar.url
             embed.set_author(name=str(bot_author), icon_url=icon)
             embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + "GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
             await ctx.send(embed=embed)
 
 
