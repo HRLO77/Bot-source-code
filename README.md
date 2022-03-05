@@ -17,13 +17,9 @@ I will review the pull requests sent and get back to your if possible within 1-3
 
 If you need a link to servers where this bot is, you can just contact me.
 
-If you want to be a bot tester, let me know.
-
-If you are creating an instance of the bot, or using it in a new server, do NOT manually create roles called, 'muted' or 'file_muted' as those are reserved for the bot. When you first use mute and file_mute commands, it will return an error as it is setting up the roles, wait a few seconds, then try muting and file_muting a user again. Then you have setup the muting system!
+If you want to be a bot tester, let me know.!
 
 Fill in the dictionary in the first few lines after imports if you want to create a default role syntax for your guild.
-
-You can comment all the lines of code in the on_ready, except the last print line to stop the bot from direct messaging all the members in all the guilds.
 
 The code now automatically installs and updates the API wrappers and extra modules. NOTE: The commands for installing these modules works only Windows systems, not linux or macOS.
 
