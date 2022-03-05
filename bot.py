@@ -814,6 +814,10 @@ class hush_cog(commands.Cog):
     @commands.command(aliases=('silence', 'mute_channel', 'silence_channel'))
     @commands.has_permissions(moderate_members=True)
     async def hush(self, ctx, time: float = 5, *, reason: str = 'None'):
+        channel = ctx.channel
+        print(ctx.author.voice, type(ctx.author.voice))
+        if isinstance(ctx.author.voice, discord.VoiceState):
+            ctx.channel = ctx.author.voice.channel
         try:
             if (ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel and (ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages and isinstance(ctx.channel, discord.TextChannel) or (ctx.channel.overwrites_for(ctx.guild.default_role)).connect and (((ctx.channel.overwrites_for(ctx.guild.default_role)).speak or (ctx.channel.overwrites_for(ctx.guild.default_role)).video) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
@@ -836,8 +840,8 @@ class hush_cog(commands.Cog):
         overwrite.external_stickers = False
         overwrite.embed_links = False
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
-        await ctx.send(f'''{ctx.author.mention} has hushed the channel for **{time}** minutes because:
-    **{reason}**''')
+        await channel.send(f'''{ctx.author.mention} has hushed the channel for **{time}** minutes because:
+**{reason}**''')
         await asyncio.sleep(time * 60)
         overwrite = discord.PermissionOverwrite()
         overwrite.send_messages = True
@@ -860,12 +864,16 @@ class hush_cog(commands.Cog):
         except KeyError:
             pass
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-        await ctx.send(f'{ctx.author.mention}, channel has been unhushed.')
+        await channel.send(f'{ctx.author.mention}, channel has been unhushed.')
 
 
     @commands.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
     @commands.has_permissions(moderate_members=True)
     async def un_hush(self, ctx, *, reason: str = 'None'):
+        channel = ctx.channel
+        print(ctx.author.voice, type(ctx.author.voice))
+        if isinstance(ctx.author.voice, discord.VoiceState):
+            ctx.channel = ctx.author.voice.channel
         try:
             if (((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel) and not((ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(ctx.channel, discord.TextChannel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
@@ -888,8 +896,65 @@ class hush_cog(commands.Cog):
         overwrite.external_stickers = False
         overwrite.embed_links = False
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
-        await ctx.send(f'''{ctx.author.mention} has unhushed the channel because:
-    **{reason}**''')
+        await channel.send(f'''{ctx.author.mention} has unhushed the channel because:
+**{reason}**''')
+
+
+    @commands.command(aliases=['unhide'])
+    @commands.has_permissions(moderate_members=True)
+    async def un_hide(self, ctx, *, reason: str = 'None'):
+        channel = ctx.channel
+        print(ctx.author.voice, type(ctx.author.voice))
+        if isinstance(ctx.author.voice, discord.VoiceState):
+            ctx.channel = ctx.author.voice.channel
+        try:
+            if (not((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+                pass
+            else:
+                return
+        except KeyError:
+            return
+        overwrite = discord.PermissionOverwrite()
+        overwrite.view_channel = True
+        overwrite.connect = True
+        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await channel.send(f'''{ctx.author.mention} has unhidden the channel because:
+**{reason}**''')
+
+
+    @commands.command()
+    @commands.has_permissions(moderate_members=True)
+    async def hide(self, ctx, time: float = 5, *, reason: str = 'None'):
+        channel = ctx.channel
+        print(ctx.author.voice, type(ctx.author.voice))
+        if isinstance(ctx.author.voice, discord.VoiceState):
+            ctx.channel = ctx.author.voice.channel
+        try:
+            if (ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel or ((ctx.channel.overwrites_for(ctx.guild.default_role)).connect and isinstance(ctx.channel, discord.VoiceChannel)):
+                pass
+            else:
+                return
+        except KeyError:
+            pass
+        overwrite = discord.PermissionOverwrite()
+        overwrite.view_channel = False
+        overwrite.connect = False
+        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await channel.send(f'''{ctx.author.mention} has hidden the channel for **{time}** minutes because:
+**{reason}**''')
+        await asyncio.sleep(time * 60)
+        overwrite = discord.PermissionOverwrite()
+        overwrite.view_channel = True
+        overwrite.connect = True
+        try:
+            if (not((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+                pass
+            else:
+                return
+        except KeyError:
+            pass
+        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+        await channel.send(f'{ctx.author.mention}, channel has been unhidden.')
 
 
 class server_lock_cog(commands.Cog):
