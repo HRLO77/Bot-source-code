@@ -1221,7 +1221,35 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+        
+        
+    @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
+    async def server(self, ctx):
+        embed = discord.Embed(title=f'Server info')
+        icon = ctx.guild.icon.url
+        embed.color= ctx.author.color
+        embed.set_author(icon_url=icon, name=ctx.guild)
+        icon = ctx.guild.owner.avatar
+        if icon is None:
+            icon = ctx.guild.owner.default_avatar.url
+        else:
+            icon = icon.url
+        embed.set_footer(icon_url=icon, text=f'Created on {str(ctx.guild.created_at).rsplit(" ")[0]} by {ctx.guild.owner}.')
+        embed.add_field(name=f'Members', value=f'**{len(ctx.guild.members)}** members.')
+        embed.add_field(name='Roles', value=f'**{len(ctx.guild.roles)}** roles.')
+        embed.add_field(name='Channels', value=f'**{len(ctx.guild.channels)}** channels.')
+        data = len((await ctx.guild.bans()))
+        if  data > 9999:
+            data = '10000+'
+        embed.add_field(name='Bans', value=f'**{data}** ban entries.')
+        data = len(await (ctx.guild.audit_logs(limit=None)).flatten())
+        if data > 9999:
+            data = '9999+'
+        embed.add_field(name='Moderation actions', value=f'**{data}** actions.')
+        embed.add_field(name='Premium', value=f'**{len(ctx.guild.premium_subscribers)}** server boosters.\n**{ctx.guild.premium_subscription_count}** boosts.\nBoost level **{ctx.guild.premium_tier}**.')
+        await ctx.message.reply(embed=embed)
+      
+        
     @commands.command(aliases=('get_member_history', 'pull_member_history'))
     async def fetch_member_history(self, ctx, member: discord.Member, limit: int = 10, links=False):
         try:
