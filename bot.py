@@ -1238,6 +1238,7 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name=f'Members', value=f'**{len(ctx.guild.members)}** members.')
         embed.add_field(name='Roles', value=f'**{len(ctx.guild.roles)}** roles.')
         embed.add_field(name='Channels', value=f'**{len(ctx.guild.channels)}** channels.')
+        embed.add_field(name='Threads', value=f'**{len(await ctx.guild.active_threads())}** active threads.')
         data = len((await ctx.guild.bans()))
         if  data > 9999:
             data = '10000+'
