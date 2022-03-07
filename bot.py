@@ -1,14 +1,3 @@
-# import ensurepip
-#
-# ensurepip.bootstrap()
-# import os
-#
-# os.system('py -m pip install disnake')
-# os.system('py -m pip install profanity')
-# os.system('py -m pip install pip')
-# os.system('py -m pip install disnake --upgrade')
-# os.system('py -m pip install profanity --upgrade')
-# os.system('py -m pip install pip --upgrade')
 from explicit_data import *
 from disnake.ext import tasks
 from disnake.utils import get
@@ -24,7 +13,6 @@ import random
 import Functions
 import importlib as ilib
 import asyncio
-import requests
 import json
 from datetime import datetime
 TOKEN = 'TOKEN'
@@ -2147,6 +2135,8 @@ def remove_cogs():
     bot.remove_cog(mute_cog(bot))
     bot.remove_cog(reacting_cog(bot))
     bot.remove_cog(print_cog(bot))
+    bot.remove_cog(owner_cog(bot))
+
 
 
 def add_cogs():
@@ -2167,6 +2157,7 @@ def add_cogs():
     bot.add_cog(cog=mute_cog(bot), override=True)
     bot.add_cog(cog=reacting_cog(bot), override=True)
     bot.add_cog(cog=print_cog(bot), override=True)
+    bot.add_cog(cog=owner_cog(bot), override=True)
 
 
 add_cogs()
