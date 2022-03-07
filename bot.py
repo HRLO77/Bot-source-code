@@ -1552,16 +1552,15 @@ class print_cog(commands.Cog):
         embed = discord.Embed(title=title, description=text, color=color)
         embed.set_author(name=ctx.author, icon_url=icon)
         embed.set_footer(icon_url=icon, text=f'Message sent by {ctx.author} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
-        await ctx.send(embed=embed)
-        await ctx.message.delete()
         if 'rule' in title.lower():
             with open('dates.json', 'r') as json_file:
                 data = json.load(json_file)
-            data[str(ctx.guild.id)] = text
-            print(data)
-            with open('dates.json', 'w') as json_file:
-                json.dump(data, json_file)
-
+        data[str(ctx.guild.id)] = text
+        print(data)
+        with open('dates.json', 'w') as json_file:
+            json.dump(data, json_file)
+        await ctx.send(embed=embed)
+        await ctx.message.delete()
 
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
