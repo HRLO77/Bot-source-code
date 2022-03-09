@@ -1620,7 +1620,7 @@ class filters_cog(commands.Cog):
         self.bot = bot
         
         
-            @commands.command(aliases=('spam_filter', 'spam'))
+        @commands.command(aliases=('spam_filter', 'spam'))
         @commands.has_permissions(manage_messages=True, moderate_members=True)
         async def spam_check(self, ctx, value):
             global filtering
