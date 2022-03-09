@@ -1,3 +1,14 @@
+# import ensurepip
+#
+# ensurepip.bootstrap()
+# import os
+#
+# os.system('py -m pip install disnake')
+# os.system('py -m pip install profanity')
+# os.system('py -m pip install pip')
+# os.system('py -m pip install disnake --upgrade')
+# os.system('py -m pip install profanity --upgrade')
+# os.system('py -m pip install pip --upgrade')
 from explicit_data import *
 from disnake.ext import tasks
 from disnake.utils import get
@@ -13,6 +24,7 @@ import random
 import Functions
 import importlib as ilib
 import asyncio
+import requests
 import json
 from datetime import datetime
 TOKEN = 'TOKEN'
@@ -126,15 +138,15 @@ class event_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_guild_add")
     async def on_guild_join(self, guild):
         reset_logs(guild.id)
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_guild_remove")
     async def on_guild_remove(self, guild):
         reset_logs(guild.id)
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_ready")
     async def on_ready(self):
         global filtering
         print(f'There are {len(self.bot.users)} users.')
@@ -157,7 +169,7 @@ class event_cog(commands.Cog):
         for i in self.bot.guilds:
             filtering[str(i.id)] = (1, 1)
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_message")
     async def on_message(self, message: discord.Message):
         global filtering
         if not(message.guild is None):
@@ -319,7 +331,7 @@ class event_cog(commands.Cog):
                     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_message_edit")
     async def on_message_edit(self, old_message: discord.Message, message: discord.Message):
         if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'rick', 'astley')) and not(message.author.bot):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
@@ -418,19 +430,19 @@ class event_cog(commands.Cog):
                 await message.delete()
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_member_join")
     async def on_member_join(self, member: discord.Member):
         await member.send(f'{member.mention} Welcome to **{member.guild.name}**!')
         await member.send(':wave:')
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_meber_remove")
     async def on_member_remove(self, member: discord.Member):
         await member.send(f'{member.mention} see you soon in **{member.guild.name}**')
         await member.send(':wave:')
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_command_error")
     async def on_command_error(self, ctx, error):
         embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
         embed.color = ctx.author.color
@@ -449,8 +461,9 @@ class event_cog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload):
+        print(f'payloaded {payload.guild_id}, {payload.message_id}')
         data = reacting.get((payload.guild_id, payload.message_id))
         if type(data) == tuple:
             pass
@@ -468,8 +481,9 @@ class event_cog(commands.Cog):
                 print(f'Cannot direct message {str(member)}')
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_raw_reaction_remove")
     async def on_raw_reaction_remove(self, payload):
+        print(f'payload2 {payload.guild_id}, {payload.message_id}')
         data = reacting.get((payload.guild_id, payload.message_id))
         if type(data) == tuple:
             pass
@@ -487,7 +501,7 @@ class event_cog(commands.Cog):
                 print(f'Cannot direct message {str(member)}')
 
 
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_raw_message_delete")
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         global sniped_messages
         guild = None
@@ -668,7 +682,7 @@ class messages_cog(commands.Cog):
         list_messages = []
         messages = 0
         index = 0
-        async for message in (ctx.channel.history(limit=999999999999999999)):
+        async for message in (ctx.channel.history(limit=None)):
             if messages >= limit or index >= limit * 5:
                 if not(bulk):
                     await ctx.send(
@@ -1209,8 +1223,8 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
+
+
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
     async def server(self, ctx):
         embed = discord.Embed(title=f'Server info')
@@ -1228,17 +1242,17 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Channels', value=f'**{len(ctx.guild.channels)}** channels.')
         embed.add_field(name='Threads', value=f'**{len(await ctx.guild.active_threads())}** active threads.')
         data = len((await ctx.guild.bans()))
-        if  data > 9999:
+        if  data >= 9999:
             data = '10000+'
         embed.add_field(name='Bans', value=f'**{data}** ban entries.')
         data = len(await (ctx.guild.audit_logs(limit=None)).flatten())
-        if data > 9999:
+        if data >= 9999:
             data = '9999+'
         embed.add_field(name='Moderation actions', value=f'**{data}** actions.')
         embed.add_field(name='Premium', value=f'**{len(ctx.guild.premium_subscribers)}** server boosters.\n**{ctx.guild.premium_subscription_count}** boosts.\nBoost level **{ctx.guild.premium_tier}**.')
         await ctx.message.reply(embed=embed)
-      
-        
+
+
     @commands.command(aliases=('get_member_history', 'pull_member_history'))
     async def fetch_member_history(self, ctx, member: discord.Member, limit: int = 10, links=False):
         try:
@@ -1248,7 +1262,7 @@ class fetch_data_cog(commands.Cog):
         member = await ctx.guild.fetch_member(memberid)
         messages = []
         count = 0
-        async for message in (ctx.channel.history(limit=99999999999999999)):
+        async for message in (ctx.channel.history(limit=None)):
             if count >= limit:
                 embed = discord.Embed(title=f'Last {limit} messages from {member}.')
                 embed.description = f'{messages}'
@@ -1552,15 +1566,16 @@ class print_cog(commands.Cog):
         embed = discord.Embed(title=title, description=text, color=color)
         embed.set_author(name=ctx.author, icon_url=icon)
         embed.set_footer(icon_url=icon, text=f'Message sent by {ctx.author} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+        await ctx.send(embed=embed)
+        await ctx.message.delete()
         if 'rule' in title.lower():
             with open('dates.json', 'r') as json_file:
                 data = json.load(json_file)
-        data[str(ctx.guild.id)] = text
-        print(data)
-        with open('dates.json', 'w') as json_file:
-            json.dump(data, json_file)
-        await ctx.send(embed=embed)
-        await ctx.message.delete()
+            data[str(ctx.guild.id)] = text
+            print(data)
+            with open('dates.json', 'w') as json_file:
+                json.dump(data, json_file)
+
 
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
@@ -2099,19 +2114,11 @@ class logs_cog(commands.Cog):
         await ctx.send(f'{ctx.author.mention} cleared all logs from bot session in **{ctx.guild}**.')
 
 
-@tasks.loop(minutes=5)
+@tasks.loop(minutes=1)
 async def ping():
     await bot.wait_until_ready()
     user = await bot.fetch_user(bot.user.id)
-
-
-@tasks.loop(minutes=5)
-async def restart_cogs():
-    await bot.wait_until_ready()
-    remove_cogs()
-    add_cogs()
-
-restart_cogs.start()
+    print(user)
 
 ping.start()
 
@@ -2135,7 +2142,6 @@ def remove_cogs():
     bot.remove_cog(reacting_cog(bot))
     bot.remove_cog(print_cog(bot))
     bot.remove_cog(owner_cog(bot))
-
 
 
 def add_cogs():
