@@ -1516,7 +1516,7 @@ class owner_cog(commands.Cog):
 
 
     @commands.command(aliases=('e', 'eval'))
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def evaluate(self, ctx, *, command):
         f = open('compile_user_code.py', 'w')
         f = f.writelines(str(command).strip('`').strip('python').strip('py'))
