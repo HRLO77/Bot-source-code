@@ -1618,6 +1618,37 @@ class filters_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+        
+            @commands.command(aliases=('spam_filter', 'spam'))
+        @commands.has_permissions(manage_messages=True, moderate_members=True)
+        async def spam_check(self, ctx, value):
+            global filtering
+            try:
+                filtering[str(ctx.guild.id)]
+            except KeyError:
+                filtering[str(ctx.guild.id)] = (1, 1)
+            if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
+                filtering[str(ctx.guild.id)] = (int(value), (filtering[str(ctx.guild.id)])[1])
+            else:
+                raise ValueError('Invalid value for "spam_check".')
+            await ctx.send(f'Spam filter level has been set to {value}.')
+
+            
+        @commands.command(aliases=('content_filter', 'content', 'swear_check', 'profanity_filter', 'profanity_check'))
+        @commands.has_permissions(manage_messages=True, moderate_members=True)
+        async def content_check(self, ctx, value):
+            global filtering
+            try:
+                filtering[str(ctx.guild.id)]
+            except KeyError:
+                filtering[str(ctx.guild.id)] = (1, 1)
+            if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
+                filtering[str(ctx.guild.id)] = ((filtering[str(ctx.guild.id)])[0], int(value))
+            else:
+                raise ValueError('Invalid value for "content_check".')
+            await ctx.send(f'Content filter level has been set to {value}.')
+            
 
     @commands.command(aliases=('rm_swear', 'delete_swear', 'remove_swear'))
     @commands.has_permissions(moderate_members=True)
@@ -1773,34 +1804,6 @@ class filters_cog(commands.Cog):
                         explicit_data5.add(Functions.list_to_str(moveable_cache))
         await ctx.send(f'{ctx.author.mention}, swears was added to the filter.')
         await ctx.message.delete()
-
-        @commands.command(aliases=('spam_filter', 'spam'))
-        @commands.has_permissions(manage_messages=True, moderate_members=True)
-        async def spam_check(self, ctx, value):
-            global filtering
-            try:
-                filtering[str(ctx.guild.id)]
-            except KeyError:
-                filtering[str(ctx.guild.id)] = (1, 1)
-            if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
-                filtering[str(ctx.guild.id)] = (int(value), (filtering[str(ctx.guild.id)])[1])
-            else:
-                raise ValueError('Invalid value for "spam_check".')
-            await ctx.send(f'Spam filter level has been set to {value}.')
-
-        @commands.command(aliases=('content_filter', 'content', 'swear_check', 'profanity_filter', 'profanity_check'))
-        @commands.has_permissions(manage_messages=True, moderate_members=True)
-        async def content_check(self, ctx, value):
-            global filtering
-            try:
-                filtering[str(ctx.guild.id)]
-            except KeyError:
-                filtering[str(ctx.guild.id)] = (1, 1)
-            if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
-                filtering[str(ctx.guild.id)] = ((filtering[str(ctx.guild.id)])[0], int(value))
-            else:
-                raise ValueError('Invalid value for "content_check".')
-            await ctx.send(f'Content filter level has been set to {value}.')
 
 
 class channels_cog(commands.Cog):
