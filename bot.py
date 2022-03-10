@@ -1223,6 +1223,29 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+        
+    @commands.command(aliases=('e', 'eval'))
+    async def evaluate(self, ctx, *, command):
+        f = open('compile_user_code.py', 'w')
+        f = f.writelines(str(command).strip('`').strip('python').strip('py'))
+        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
+                                input=f,
+                                capture_output=True, text=True, timeout=5)
+        if len(result.stdout) > 45:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
@@ -1513,30 +1536,6 @@ class owner_cog(commands.Cog):
         remove_cogs()
         await asyncio.sleep(2)
         add_cogs()
-
-
-    @commands.command(aliases=('e', 'eval'))
-    @commands.has_permissions(administrator=True)
-    async def evaluate(self, ctx, *, command):
-        f = open('compile_user_code.py', 'w')
-        f = f.writelines(str(command).strip('`').strip('python').strip('py'))
-        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
-                                input=f,
-                                capture_output=True, text=True, timeout=5)
-        if len(result.stdout) > 45:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-    ```
-    {result.stderr}
-    {result.stdout}
-    ```''')
 
 
 class print_cog(commands.Cog):
