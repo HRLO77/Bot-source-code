@@ -181,7 +181,7 @@ class event_cog(commands.Cog):
         async def syspurgeban(member_id, limit=10, bulk: bool = False):
             list_messages = []
             messages = 0
-            async for i in message.channel.history(limit=99999999999999999):
+            async for i in message.channel.history(limit=None):
                 if messages >= limit:
                     if bulk:
                         await message.channel.delete_messages(list_messages)
