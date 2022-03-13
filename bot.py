@@ -24,7 +24,6 @@ import random
 import Functions
 import importlib as ilib
 import asyncio
-import requests
 import json
 from datetime import datetime
 TOKEN = 'TOKEN'
@@ -89,10 +88,12 @@ def log(to_log: tuple, guild):
 reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
 
+
 muted_channel = False
 tracemalloc.start()
 sniped_messages = dict()
 filtering = dict()
+default_roles = dict()
 spam = 1
 content = 1
 
@@ -218,6 +219,10 @@ class event_cog(commands.Cog):
         except (AttributeError, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, discord.Forbidden):
             print('Message log error.')
+        if message.guild.id in list(default_roles.keys()):
+            pass
+        else:
+            default_roles[message.guild.id] = message.guild.default_role.id
         test = str(str(message.content).replace(' ', '')).lower()
         if message.author.bot:
             return
@@ -813,15 +818,23 @@ class hush_cog(commands.Cog):
         self.bot = bot
 
 
+    @commands.command(aliases=('set_role', 'set_default_role', 'defaulted_role', 'mute_role', 'muted_role'))
+    @commands.has_permissions(moderate_members=True)
+    async def default_role(self, ctx, role: discord.Role):
+        default_roles[ctx.guild.id] = role.id
+        await ctx.send(f'Default role for muting is now **{role.name}**.')
+
+
     @commands.command(aliases=('silence', 'mute_channel', 'silence_channel'))
     @commands.has_permissions(moderate_members=True)
     async def hush(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if ((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel and (ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages and isinstance(ctx.channel, discord.TextChannel)) or ((ctx.channel.overwrites_for(ctx.guild.default_role)).connect and (((ctx.channel.overwrites_for(ctx.guild.default_role)).speak or (ctx.channel.overwrites_for(ctx.guild.default_role)).stream) and isinstance(ctx.channel, discord.VoiceChannel))):
+            if ((ctx.channel.overwrites_for(role)).view_channel and (ctx.channel.overwrites_for(role)).send_messages and isinstance(ctx.channel, discord.TextChannel)) or ((ctx.channel.overwrites_for(role)).connect and (((ctx.channel.overwrites_for(role)).speak or (ctx.channel.overwrites_for(role)).stream) and isinstance(ctx.channel, discord.VoiceChannel))):
                 pass
             else:
                 return
@@ -841,7 +854,7 @@ class hush_cog(commands.Cog):
         overwrite.external_emojis = False
         overwrite.external_stickers = False
         overwrite.embed_links = False
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await ctx.channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await channel.send(f'''{ctx.author.mention} has hushed the channel for **{time}** minutes because:
     **{reason}**''')
         await asyncio.sleep(time * 60)
@@ -858,14 +871,14 @@ class hush_cog(commands.Cog):
         overwrite.stream = True
         try:
             if (not(
-            (ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages) and (ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel and isinstance(ctx.channel, discord.TextChannel)) or (not(
-            (ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            (ctx.channel.overwrites_for(role)).send_messages) and (ctx.channel.overwrites_for(role)).view_channel and isinstance(ctx.channel, discord.TextChannel)) or (not(
+            (ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
         except KeyError:
             pass
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
         await channel.send(f'{ctx.author.mention}, channel has been unhushed.')
 
 
@@ -873,11 +886,12 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def un_hush(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if (((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel) and not((ctx.channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(ctx.channel, discord.TextChannel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (((ctx.channel.overwrites_for(role)).view_channel) and not((ctx.channel.overwrites_for(role)).send_messages) and isinstance(ctx.channel, discord.TextChannel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
@@ -897,7 +911,7 @@ class hush_cog(commands.Cog):
         overwrite.external_emojis = False
         overwrite.external_stickers = False
         overwrite.embed_links = False
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await ctx.channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await channel.send(f'''{ctx.author.mention} has unhushed the channel because:
     **{reason}**''')
 
@@ -906,11 +920,12 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def un_hide(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if (not((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (not((ctx.channel.overwrites_for(role)).view_channel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
@@ -921,7 +936,7 @@ class hush_cog(commands.Cog):
         overwrite.connect = True
         overwrite.send_messages = True
         overwrite.speak = True
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await ctx.channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await channel.send(f'''{ctx.author.mention} has unhidden the channel because:
     **{reason}**''')
 
@@ -930,11 +945,12 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def hide(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if ((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel) or (((ctx.channel.overwrites_for(ctx.guild.default_role)).connect and isinstance(ctx.channel, discord.VoiceChannel))):
+            if ((ctx.channel.overwrites_for(role)).view_channel) or (((ctx.channel.overwrites_for(role)).connect and isinstance(ctx.channel, discord.VoiceChannel))):
                 pass
             else:
                 return
@@ -945,7 +961,7 @@ class hush_cog(commands.Cog):
         overwrite.connect = False
         overwrite.send_messages = False
         overwrite.speak = False
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+        await ctx.channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await channel.send(f'''{ctx.author.mention} has hidden the channel for **{time}** minutes because:
     **{reason}**''')
         await asyncio.sleep(time * 60)
@@ -955,13 +971,13 @@ class hush_cog(commands.Cog):
         overwrite.send_messages = True
         overwrite.speak = True
         try:
-            if (not((ctx.channel.overwrites_for(ctx.guild.default_role)).view_channel)) or (not((ctx.channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (not((ctx.channel.overwrites_for(role)).view_channel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
         except KeyError:
             pass
-        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
         await channel.send(f'{ctx.author.mention}, channel has been unhidden.')
 
 
@@ -980,12 +996,13 @@ class server_lock_cog(commands.Cog):
         overwrite.send_messages = True
         overwrite.connect = True
         overwrite.speak = True
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         for channel in ctx.guild.channels:
             try:
-                if not (channel.overwrites_for(ctx.guild.default_role).view_channel) or (
-                        not (channel.overwrites_for(ctx.guild.default_role).connect) and isinstance(channel,
+                if not (channel.overwrites_for(role).view_channel) or (
+                        not (channel.overwrites_for(role).connect) and isinstance(channel,
                                                                                                     discord.VoiceChannel)):
-                    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+                    await channel.set_permissions(role, overwrite=overwrite)
                 else:
                     continue
             except KeyError:
@@ -1001,14 +1018,15 @@ class server_lock_cog(commands.Cog):
         overwrite.send_messages = False
         overwrite.connect = False
         overwrite.speak = False
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         for channel in ctx.guild.channels:
             try:
-                if (channel.overwrites_for(ctx.guild.default_role).view_channel) or (channel.overwrites_for(ctx.guild.default_role).connect and isinstance(channel, discord.VoiceChannel)):
-                    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+                if (channel.overwrites_for(role).view_channel) or (channel.overwrites_for(role).connect and isinstance(channel, discord.VoiceChannel)):
+                    await channel.set_permissions(role, overwrite=overwrite, reason=reason)
                 else:
                     continue
             except KeyError:
-                await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+                await channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await ctx.send(f'''{ctx.author.mention} has hidden the server for **{time}** minutes because:
 **{reason}**''')
         await asyncio.sleep(time * 60)
@@ -1019,10 +1037,10 @@ class server_lock_cog(commands.Cog):
         overwrite.speak = True
         for channel in ctx.guild.channels:
             try:
-                if not(channel.overwrites_for(ctx.guild.default_role).view_channel) or (not(channel.overwrites_for(ctx.guild.default_role).connect) and isinstance(channel, discord.VoiceChannel)):
-                    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+                if not(channel.overwrites_for(role).view_channel) or (not(channel.overwrites_for(role).connect) and isinstance(channel, discord.VoiceChannel)):
+                    await channel.set_permissions(role, overwrite=overwrite)
                 else:
-                    continue
+                    await channel.set_permissions(role, overwrite=overwrite, reason=reason)
             except KeyError:
                 continue
         await ctx.send(f'{ctx.author.mention} server has been unhidden.')
@@ -1032,6 +1050,7 @@ class server_lock_cog(commands.Cog):
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def lockdown(self, ctx, time: float = 5, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         overwrite.send_messages = False
         overwrite.read_messages = True
         overwrite.send_messages_in_threads = False
@@ -1047,17 +1066,17 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (channel.overwrites_for(ctx.guild.default_role)).view_channel and (
-                channel.overwrites_for(ctx.guild.default_role)).send_messages and isinstance(channel,
+                if (channel.overwrites_for(role)).view_channel and (
+                channel.overwrites_for(role)).send_messages and isinstance(channel,
                                                                                                  discord.TextChannel) or (
-                channel.overwrites_for(ctx.guild.default_role)).connect and (((channel.overwrites_for(
-                        ctx.guild.default_role)).speak or (channel.overwrites_for(
-                        ctx.guild.default_role)).stream) and isinstance(channel, discord.VoiceChannel)):
-                    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+                channel.overwrites_for(role)).connect and (((channel.overwrites_for(
+                        role)).speak or (channel.overwrites_for(
+                        role)).stream) and isinstance(channel, discord.VoiceChannel)):
+                    await channel.set_permissions(role, overwrite=overwrite, reason=reason)
                 else:
                     continue
             except KeyError:
-                await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+                await channel.set_permissions(role, overwrite=overwrite, reason=reason)
         await ctx.send(f'''{ctx.author.mention} has locked the server for **{time}** minutes because:
 **{reason}**''')
         await asyncio.sleep(time * 60)
@@ -1077,12 +1096,12 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (((channel.overwrites_for(ctx.guild.default_role)).view_channel) and not (
-                (channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(channel,
+                if (((channel.overwrites_for(role)).view_channel) and not (
+                (channel.overwrites_for(role)).send_messages) and isinstance(channel,
                                                                                                    discord.TextChannel)) or (
-                        not ((channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(channel,
+                        not ((channel.overwrites_for(role)).connect) and isinstance(channel,
                                                                                                           discord.VoiceChannel)):
-                    pass
+                    await channel.set_permissions(role, overwrite=overwrite)
                 else:
                     continue
             except KeyError:
@@ -1094,6 +1113,7 @@ class server_lock_cog(commands.Cog):
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def unlock(self, ctx, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
+        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
         overwrite.send_messages = True
         overwrite.read_messages = True
         overwrite.send_messages_in_threads = True
@@ -1109,12 +1129,12 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (((channel.overwrites_for(ctx.guild.default_role)).view_channel) and not (
-                (channel.overwrites_for(ctx.guild.default_role)).send_messages) and isinstance(channel,
+                if (((channel.overwrites_for(role)).view_channel) and not (
+                (channel.overwrites_for(role)).send_messages) and isinstance(channel,
                                                                                                    discord.TextChannel)) or (
-                        not ((channel.overwrites_for(ctx.guild.default_role)).connect) and isinstance(channel,
+                        not ((channel.overwrites_for(role)).connect) and isinstance(channel,
                                                                                                           discord.VoiceChannel)):
-                    pass
+                    await channel.set_permissions(role, overwrite=overwrite)
                 else:
                     continue
             except KeyError:
@@ -1223,8 +1243,8 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
+
+
     @commands.command(aliases=('e', 'eval'))
     async def evaluate(self, ctx, *, command):
         f = open('compile_user_code.py', 'w')
@@ -1451,6 +1471,13 @@ class fetch_data_cog(commands.Cog):
         dm = await member.create_dm()
         embed.add_field(name='Extra',
                         value=f'Hash: {hash(member)}\nID: {member.id}\nColor: {member.color}\n{int(member.public_flags.early_supporter) * "Early supporter"}\n{int(member.public_flags.verified_bot_developer) * "Verified developer"}\n{int(member.public_flags.partner) * "Discord partner"} \n{int(member.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not (member.public_flags.bug_hunter_level_2) and member.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(member.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(member.public_flags.staff and not (member.public_flags.partner)) * "Discord employee"}\n{int(member.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
+        logs =  0
+        async for i in (ctx.guild.audit_logs(limit=None)):
+            if i.target == member:
+                continue
+            else:
+                logs += 1
+        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them.')
         context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {member}!', embed=embed)
         await context.add_reaction('👋')
         try:
@@ -1496,6 +1523,13 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Guilds', value=f'Shares **{len(User.mutual_guilds)}** guild{(len(User.mutual_guilds) != 1) * "s"} with me.')
         dm = await User.create_dm()
         embed.add_field(name='Extra', value=f'Hash: {hash(User)}\nID: {User.id}\nColor: {User.color}\n{int(User.public_flags.early_supporter) * "Early supporter"}\n{int(User.public_flags.verified_bot_developer) * "Verified developer"}\n{int(User.public_flags.partner) * "Discord partner"} \n{int(User.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not(User.public_flags.bug_hunter_level_2) and User.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(User.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(User.public_flags.staff and not(User.public_flags.partner)) * "Discord employee"}\n{int(User.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
+        logs =  0
+        async for i in (ctx.guild.audit_logs(limit=None)):
+            if i.target == member:
+                continue
+            else:
+                logs += 1
+        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them.')
         context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {User}!', embed=embed)
         await context.add_reaction('👋')
         try:
@@ -1683,8 +1717,8 @@ class filters_cog(commands.Cog):
                     f"Explicit_data5 does not contain {string} as a value.")
         await ctx.send(f"{ctx.author.mention} swear was removed from the filter.")
         await ctx.message.delete()
-    
-    
+
+
     @commands.command(aliases=['append_swear'])
     @commands.has_permissions(moderate_members=True)
     async def add_swear(self, ctx, *, string: str):
@@ -1702,8 +1736,8 @@ class filters_cog(commands.Cog):
             explicit_data5.add(string)
         await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
         await ctx.message.delete()
-    
-    
+
+
     @commands.command(aliases=['append_enhanced_swears'])
     @commands.has_permissions(moderate_members=True)
     async def add_enhanced_swears(self, ctx, *, swears):
@@ -1745,8 +1779,8 @@ class filters_cog(commands.Cog):
                     explicit_data5.add(i)
         await ctx.send(f'{ctx.author.mention}, swears was added to the filter.')
         await ctx.message.delete()
-    
-    
+
+
     @commands.command(aliases=['append_extra_enhanced_swears'])
     @commands.has_permissions(moderate_members=True)
     async def add_extra_enhanced_swears(self, ctx, *, swears):
