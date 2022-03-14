@@ -512,7 +512,7 @@ class event_cog(commands.Cog):
         guild = None
         if payload.guild_id is not None:
             guild = await bot.fetch_guild(payload.guild_id)
-            sniped_messages[str(guild.id)] = payload
+            sniped_messages[(guild.id, int(payload.channel_id))] = payload
         try:
             print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot)
             log(('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot), payload.guild_id)
@@ -626,7 +626,7 @@ class messages_cog(commands.Cog):
     async def snipe(self, ctx):
         global sniped_messages
         try:
-            payload = sniped_messages[str(ctx.guild.id)]
+            payload = sniped_messages[(ctx.guild.id, ctx.message.channel.id)]
         except KeyError:
             await ctx.author.send(
                 f'{ctx.author.mention} no deleted messages in **{ctx.guild}** in the current session.')
