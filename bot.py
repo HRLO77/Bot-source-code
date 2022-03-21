@@ -190,7 +190,7 @@ class event_cog(commands.Cog):
                     continue
 
         def check_for_spam(m):
-            return m.author == message.author
+            return m.author == message.author or m.content.lower().replace(' ', '') in message.contentlower().replace(' ', '') or message.contentlower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)][1]) or (filtering[str(m.guild.id)][1] > 2 and m.content.isupper())
         if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'astley')) and not(message.author.bot):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
             await message.author.send(f'{message.author.mention} bruh why?')
@@ -229,7 +229,7 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 950 or count > 27:
+            if len(test) > 950 or count > 27 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
                 await message.delete()
         elif (filtering[str(message.guild.id)][1]) == 2:
             count = 0
@@ -240,7 +240,7 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 450 or count > 15:
+            if len(test) > 450 or count > 15 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
                 await message.delete()
         elif (filtering[str(message.guild.id)][1]) == 3:
             count = 0
@@ -253,7 +253,7 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 195 or count > 11:
+            if len(test) > 195 or count > 11 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
                 await message.delete()
         elif (filtering[str(message.guild.id)][1]) == 4:
             count = 0
@@ -266,7 +266,7 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 90 or count > 5:
+            if len(test) > 90 or count > 5 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
                 await message.delete()
         if (filtering[str(message.guild.id)][0]) == 1:
             if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
