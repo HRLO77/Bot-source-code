@@ -1620,22 +1620,26 @@ class reacting_cog(commands.Cog):
         reacting[(ctx.guild.id, reacting_message_id)] = (
             default_role_id, emoji_to_react)
         await ctx.send(
-            f'{ctx.author.mention} updated reacting object index: **{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}**')
+            f'{ctx.author.mention} updated reacting object index: `{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}`')
 
 
     @commands.command(aliases=('delete_react', 'rm_react', 'del_react'))
     @commands.has_permissions(manage_messages=True, manage_emojis=True)
     async def remove_react(self, ctx, reacting_message_id: int):
         del reacting[(ctx.guild.id, reacting_message_id)]
-        await ctx.send(f'{ctx.author.mention} deleted reacting object index: **{(ctx.guild.id, reacting_message_id)}**')
+        await ctx.send(f'{ctx.author.mention} deleted reacting object index: `{(ctx.guild.id, reacting_message_id)}`')
 
 
     @commands.command(aliases=('react_obj', 'react_object', 'react_dictionary'))
     async def react_dict(self, ctx, message_id: discord.Message = None):
         if message_id is None:
-            await ctx.send(f"Reacting dictionary for RawReactionActionEvent - **{reacting}**")
+            d = dict()
+            for key in reacting.keys():
+                if key[0] == ctx.guild.id:
+                    d[key] = reacting[key]
+            await ctx.send(f"Reacting dictionary for current guild- `{d}`")
         else:
-            await ctx.send(f"Reacting dictionary for message {message_id.id} - **{'({0},{1}): {2}'.format(ctx.guild.id, message_id.id, reacting[(ctx.guild.id, message_id.id)])}**")
+            await ctx.send(f"Reacting dictionary for message {message_id.id} `{'({0},{1}): {2}'.format(ctx.guild.id, message_id.id, reacting[(ctx.guild.id, message_id.id)])}`")
 
 
 class filters_cog(commands.Cog):
