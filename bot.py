@@ -627,7 +627,7 @@ class ticket_cog(commands.Cog):
         await ctx.send(f'Invalid channel.')
 
 
-    @commands.command()
+    @commands.command(aliases=('open_ticket', 'start_ticket'))
     @commands.cooldown(1, 600, commands.BucketType.member)
     async def ticket(self, ctx, *, reason: str):
         bot_author = ctx.guild.me
