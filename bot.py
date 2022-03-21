@@ -1236,6 +1236,11 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+        
+    @commands.command(aliases=('char_info', 'charinfo'))
+    async def char(self, ctx, char: str):
+        await ctx.send(f'`{char}`')
 
 
     @commands.command(aliases=('e', 'eval'))
