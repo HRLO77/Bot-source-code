@@ -1,14 +1,7 @@
-# import ensurepip
-#
-# ensurepip.bootstrap()
-# import os
-#
-# os.system('py -m pip install disnake')
-# os.system('py -m pip install profanity')
-# os.system('py -m pip install pip')
-# os.system('py -m pip install disnake --upgrade')
-# os.system('py -m pip install profanity --upgrade')
-# os.system('py -m pip install pip --upgrade')
+import ensurepip
+
+ensurepip.bootstrap()
+import os
 from explicit_data import *
 from disnake.ext import tasks
 from disnake.utils import get
@@ -1246,6 +1239,7 @@ class fetch_data_cog(commands.Cog):
 
 
     @commands.command(aliases=('e', 'eval'))
+    @commands.has_permissions(administrator=True)
     async def evaluate(self, ctx, *, command):
         f = open('compile_user_code.py', 'w')
         f = f.writelines(str(command).strip('`').strip('python').strip('py'))
