@@ -1239,7 +1239,7 @@ class fetch_data_cog(commands.Cog):
         
         
     @commands.command(aliases=('char_info', 'charinfo'))
-    async def char(self, ctx, char: str):
+    async def char(self, ctx, *, char: str):
         await ctx.send(f'`{char}`')
 
 
