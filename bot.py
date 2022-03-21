@@ -615,7 +615,7 @@ class ticket_cog(commands.Cog):
         self.bot = bot
 
 
-    @commands.commands(aliases=('cancel_ticket'))
+    @commands.command(aliases=('cancel_ticket'))
     @commands.has_permissions(moderate_members=True)
     async def close_ticket(self, ctx, channel: discord.TextChannel):
         if channel.name.startswith('ticket-'):
