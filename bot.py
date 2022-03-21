@@ -607,7 +607,77 @@ class mute_cog(commands.Cog):
         await ctx.send(f'''{ctx.author.mention} took {member.mention} out of  the timeout chair, because:
     **{reason}**.''')
 
+        
+class ticket_cog(commands.Cog):
 
+
+    def __init__(self, bot):
+        self.bot = bot
+
+
+    @commands.commands(aliases=('cancel_ticket'))
+    @commands.has_permissions(moderate_members=True)
+    async def close_ticket(self, ctx, channel: discord.TextChannel):
+        if channel.name.startswith('ticket-'):
+            async for entry in ctx.guild.audit_logs(limit=None, action=discord.AuditLogAction.channel_create, user=ctx.guild.me):
+                if entry.target == channel:
+                    await channel.delete()
+                    return await ctx.message.reply(f'`{channel.name}` closed.')
+            await ctx.send(f'Invalid channel.')
+        await ctx.send(f'Invalid channel.')
+
+
+    @commands.command()
+    @commands.cooldown(1, 600, commands.BucketType.member)
+    async def ticket(self, ctx, *, reason: str):
+        bot_author = ctx.guild.me
+        cached_message = None
+        truth = False
+        while not(truth):
+            integer = random.randint(0, 9999)
+            truth = False
+            for channel in ctx.guild.channels:
+                if isinstance(channel, discord.TextChannel) and not(f'ticket-{integer}' in channel.name):
+                    truth = True
+                    break
+        icon = ctx.author.avatar
+        if icon is None:
+            icon= ctx.author.default_avatar.url
+        else:
+            icon = icon.url
+        ticket =  await ctx.guild.create_text_channel(name=f'ticket-{integer}')
+        embed = discord.Embed(title=f'Ticket-{integer}', description=f'{ctx.author.mention} run `@{bot_author.name} close` to close this ticket.', color=(bot_author.color))
+        embed.set_author(name=f'{ctx.author} requested a ticket', icon_url=icon)
+        icon = ctx.guild.icon
+        if icon is None:
+            icon = ctx.author.avatar
+            if icon is None:
+                icon = ctx.author.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        embed.set_footer(text=f'{ctx.author} requested a ticket on {str(ticket.created_at).rsplit(".")[0]} in {ctx.guild}.', icon_url=icon)
+        embed.add_field(name=f'Reason', value=f'{reason}')
+        await ticket.send(content='If this channel does not recieve a message within 10 minutes, the ticket will be closed.', embed=embed)
+        await ticket.set_permissions(ctx.guild.default_role, view_channel=False)
+        await ticket.set_permissions(ctx.guild.get_role(default_roles[ctx.guild.id]), view_channel=False)
+        await ticket.set_permissions(await ctx.guild.fetch_member(ctx.author.id), view_channel=True)
+        while True:
+            try:
+                cached_message = await self.bot.wait_for('message', timeout=600)
+            except asyncio.exceptions.TimeoutError:
+                await ticket.delete()
+                await ctx.author.send(f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** due to inactivity.')
+                return
+            else:
+                if bot_author.mentioned_in(cached_message) and 'close' in cached_message.content.lower().rsplit(' ')[1] and cached_message.author == ctx.author and cached_message.channel == ticket:
+                    await ticket.delete()
+                    await ctx.author.send(
+                        f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
+                    return
+        
+        
 class messages_cog(commands.Cog):
 
 
@@ -2172,6 +2242,7 @@ def remove_cogs():
     bot.remove_cog(reacting_cog(bot))
     bot.remove_cog(print_cog(bot))
     bot.remove_cog(owner_cog(bot))
+    bot.remove_cog(ticket_cog(bot))
 
 
 def add_cogs():
@@ -2193,6 +2264,7 @@ def add_cogs():
     bot.add_cog(cog=reacting_cog(bot), override=True)
     bot.add_cog(cog=print_cog(bot), override=True)
     bot.add_cog(cog=owner_cog(bot), override=True)
+    bot.add_cog(cog=ticket_cog(bot), override=True)
 
 
 add_cogs()
