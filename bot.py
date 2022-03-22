@@ -171,7 +171,7 @@ class event_cog(commands.Cog):
             try:
                 filtering[str(message.guild.id)]
             except KeyError:
-                filtering[str(message.guild.id)] = (1, 1)
+                filtering[str(message.guild.id)] = (1, 2)
         async def syspurgeban(member_id, limit=10, bulk: bool = False):
             list_messages = []
             messages = 0
