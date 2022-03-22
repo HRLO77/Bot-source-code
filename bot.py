@@ -1619,13 +1619,6 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Guilds', value=f'Shares **{len(User.mutual_guilds)}** guild{(len(User.mutual_guilds) != 1) * "s"} with me.')
         dm = await User.create_dm()
         embed.add_field(name='Extra', value=f'Hash: {hash(User)}\nID: {User.id}\nColor: {User.color}\n{int(User.public_flags.early_supporter) * "Early supporter"}\n{int(User.public_flags.verified_bot_developer) * "Verified developer"}\n{int(User.public_flags.partner) * "Discord partner"} \n{int(User.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not(User.public_flags.bug_hunter_level_2) and User.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(User.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(User.public_flags.staff and not(User.public_flags.partner)) * "Discord employee"}\n{int(User.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
-        logs =  0
-        async for i in (ctx.guild.audit_logs(limit=None)):
-            if i.target == member:
-                continue
-            else:
-                logs += 1
-        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them.')
         context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {User}!', embed=embed)
         await context.add_reaction('👋')
         try:
