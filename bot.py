@@ -163,7 +163,7 @@ class event_cog(commands.Cog):
         for i in self.bot.guilds:
             filtering[str(i.id)] = (1, 1)
 
-    @commands.Cog.listener("on_message")
+        @commands.Cog.listener("on_message")
     async def on_message(self, message: discord.Message):
         global filtering
         if not(message.guild is None):
@@ -190,7 +190,7 @@ class event_cog(commands.Cog):
                     continue
 
         def check_for_spam(m):
-            return m.author == message.author or m.content.lower().replace(' ', '') in message.contentlower().replace(' ', '') or message.contentlower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)][1]) or (filtering[str(m.guild.id)][1] > 2 and m.content.isupper())
+            return m.author == message.author or m.content.lower().replace(' ', '') in message.content.lower().replace(' ', '') or message.content.lower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)][1]) or (filtering[str(m.guild.id)][1] > 2 and m.content.isupper())
         if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'astley')) and not(message.author.bot):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
             await message.author.send(f'{message.author.mention} bruh why?')
@@ -227,6 +227,10 @@ class event_cog(commands.Cog):
             for index, value in enumerate(test):
                 if value == cache:
                     count += 1
+                if value.is_upper():
+                    count += 1
+                if not(value.isascii()):
+                    count += 1
                 cache = value
             count -= 1
             if len(test) > 950 or count > 27 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
@@ -236,25 +240,34 @@ class event_cog(commands.Cog):
             for index, value in enumerate(test):
                 if value == cache:
                     count += 1
-                if not (value in valid_chars):
+                if not (value.lower() in valid_chars):
+                    count += 1
+                if value.is_upper():
+                    count += 1
+                if not(value.isascii()):
                     count += 1
                 cache = value
             count -= 1
             if len(test) > 450 or count > 15 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
-                await message.delete()
+                await syspurgeban(message.author.id, 10, 1)
         elif (filtering[str(message.guild.id)][1]) == 3:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
                     count += 1
-                if value in special_chars:
+                if value.lower() in special_chars:
                     count += 1
-                if not (value in valid_chars):
-                    count += 1
+                if not (value.lower() in valid_chars):
+                    count += 0.5
+                if not(value.isascii()):
+                    count += 2
                 cache = value
             count -= 1
             if len(test) > 195 or count > 11 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
-                await message.delete()
+                await syspurgeban(message.author.id, 25, 1)
+                await message.author.timeout(duration=300.0, reason='Spam')
+                await message.author.send(
+                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **5** minutes.')
         elif (filtering[str(message.guild.id)][1]) == 4:
             count = 0
             for index, value in enumerate(test):
@@ -264,10 +277,17 @@ class event_cog(commands.Cog):
                     count += 1
                 if not (value in valid_chars):
                     count += 1
+                if value.is_upper():
+                    count += 1
+                if not(value.isascii()):
+                    count += 1
                 cache = value
             count -= 1
             if len(test) > 90 or count > 5 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
-                await message.delete()
+                await syspurgeban(message.author.id, 30, 1)
+                await message.author.timeout(duration=600.0, reason='Spam')
+                await message.author.send(
+                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **10** minutes.')
         if (filtering[str(message.guild.id)][0]) == 1:
             if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
                 await message.delete()
@@ -314,9 +334,9 @@ class event_cog(commands.Cog):
                 pass
             else:
                 await syspurgeban(message.author.id, 25, 1)
-                await message.author.timeout(duration=30.0, reason='Spam')
+                await message.author.timeout(duration=300.0, reason='Spam')
                 await message.author.send(
-                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **30** seconds.')
+                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **5** minutes.')
         elif (filtering[str(message.guild.id)][1]) == 4:
             try:
                 await bot.wait_for('message', timeout=15, check=check_for_spam)
@@ -324,9 +344,9 @@ class event_cog(commands.Cog):
                 pass
             else:
                 await syspurgeban(message.author.id, 30, 1)
-                await message.author.timeout(duration=60.0, reason='Spam')
+                await message.author.timeout(duration=600.0, reason='Spam')
                 await message.author.send(
-                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
+                    f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **10** minutes.')
 
 
     @commands.Cog.listener("on_message_edit")
@@ -671,11 +691,12 @@ class ticket_cog(commands.Cog):
                 await ctx.author.send(f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** due to inactivity.')
                 return
             else:
-                if bot_author.mentioned_in(cached_message) and 'close' in cached_message.content.lower().rsplit(' ')[1] and cached_message.author == ctx.author and cached_message.channel == ticket:
-                    await ticket.delete()
-                    await ctx.author.send(
-                        f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
-                    return
+                if len(cached_message.content.rsplit(' ')) == 2:
+                    if bot_author.mentioned_in(cached_message) and 'close' in cached_message.content.lower().rsplit(' ')[1] and cached_message.author == ctx.author and cached_message.channel == ticket:
+                        await ticket.delete()
+                        await ctx.author.send(
+                            f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
+                        return
         
         
 class messages_cog(commands.Cog):
