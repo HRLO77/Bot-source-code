@@ -81,6 +81,8 @@ def log(to_log: tuple, guild):
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
 reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
+topics = list()
+
 
 
 muted_channel = False
@@ -461,23 +463,23 @@ class event_cog(commands.Cog):
         await member.send(':wave:')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not(icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not(icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon, text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not(icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not(icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon, text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
     @commands.Cog.listener("on_raw_reaction_add")
@@ -1335,27 +1337,7 @@ class fetch_data_cog(commands.Cog):
         await ctx.send(f'`{char}`')
 
 
-    @commands.command(aliases=('e', 'eval'))
-    async def evaluate(self, ctx, *, command):
-        f = open('compile_user_code.py', 'w')
-        f = f.writelines(str(command).strip('`').strip('python').strip('py'))
-        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
-                                input=f,
-                                capture_output=True, text=True, timeout=5)
-        if len(result.stdout) > 45:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
+
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
@@ -1645,6 +1627,41 @@ class owner_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(aliases=('e', 'eval'))
+    @commands.is_owner
+    async def evaluate(self, ctx, *, command):
+        f = open('compile_user_code.py', 'w')
+        f = f.writelines(str(command).strip('`').strip('python').strip('py'))
+        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
+                                input=f,
+                                capture_output=True, text=True, timeout=5)
+        if len(result.stdout) > 45:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+    ```
+    {result.stderr}
+    {result.stdout}
+    ```''')
+
+
+    @commands.command()
+    @commands.is_owner()
+    async def reset_cooldown(self, ctx, *, command):
+        command = self.bot.get_command(command)
+        if command is None:
+            await ctx.message.reply('Commands doesn\'t exist.')
+            return
+        command.reset_cooldown(ctx=ctx)
+        await ctx.message.reply('Cooldown reset.')
+
+
     @commands.command(aliases=('terminate_bot', 'kill_bot', 'cut_bot'))
     @commands.is_owner()
     async def close_bot(self, ctx):
@@ -1701,7 +1718,34 @@ class print_cog(commands.Cog):
 
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
-    await ctx.send(f'{round(bot.latency * 1000)} ms.')
+    embed = discord.Embed(title='Status')
+    if bot.latency * 1000 > 119:
+        embed.color = discord.Color.from_rgb(0,255,0)
+    elif bot.latency * 1000 > 79:
+        embed.color = discord.Color.from_rgb(255,249,8)
+    elif bot.latency * 1000 > 39:
+        embed.color = discord.Color.from_rgb(141,255,8)
+    else:
+        embed.color = discord.Color.from_rgb(000, 255, 000)
+    embed.add_field(name='Ping', value=str(round(bot.latency * 1000)) + ' ms.')
+    embed.add_field(name='Ratelimited', value=f'{bot.is_ws_ratelimited()}')
+    try:
+        await bot.fetch_user(bot.user.id)
+    except (discord.Forbidden, discord.HTTPException, discord.NotFound):
+        embed.add_field(name='Connection', value='Down.')
+    else:
+        embed.add_field(name='Connection', value='Working.')
+    async with ctx.message.channel.typing():
+        try:
+            await bot.wait_for(event='socket_event_type', timeout=10)
+        except asyncio.exceptions.TimeoutError:
+            embed.add_field(name='Websocket', value='Not recieving.')
+        else:
+            embed.add_field(name='Websocket', value='Recieving.')
+        await asyncio.sleep(2)
+
+    await ctx.message.reply(embed=embed)
+    discord.Color
 
 
 class reacting_cog(commands.Cog):
@@ -2239,15 +2283,15 @@ class logs_cog(commands.Cog):
         with (open('logs.json', 'w')) as json_file:
             json.dump(data, json_file)
         await ctx.send(f'{ctx.author.mention} cleared all logs from bot session in **{ctx.guild}**.')
-        
-        
+
+
 class extras_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(aliases=['add_topic'])
     @commands.cooldown(1, 420, commands.BucketType.user)
     async def topic_add(self, ctx, *, topic: str):
         owner = await self.bot.fetch_user(self.bot.owner_id)
@@ -2290,7 +2334,6 @@ class extras_cog(commands.Cog):
                 await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been denied!")
         await context.remove_reaction(emoji='✅', member=self.bot.user)
         await context.remove_reaction(emoji='❌', member=self.bot.user)
-
 
     @commands.command()
     @commands.cooldown(1, 120, commands.BucketType.channel)
@@ -2347,7 +2390,7 @@ def remove_cogs():
     bot.remove_cog(print_cog(bot))
     bot.remove_cog(owner_cog(bot))
     bot.remove_cog(ticket_cog(bot))
-    bot.remove_cog(owner_cog(bot))
+    bot.remove_cog(extras_cog(bot))
 
 
 def add_cogs():
