@@ -2304,7 +2304,17 @@ class extras_cog(commands.Cog):
         else:
             icon = icon.url
         embed.set_author(icon_url=icon, name=message.author)
-        embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.')
+        icon = message.guild.icon
+        if icon is None:
+            icon = message.author.avatar
+            if icon is None:
+                icon = message.author.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        print(icon)
+        embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.', icon_url=icon)
         await ctx.message.reply(embed=embed)
 
 
