@@ -1,7 +1,8 @@
-import ensurepip
-
-ensurepip.bootstrap()
-import os
+# import ensurepip
+#
+# ensurepip.bootstrap()
+# import os
+import math
 from explicit_data import *
 from disnake.ext import tasks
 from disnake.utils import get
@@ -87,7 +88,7 @@ tracemalloc.start()
 sniped_messages = dict()
 filtering = dict()
 default_roles = dict()
-spam = 1
+spam = 2
 content = 1
 
 
@@ -163,7 +164,7 @@ class event_cog(commands.Cog):
         for i in self.bot.guilds:
             filtering[str(i.id)] = (1, 1)
 
-        @commands.Cog.listener("on_message")
+    @commands.Cog.listener("on_message")
     async def on_message(self, message: discord.Message):
         global filtering
         if not(message.guild is None):
@@ -227,7 +228,7 @@ class event_cog(commands.Cog):
             for index, value in enumerate(test):
                 if value == cache:
                     count += 1
-                if value.is_upper():
+                if value.isupper():
                     count += 1
                 if not(value.isascii()):
                     count += 1
@@ -242,7 +243,7 @@ class event_cog(commands.Cog):
                     count += 1
                 if not (value.lower() in valid_chars):
                     count += 1
-                if value.is_upper():
+                if value.isupper():
                     count += 1
                 if not(value.isascii()):
                     count += 1
@@ -277,7 +278,7 @@ class event_cog(commands.Cog):
                     count += 1
                 if not (value in valid_chars):
                     count += 1
-                if value.is_upper():
+                if value.isupper():
                     count += 1
                 if not(value.isascii()):
                     count += 1
@@ -481,7 +482,6 @@ class event_cog(commands.Cog):
 
     @commands.Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload):
-        print(f'payloaded {payload.guild_id}, {payload.message_id}')
         data = reacting.get((payload.guild_id, payload.message_id))
         if type(data) == tuple:
             pass
@@ -501,7 +501,6 @@ class event_cog(commands.Cog):
 
     @commands.Cog.listener("on_raw_reaction_remove")
     async def on_raw_reaction_remove(self, payload):
-        print(f'payload2 {payload.guild_id}, {payload.message_id}')
         data = reacting.get((payload.guild_id, payload.message_id))
         if type(data) == tuple:
             pass
@@ -545,7 +544,9 @@ class kick_cog(commands.Cog):
 
 
     def __init__(self, bot):
-        self.bot =bot
+        self.bot = bot
+
+
     @commands.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'))
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason='None'):
@@ -627,7 +628,7 @@ class mute_cog(commands.Cog):
         await ctx.send(f'''{ctx.author.mention} took {member.mention} out of  the timeout chair, because:
     **{reason}**.''')
 
-        
+
 class ticket_cog(commands.Cog):
 
 
@@ -697,8 +698,8 @@ class ticket_cog(commands.Cog):
                         await ctx.author.send(
                             f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
                         return
-        
-        
+
+
 class messages_cog(commands.Cog):
 
 
@@ -1327,15 +1328,14 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
-    @commands.command(aliases=('char_info', 'charinfo'))
-    async def char(self, ctx, *, char: str):
+
+
+    @commands.command()
+    async def char(self, ctx, *, char):
         await ctx.send(f'`{char}`')
 
 
     @commands.command(aliases=('e', 'eval'))
-    @commands.has_permissions(administrator=True)
     async def evaluate(self, ctx, *, command):
         f = open('compile_user_code.py', 'w')
         f = f.writelines(str(command).strip('`').strip('python').strip('py'))
@@ -1376,7 +1376,7 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Threads', value=f'**{len(await ctx.guild.active_threads())}** active threads.')
         data = len((await ctx.guild.bans()))
         if  data >= 9999:
-            data = '10000+'
+            data = '9999+'
         embed.add_field(name='Bans', value=f'**{data}** ban entries.')
         data = len(await (ctx.guild.audit_logs(limit=None)).flatten())
         if data >= 9999:
@@ -1562,12 +1562,18 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Extra',
                         value=f'Hash: {hash(member)}\nID: {member.id}\nColor: {member.color}\n{int(member.public_flags.early_supporter) * "Early supporter"}\n{int(member.public_flags.verified_bot_developer) * "Verified developer"}\n{int(member.public_flags.partner) * "Discord partner"} \n{int(member.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not (member.public_flags.bug_hunter_level_2) and member.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(member.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(member.public_flags.staff and not (member.public_flags.partner)) * "Discord employee"}\n{int(member.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
         logs =  0
+        logs2 = 0
         async for i in (ctx.guild.audit_logs(limit=None)):
             if i.target == member:
-                continue
-            else:
                 logs += 1
-        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them.')
+            else:
+                continue
+        async for i in (ctx.guild.audit_logs(limit=None, user=member)):
+            if i.target == member:
+                logs2 += 1
+            else:
+                continue
+        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them, **{logs2}** of which were done on themselves.')
         context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {member}!', embed=embed)
         await context.add_reaction('👋')
         try:
@@ -1613,6 +1619,13 @@ class fetch_data_cog(commands.Cog):
         embed.add_field(name='Guilds', value=f'Shares **{len(User.mutual_guilds)}** guild{(len(User.mutual_guilds) != 1) * "s"} with me.')
         dm = await User.create_dm()
         embed.add_field(name='Extra', value=f'Hash: {hash(User)}\nID: {User.id}\nColor: {User.color}\n{int(User.public_flags.early_supporter) * "Early supporter"}\n{int(User.public_flags.verified_bot_developer) * "Verified developer"}\n{int(User.public_flags.partner) * "Discord partner"} \n{int(User.public_flags.discord_certified_moderator) * "Certified moderator"}\n{int(not(User.public_flags.bug_hunter_level_2) and User.public_flags.bug_hunter) * "Level 1 bug hunter"}\n{int(User.public_flags.bug_hunter_level_2) * "Level 2 bug hunter"}\n{int(User.public_flags.staff and not(User.public_flags.partner)) * "Discord employee"}\n{int(User.public_flags.spammer) * "**Careful**, this user has been reported to discord for **spamming**"}')
+        logs =  0
+        async for i in (ctx.guild.audit_logs(limit=None)):
+            if i.target == member:
+                continue
+            else:
+                logs += 1
+        embed.add_field(name='Moderation actions', value=f'{member} has **{logs}** actions performed on them.')
         context = await ctx.author.send(content=f'React to this message with :wave: to say hi to {User}!', embed=embed)
         await context.add_reaction('👋')
         try:
@@ -1685,11 +1698,11 @@ class print_cog(commands.Cog):
         await ctx.send(embed=embed)
         await ctx.message.delete()
         if 'rule' in title.lower():
-            with open('dates.json', 'r') as json_file:
+            with open('rules.json', 'r') as json_file:
                 data = json.load(json_file)
             data[str(ctx.guild.id)] = text
             print(data)
-            with open('dates.json', 'w') as json_file:
+            with open('rules.json', 'w') as json_file:
                 json.dump(data, json_file)
 
 
@@ -1711,7 +1724,7 @@ class reacting_cog(commands.Cog):
         reacting[(ctx.guild.id, reacting_message_id)] = (
             default_role_id, emoji_to_react)
         await ctx.send(
-            f'{ctx.author.mention} updated reacting object index: `{(ctx.guild.id, reacting_message_id)}:{(default_role_id, emoji_to_react)}`')
+            f'{ctx.author.mention} updated reacting object index: `{(ctx.guild.id, reacting_message_id)}: {(default_role_id, emoji_to_react)}`')
 
 
     @commands.command(aliases=('delete_react', 'rm_react', 'del_react'))
@@ -2066,7 +2079,7 @@ class rules_cog(commands.Cog):
 
     @commands.command()
     async def rule(self, ctx, rule_int: int = None):
-        with open('dates.json', 'r') as json_file:
+        with open('rules.json', 'r') as json_file:
             data = json.load(json_file)
         try:
             data[str(ctx.guild.id)]
@@ -2081,7 +2094,7 @@ class rules_cog(commands.Cog):
     @commands.command()
     async def rules(self, ctx):
         bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('dates.json', 'r') as json_file:
+        with open('rules.json', 'r') as json_file:
             data = json.load(json_file)
         try:
             data[str(ctx.guild.id)]
@@ -2107,7 +2120,7 @@ class rules_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True, view_audit_log=True)
     async def rule_add(self, ctx, *, text: str = 'None'):
         bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('dates.json', 'r') as json_file:
+        with open('rules.json', 'r') as json_file:
             data = json.load(json_file)
         try:
             data[str(ctx.guild.id)]
@@ -2115,7 +2128,7 @@ class rules_cog(commands.Cog):
             await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
             return
         data[str(ctx.guild.id)] = f'{data[str(ctx.guild.id)]}\n{text}'
-        with open('dates.json', 'w') as json_file:
+        with open('rules.json', 'w') as json_file:
             json.dump(data, json_file)
         with open("rules.txt", 'w') as rules:
             rules.writelines(data[str(ctx.guild.id)])
@@ -2136,7 +2149,7 @@ class rules_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True, view_audit_log=True)
     async def rule_replace(self, ctx, rule_ind: int, *, read: str):
         bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('dates.json', 'r') as json_file:
+        with open('rules.json', 'r') as json_file:
             data = json.load(json_file)
         try:
             data[str(ctx.guild.id)]
@@ -2152,7 +2165,7 @@ class rules_cog(commands.Cog):
             else:
                 text = f'{text}{value}'
         data[str(ctx.guild.id)] = text
-        with open('dates.json', 'w') as json_file:
+        with open('rules.json', 'w') as json_file:
             json.dump(data, json_file)
         with open("rules.txt", 'w') as rules:
             for i in listed:
@@ -2174,7 +2187,7 @@ class rules_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True, view_audit_log=True)
     async def rule_remove(self, ctx, rule_ind: int = 0):
         bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('dates.json', 'r') as json_file:
+        with open('rules.json', 'r') as json_file:
             data = json.load(json_file)
         try:
             data[str(ctx.guild.id)]
@@ -2190,7 +2203,7 @@ class rules_cog(commands.Cog):
             else:
                 text = f'{text}{value}'
         data[str(ctx.guild.id)] = text
-        with open('dates.json', 'w') as json_file:
+        with open('rules.json', 'w') as json_file:
             json.dump(data, json_file)
         with open("rules.txt", 'w') as rules:
             for i in listed:
@@ -2286,6 +2299,7 @@ def add_cogs():
     bot.add_cog(cog=print_cog(bot), override=True)
     bot.add_cog(cog=owner_cog(bot), override=True)
     bot.add_cog(cog=ticket_cog(bot), override=True)
+
 
 
 add_cogs()
