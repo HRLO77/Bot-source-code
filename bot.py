@@ -2239,6 +2239,73 @@ class logs_cog(commands.Cog):
         with (open('logs.json', 'w')) as json_file:
             json.dump(data, json_file)
         await ctx.send(f'{ctx.author.mention} cleared all logs from bot session in **{ctx.guild}**.')
+        
+        
+class extras_cog(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+
+
+    @commands.command()
+    @commands.cooldown(1, 420, commands.BucketType.user)
+    async def topic_add(self, ctx, *, topic: str):
+        owner = await self.bot.fetch_user(self.bot.owner_id)
+        icon = ctx.message.author.avatar
+        if icon is None:
+            icon = ctx.message.author.default_avatar.url
+        else:
+            icon = icon.url
+        embed = discord.Embed(title='Topic verification request', color=ctx.author.color, description=f'{ctx.author.mention} is requesting verification for the topic:\n`{topic}`\n The request will be automatically denied in 10 minutes.')
+        embed.set_author(name=ctx.author, icon_url=icon)
+        icon = ctx.guild.icon
+        if icon is None:
+            icon = ctx.message.author.avatar
+            if icon is None:
+                icon = ctx.message.author.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        embed.set_footer(text=f'{ctx.author} requested topic verification in {ctx.guild} at {str(ctx.message.created_at).rsplit(".")[0]}', icon_url=icon)
+        context = await owner.send(embed=embed)
+        await context.add_reaction('✅')
+        await context.add_reaction('❌')
+        await ctx.author.send(f'{ctx.author.mention} your topic request is being verified by the owner.')
+        def check(payload: discord.RawReactionActionEvent):
+            return payload.user_id == owner.id and payload.channel_id == context.channel.id and any(i in str(payload.emoji) for i in ('✅', '❌'))
+        try:
+            data = await self.bot.wait_for(event='raw_reaction_add', timeout=600, check=check)
+        except asyncio.exceptions.TimeoutError:
+            await context.message.reply('Request automatically denied due to inactivity.')
+            await ctx.author.send(f"{ctx.author.mention} The owner did not respond to the request.")
+            await context.delete()
+        else:
+            if '✅' in str(data.emoji):
+                await context.reply('Topic verification request approved!')
+                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been approved!")
+                topics.append((topic, ctx.message))
+            else:
+                await context.reply('Request automatically denied due to inactivity.')
+                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been denied!")
+        await context.remove_reaction(emoji='✅', member=self.bot.user)
+        await context.remove_reaction(emoji='❌', member=self.bot.user)
+
+
+    @commands.command()
+    @commands.cooldown(1, 120, commands.BucketType.channel)
+    async def topic(self, ctx):
+        ind = random.choice(topics)
+        message = ind[1]
+        embed = discord.Embed(title=str(ind[0]), color=message.author.color, description='Want to add a topic? run `>topic_add <topic>` to request a topic verification by the owner!')
+        icon = message.author.avatar
+        if icon is None:
+            icon = message.author.default_avatar.url
+        else:
+            icon = icon.url
+        embed.set_author(icon_url=icon, name=message.author)
+        embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.')
+        await ctx.message.reply(embed=embed)
 
 
 @tasks.loop(minutes=1)
@@ -2270,6 +2337,7 @@ def remove_cogs():
     bot.remove_cog(print_cog(bot))
     bot.remove_cog(owner_cog(bot))
     bot.remove_cog(ticket_cog(bot))
+    bot.remove_cog(owner_cog(bot))
 
 
 def add_cogs():
@@ -2292,6 +2360,7 @@ def add_cogs():
     bot.add_cog(cog=print_cog(bot), override=True)
     bot.add_cog(cog=owner_cog(bot), override=True)
     bot.add_cog(cog=ticket_cog(bot), override=True)
+    bot.add_cog(cog=extras_cog(bot), override=True)
 
 
 
