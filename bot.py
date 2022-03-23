@@ -639,7 +639,7 @@ class ticket_cog(commands.Cog):
         self.roles = dict()
 
     def can_close_tickets(self, ctx):
-        async def predicate(ctx):
+        async def predicate(self, ctx):
             try:
                 self.roles[ctx.guild.id]
             except KeyError:
@@ -648,7 +648,7 @@ class ticket_cog(commands.Cog):
                 else:
                     return False
             else:
-                for role in self.roles[ctx.guild.id]:
+                for role in roles[ctx.guild.id]:
                     try:
                         if ctx.guild.get_role(role) in ctx.author.roles:
                             return True
@@ -658,25 +658,28 @@ class ticket_cog(commands.Cog):
                         print(f'Could not find role {role} in guild {ctx.guild.id} for ticket viewing.')
                 return False
 
-        return commands.check(predicate)
+        return commands.check(predicate(self, ctx))
 
 
-    @commands.command(aliases=('ticket_role', 'view_ticket'))
-    @commands_has_permissions(moderate_members=True)
-    async def add_role(self, ctx, role: discord.Role):
+    @commands.command(aliases=('viewing_role', 'view_ticket'))
+    @commands.has_permissions(moderate_members=True)
+    async def ticket_role(self, ctx, role: discord.Role):
         try:
             guild = self.roles[ctx.guild.id]
         except KeyError:
             self.roles[ctx.guild.id] = [role.id]
-            await ctx.message.reply(f'Members with **{role.name}** can now view opened tickets.')
+            await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
         else:
             self.roles[ctx.guild.id].append(role.id)
-            await ctx.message.reply(f'Members with **{role.name}** can now view opened tickets.')
+            await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
 
 
     @commands.command(aliases=['cancel_ticket'])
-    @can_close_tickets()
     async def close_ticket(self, ctx, channel: discord.TextChannel):
+        if can_close_tickets(self, ctx):
+            pass
+        else:
+            return await ctx.message.reply('You may not close this ticket.')
         if channel.name.startswith('ticket-'):
             async for entry in ctx.guild.audit_logs(limit=None, action=discord.AuditLogAction.channel_create, user=ctx.guild.me):
                 if entry.target == channel:
@@ -718,6 +721,18 @@ class ticket_cog(commands.Cog):
             icon = icon.url
         embed.set_footer(text=f'{ctx.author} requested a ticket on {str(ticket.created_at).rsplit(".")[0]} in {ctx.guild}.', icon_url=icon)
         embed.add_field(name=f'Reason', value=f'{reason}')
+        try:
+            self.roles[ctx.guild.id]
+        except KeyError:
+            pass
+        else:
+            string = ''
+            if len(self.roles[ctx.guild.id]) > 1:
+                for role in self.roles[ctx.guild.id]:
+                    string = f'{string}{ctx.guild.get_role(role).mention}, '
+            else:
+                string = ctx.guild.get_role(role).mention
+            embed.add_field(name='Roles that can view this ticket', value=string, inline=False)
         await ticket.send(content='If this channel does not recieve a message within 10 minutes, the ticket will be closed.', embed=embed)
         await ticket.set_permissions(ctx.guild.default_role, view_channel=False)
         await ticket.set_permissions(ctx.guild.get_role(default_roles[ctx.guild.id]), view_channel=False)
