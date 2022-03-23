@@ -2338,7 +2338,7 @@ class extras_cog(commands.Cog):
         
     @commands.command(aliases=['nickname'])
     @commands.has_permissions(manage_nicknames=True)
-    async def nick(self, ctx, member: discord.Member, *, new_nick: str=None):
+    async def nick(self, ctx, member: discord.Member, *, new_nick:str=None):
         if new_nick is None:
             new_nick = f'Member-{random.randint(0, 999999)}'
         await member.edit(nick=new_nick)
