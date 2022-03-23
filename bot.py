@@ -2335,6 +2335,16 @@ class extras_cog(commands.Cog):
         await context.remove_reaction(emoji='✅', member=self.bot.user)
         await context.remove_reaction(emoji='❌', member=self.bot.user)
 
+        
+    @commands.command(aliases=['nickname'])
+    @commands.has_permissions(manage_nicknames=True)
+    async def nick(self, ctx, member: discord.Member, *, new_nick: str=None):
+        if new_nick is None:
+            new_nick = f'Member-{random.randint(0, 999999)}'
+        await member.edit(nick=new_nick)
+        await ctx.message.reply(f'{member.mention}\'s name was changed to **{new_nick}**.')
+        
+        
     @commands.command()
     @commands.cooldown(1, 120, commands.BucketType.channel)
     async def topic(self, ctx):
