@@ -662,7 +662,7 @@ class ticket_cog(commands.Cog):
 
 
     @commands.command(aliases=('ticket_role', 'view_ticket'))
-    @can_close_tickets()
+    @commands_has_permissions(moderate_members=True)
     async def add_role(self, ctx, role: discord.Role):
         try:
             guild = self.roles[ctx.guild.id]
@@ -675,7 +675,7 @@ class ticket_cog(commands.Cog):
 
 
     @commands.command(aliases=['cancel_ticket'])
-    @commands.has_permissions(moderate_members=True)
+    @can_close_tickets()
     async def close_ticket(self, ctx, channel: discord.TextChannel):
         if channel.name.startswith('ticket-'):
             async for entry in ctx.guild.audit_logs(limit=None, action=discord.AuditLogAction.channel_create, user=ctx.guild.me):
