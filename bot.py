@@ -636,6 +636,42 @@ class ticket_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.roles = dict()
+
+    def can_close_tickets(self, ctx):
+        async def predicate(ctx):
+            try:
+                self.roles[ctx.guild.id]
+            except KeyError:
+                if ctx.author.guild_permissions.moderate_members:
+                    return True
+                else:
+                    return False
+            else:
+                for role in self.roles[ctx.guild.id]:
+                    try:
+                        if ctx.guild.get_role(role) in ctx.author.roles:
+                            return True
+                        if ctx.author.guild_permissions.moderate_members:
+                            return True
+                    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                        print(f'Could not find role {role} in guild {ctx.guild.id} for ticket viewing.')
+                return False
+
+        return commands.check(predicate)
+
+
+    @commands.command(aliases=('ticket_role', 'view_ticket'))
+    @can_close_tickets()
+    async def add_role(self, ctx, role: discord.Role):
+        try:
+            guild = self.roles[ctx.guild.id]
+        except KeyError:
+            self.roles[ctx.guild.id] = [role.id]
+            await ctx.message.reply(f'Members with **{role.name}** can now view opened tickets.')
+        else:
+            self.roles[ctx.guild.id].append(role.id)
+            await ctx.message.reply(f'Members with **{role.name}** can now view opened tickets.')
 
 
     @commands.command(aliases=['cancel_ticket'])
@@ -686,6 +722,18 @@ class ticket_cog(commands.Cog):
         await ticket.set_permissions(ctx.guild.default_role, view_channel=False)
         await ticket.set_permissions(ctx.guild.get_role(default_roles[ctx.guild.id]), view_channel=False)
         await ticket.set_permissions(await ctx.guild.fetch_member(ctx.author.id), view_channel=True)
+        try:
+            roles = self.roles[ctx.guild.id]
+        except KeyError:
+            pass
+        else:
+            for role in roles:
+                try:
+                    await ticket.set_permissions(ctx.guild.get_role(role), view_channel=True)
+                except (discord.Forbidden, discord.HTTPException, discord.NotFound):
+                    print(f'Could not whitelist role {role} in guild {ctx.guild.id} for ticket viewing.')
+
+
         while True:
             try:
                 cached_message = await self.bot.wait_for('message', timeout=600)
