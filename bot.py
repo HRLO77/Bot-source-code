@@ -1794,7 +1794,7 @@ async def ping(ctx):
     embed.add_field(name='Ratelimited', value=f'{bot.is_ws_ratelimited()}')
     try:
         await bot.fetch_user(bot.user.id)
-    except (discord.Forbidden, discord.HTTPException, discord.NotFound):
+    except BaseException:
         embed.add_field(name='Connection', value='Down.')
     else:
         embed.add_field(name='Connection', value='Working.')
