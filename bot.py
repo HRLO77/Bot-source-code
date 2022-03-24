@@ -774,7 +774,7 @@ class messages_cog(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(view_audit_log=True)
-    async def snipe(self, ctx, channel: discord.TextChannel=None):
+    async def snipe(self, ctx, channel: discord.TextChannel = None):
         global sniped_messages
         try:
             if channel is None:
@@ -787,7 +787,7 @@ class messages_cog(commands.Cog):
                     f'{ctx.author.mention} no deleted messages within **{ctx.guild}** in the current session.')
             else:
                 await ctx.author.send(
-                f'{ctx.author.mention} no deleted messages in the channel **{channel}** within **{ctx.guild}** in the current session.')
+                    f'{ctx.author.mention} no deleted messages in the channel **{channel}** within **{ctx.guild}** in the current session.')
         else:
             try:
                 icon = payload.cached_message.author.avatar
@@ -798,7 +798,7 @@ class messages_cog(commands.Cog):
                 color = payload.cached_message.author.color
                 embed = discord.Embed(title=f'Sniped message by {payload.cached_message.author} in {ctx.guild}')
                 embed.set_author(icon_url=icon, name=payload.cached_message.author)
-                embed.add_field(name='Message', value=payload.cached_message.content, inline=False)
+                embed.add_field(name='Message', value=f'{payload.cached_message.content}', inline=False)
                 embed.add_field(name='Extra data',
                                 value=f'Message_ID={payload.message_id}, Channel_ID={payload.channel_id}, Guild_ID={payload.guild_id}, User_ID={payload.cached_message.author.id}',
                                 inline=False)
