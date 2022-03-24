@@ -773,10 +773,13 @@ class messages_cog(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(view_audit_log=True)
-    async def snipe(self, ctx):
+    async def snipe(self, ctx, channel: discord.TextChannel=None):
         global sniped_messages
         try:
-            payload = sniped_messages[(ctx.guild.id, ctx.message.channel.id)]
+            if channel is None:
+                payload = sniped_messages[ctx.guild.id]
+            else:
+                payload = sniped_messages[(ctx.guild.id, channel)]
         except KeyError:
             await ctx.author.send(
                 f'{ctx.author.mention} no deleted messages in the channel **{ctx.channel}** within **{ctx.guild}** in the current session.')
