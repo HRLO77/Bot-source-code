@@ -782,8 +782,12 @@ class messages_cog(commands.Cog):
             else:
                 payload = sniped_messages[(ctx.guild.id, channel)]
         except KeyError:
-            await ctx.author.send(
-                f'{ctx.author.mention} no deleted messages in the channel **{ctx.channel}** within **{ctx.guild}** in the current session.')
+            if channel is None:
+                await ctx.author.send(
+                    f'{ctx.author.mention} no deleted messages within **{ctx.guild}** in the current session.')
+            else:
+                await ctx.author.send(
+                f'{ctx.author.mention} no deleted messages in the channel **{channel}** within **{ctx.guild}** in the current session.')
         else:
             try:
                 icon = payload.cached_message.author.avatar
