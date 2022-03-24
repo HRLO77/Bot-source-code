@@ -21,6 +21,8 @@ import asyncio
 import json
 from datetime import datetime
 TOKEN = 'TOKEN'
+success = {True: 0, False: 0, 'last': False}
+
 
 
 def convert_to_list(string):
