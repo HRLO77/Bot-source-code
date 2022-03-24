@@ -1803,20 +1803,23 @@ async def ping(ctx):
     try:
         await bot.fetch_user(bot.user.id)
     except BaseException:
-        embed.add_field(name='Connection', value='Down.')
+        embed.add_field(name='Connection', value='Down')
     else:
-        embed.add_field(name='Connection', value='Working.')
+        embed.add_field(name='Connection', value='Working')
     async with ctx.message.channel.typing():
         try:
             await bot.wait_for(event='socket_event_type', timeout=10)
         except asyncio.exceptions.TimeoutError:
-            embed.add_field(name='Websocket', value='Not recieving.')
+            embed.add_field(name='Websocket', value='Not recieving')
         else:
-            embed.add_field(name='Websocket', value='Recieving.')
-        await asyncio.sleep(2)
+            embed.add_field(name='Websocket', value='Recieving')
 
+        await asyncio.sleep(2)
+    if success['last']:
+        embed.add_field(name='Background ping', value=f'Last ping: Successful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
+    else:
+        embed.add_field(name='Background ping', value=f'Last ping: Unsuccessful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
     await ctx.message.reply(embed=embed)
-    discord.Color
 
 
 class reacting_cog(commands.Cog):
