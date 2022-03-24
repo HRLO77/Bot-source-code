@@ -2447,9 +2447,16 @@ class extras_cog(commands.Cog):
 
 @tasks.loop(minutes=1)
 async def ping():
+    global success
     await bot.wait_until_ready()
-    user = await bot.fetch_user(bot.user.id)
-    print(user)
+    try:
+        user = await bot.fetch_user(bot.user.id)
+    except BaseException:
+        success[False] += 1
+        success['last'] = False
+    else:
+        success[True] += 1
+        success['last'] = True
 
 ping.start()
 
