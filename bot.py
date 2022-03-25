@@ -2,13 +2,13 @@
 #
 # ensurepip.bootstrap()
 # import os
+from better_profanity import profanity
+profanity.MAX_NUMBER_COMBINATIONS = 20
 import math
-from explicit_data import *
 from disnake.ext import tasks
 from disnake.utils import get
 import secrets
 import tracemalloc
-from profanity import profanity
 import sys
 import subprocess
 import datetime
@@ -21,8 +21,6 @@ import asyncio
 import json
 from datetime import datetime
 TOKEN = 'TOKEN'
-success = {True: 0, False: 0, 'last': False}
-
 
 
 def convert_to_list(string):
@@ -84,8 +82,7 @@ def log(to_log: tuple, guild):
 reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
 topics = list()
-
-
+success = {True: 0, False: 0, 'last': False}
 
 muted_channel = False
 tracemalloc.start()
@@ -134,16 +131,20 @@ def reset_logs(guild_id):
 
 class event_cog(commands.Cog):
 
+
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.Cog.listener("on_guild_add")
     async def on_guild_join(self, guild):
         reset_logs(guild.id)
 
+
     @commands.Cog.listener("on_guild_remove")
     async def on_guild_remove(self, guild):
         reset_logs(guild.id)
+
 
     @commands.Cog.listener("on_ready")
     async def on_ready(self):
@@ -152,7 +153,7 @@ class event_cog(commands.Cog):
         print(f'We have logged in as {self.bot.user}')
         await self.bot.change_presence(activity=discord.Game(f'{self.bot.command_prefix[-1]}fetch_docs'))
         full_delete()
-        with open('warns.json', 'r') as json_file:
+        with open('warns.json', 'r+') as json_file:
             try:
                 data = json.load(json_file)
             except (json.JSONDecodeError):
@@ -165,8 +166,10 @@ class event_cog(commands.Cog):
                         pass
                     else:
                         data[str(guild.id)] = {"0": 0}
+            json.dump(data, json_file)
         for i in self.bot.guilds:
-            filtering[str(i.id)] = (1, 1)
+            filtering[str(i.id)] = 1
+
 
     @commands.Cog.listener("on_message")
     async def on_message(self, message: discord.Message):
@@ -175,7 +178,7 @@ class event_cog(commands.Cog):
             try:
                 filtering[str(message.guild.id)]
             except KeyError:
-                filtering[str(message.guild.id)] = (1, 2)
+                filtering[str(message.guild.id)] = 1
         async def syspurgeban(member_id, limit=10, bulk: bool = False):
             list_messages = []
             messages = 0
@@ -195,24 +198,24 @@ class event_cog(commands.Cog):
                     continue
 
         def check_for_spam(m):
-            return m.author == message.author or m.content.lower().replace(' ', '') in message.content.lower().replace(' ', '') or message.content.lower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)][1]) or (filtering[str(m.guild.id)][1] > 2 and m.content.isupper())
+            return m.author == message.author or m.content.lower().replace(' ', '') in message.content.lower().replace(' ', '') or message.content.lower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)]) or (filtering[str(m.guild.id)] > 2 and m.content.isupper())
         if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'astley')) and not(message.author.bot):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
             await message.author.send(f'{message.author.mention} bruh why?')
         try:
             print('Full message log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                   message.channel, message.author, message.content,
-                  message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
-                  f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
+                  message.author.bot, (filtering[str(message.guild.id)]),
+                  message.jump_url)
             log(('Full message log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                  message.channel, message.author, message.content,
-                 message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
-                 f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}'), message.guild.id)
+                 message.author.bot, (filtering[str(message.guild.id)]),
+                 message.jump_url), message.guild.id)
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print('Direct message log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
                   message.content, message.author.bot,
-                  f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
+                  message.jump_url)
             return
         except (AttributeError, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, discord.Forbidden):
@@ -221,13 +224,15 @@ class event_cog(commands.Cog):
             pass
         else:
             default_roles[message.guild.id] = message.guild.default_role.id
+        if message.guild is None:
+            return
         test = str(str(message.content).replace(' ', '')).lower()
         if message.author.bot:
             return
         else:
             pass
         cache = ''
-        if (filtering[str(message.guild.id)][1]) == 1:
+        if (filtering[str(message.guild.id)]) == 1:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -238,9 +243,9 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 950 or count > 27 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
+            if len(test) > 950 or count > 27 or len(message.mentions) > round(7 / filtering[str(message.guild.id)]):
                 await message.delete()
-        elif (filtering[str(message.guild.id)][1]) == 2:
+        elif (filtering[str(message.guild.id)]) == 2:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -253,9 +258,9 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 450 or count > 15 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]):
+            if len(test) > 450 or count > 15 or len(message.mentions) > round(7 / filtering[str(message.guild.id)]):
                 await syspurgeban(message.author.id, 10, 1)
-        elif (filtering[str(message.guild.id)][1]) == 3:
+        elif (filtering[str(message.guild.id)]) == 3:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -268,12 +273,12 @@ class event_cog(commands.Cog):
                     count += 2
                 cache = value
             count -= 1
-            if len(test) > 195 or count > 11 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
+            if len(test) > 195 or count > 11 or len(message.mentions) > round(7 / filtering[str(message.guild.id)]) or message.content.isupper():
                 await syspurgeban(message.author.id, 25, 1)
                 await message.author.timeout(duration=300.0, reason='Spam')
                 await message.author.send(
                     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **5** minutes.')
-        elif (filtering[str(message.guild.id)][1]) == 4:
+        elif (filtering[str(message.guild.id)]) == 4:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -288,51 +293,28 @@ class event_cog(commands.Cog):
                     count += 1
                 cache = value
             count -= 1
-            if len(test) > 90 or count > 5 or len(message.mentions) > round(7 / filtering[str(message.guild.id)][1]) or message.content.isupper():
+            if len(test) > 90 or count > 5 or len(message.mentions) > round(7 / filtering[str(message.guild.id)]) or message.content.isupper():
                 await syspurgeban(message.author.id, 30, 1)
                 await message.author.timeout(duration=600.0, reason='Spam')
                 await message.author.send(
                     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **10** minutes.')
-        if (filtering[str(message.guild.id)][0]) == 1:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 2:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data3):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 3:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
-                await message.delete()
-            for i in filter4:
-                test = test.replace(i, '*')
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 4:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
-                await message.delete()
-            for i in filter5:
-                test = test.replace(i, '*')
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
-                await message.delete()
-        # syspurgeban(message.author.id, 10, 1)
-        # await message.author.timeout(duration=60.0, reason='Spam')
-        # await message.author.send(
-        #     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **60** seconds.')
-        # await message.channel.send(f'{message.author.mention} please do not spam.')
-        if (filtering[str(message.guild.id)][1]) == 1:
+        if profanity.contains_profanity(message.content.lower()):
+            await message.delete()
+        if (filtering[str(message.guild.id)]) == 1:
             try:
                 await bot.wait_for('message', timeout=1, check=check_for_spam)
             except asyncio.exceptions.TimeoutError:
                 pass
             else:
                 await syspurgeban(message.author.id, 5, 1)
-        elif (filtering[str(message.guild.id)][1]) == 2:
+        elif (filtering[str(message.guild.id)]) == 2:
             try:
                 await bot.wait_for('message', timeout=2, check=check_for_spam)
             except asyncio.exceptions.TimeoutError:
                 pass
             else:
                 await syspurgeban(message.author.id, 15, 1)
-        elif (filtering[str(message.guild.id)][1]) == 3:
+        elif (filtering[str(message.guild.id)]) == 3:
             try:
                 await bot.wait_for('message', timeout=8.5, check=check_for_spam)
             except asyncio.exceptions.TimeoutError:
@@ -342,7 +324,7 @@ class event_cog(commands.Cog):
                 await message.author.timeout(duration=300.0, reason='Spam')
                 await message.author.send(
                     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **5** minutes.')
-        elif (filtering[str(message.guild.id)][1]) == 4:
+        elif (filtering[str(message.guild.id)]) == 4:
             try:
                 await bot.wait_for('message', timeout=15, check=check_for_spam)
             except asyncio.exceptions.TimeoutError:
@@ -364,7 +346,7 @@ class event_cog(commands.Cog):
         try:
             print('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                   message.channel, message.author, message.content,
-                  message.author.bot, (filtering[str(message.guild.id)][1]), (filtering[str(message.guild.id)][0]),
+                  message.author.bot, (filtering[str(message.guild.id)]),
                   f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
             log(('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                  message.channel, message.author, message.content,
@@ -385,7 +367,7 @@ class event_cog(commands.Cog):
         else:
             pass
         cache = ''
-        if (filtering[str(message.guild.id)][1]) == 1:
+        if (filtering[str(message.guild.id)]) == 1:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -394,7 +376,7 @@ class event_cog(commands.Cog):
             count -= 1
             if len(test) > 950 or count > 27:
                 await message.delete()
-        elif (filtering[str(message.guild.id)][1]) == 2:
+        elif (filtering[str(message.guild.id)]) == 2:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -418,7 +400,7 @@ class event_cog(commands.Cog):
             count -= 1
             if len(test) > 195 or count > 11:
                 await message.delete()
-        elif (filtering[str(message.guild.id)][1]) == 4:
+        elif (filtering[str(message.guild.id)]) == 4:
             count = 0
             for index, value in enumerate(test):
                 if value == cache:
@@ -431,30 +413,15 @@ class event_cog(commands.Cog):
             count -= 1
             if len(test) > 90 or count > 5:
                 await message.delete()
-        if (filtering[str(message.guild.id)][0]) == 1:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data2):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 2:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data3):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 3:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
-                await message.delete()
-            for i in filter4:
-                test = test.replace(i, '*')
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data4):
-                await message.delete()
-        elif (filtering[str(message.guild.id)][0]) == 4:
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
-                await message.delete()
-            for i in filter5:
-                test = test.replace(i, '*')
-            if profanity.contains_profanity(test) or any(i in test for i in explicit_data5):
-                await message.delete()
+        if profanity.contains_profanity(message.content.lower()):
+            await message.delete()
 
 
     @commands.Cog.listener("on_member_join")
     async def on_member_join(self, member: discord.Member):
+        if member.public_flags.spammer:
+            await member.kick(reason='Marked as spammer.')
+            return
         await member.send(f'{member.mention} Welcome to **{member.guild.name}**!')
         await member.send(':wave:')
 
@@ -1410,7 +1377,24 @@ class fetch_data_cog(commands.Cog):
         await ctx.send(f'`{char}`')
 
 
-
+    @commands.command(aliases=('e', 'eval'))
+    async def evaluate(self, ctx, *, command):
+        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
+                                capture_output=True, text=True, timeout=5)
+        if len(result.stdout) > 45:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
@@ -1700,29 +1684,6 @@ class owner_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=('e', 'eval'))
-    @commands.is_owner()
-    async def evaluate(self, ctx, *, command):
-        f = open('compile_user_code.py', 'w')
-        f = f.writelines(str(command).strip('`').strip('python').strip('py'))
-        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
-                                input=f,
-                                capture_output=True, text=True, timeout=5)
-        if len(result.stdout) > 45:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-    ```
-    {result.stderr}
-    {result.stdout}
-    ```''')
-
 
     @commands.command()
     @commands.is_owner()
@@ -1871,183 +1832,12 @@ class filters_cog(commands.Cog):
         try:
             filtering[str(ctx.guild.id)]
         except KeyError:
-            filtering[str(ctx.guild.id)] = (1, 1)
+            filtering[str(ctx.guild.id)] = 1
         if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
-            filtering[str(ctx.guild.id)] = (int(value), (filtering[str(ctx.guild.id)])[1])
+            filtering[str(ctx.guild.id)] = int(value)
         else:
             raise ValueError('Invalid value for "spam_check".')
         await ctx.send(f'Spam filter level has been set to {value}.')
-
-
-    @commands.command(aliases=('content_filter', 'content_check', 'swear_check', 'profanity_filter', 'profanity_check'))
-    @commands.has_permissions(manage_messages=True, moderate_members=True)
-    async def content(self, ctx, value):
-        global filtering
-        try:
-            filtering[str(ctx.guild.id)]
-        except KeyError:
-            filtering[str(ctx.guild.id)] = (1, 1)
-        if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
-            filtering[str(ctx.guild.id)] = ((filtering[str(ctx.guild.id)])[0], int(value))
-        else:
-            raise ValueError('Invalid value for "content_check".')
-        await ctx.send(f'Content filter level has been set to {value}.')
-
-
-    @commands.command(aliases=('rm_swear', 'delete_swear', 'remove_swear'))
-    @commands.has_permissions(moderate_members=True)
-    async def del_swear(self, ctx, *, string: str):
-        if content == 0:
-            await ctx.message.delete()
-            raise IndexError(f"Explicit data check is currently disabled.")
-        elif content == 1:
-            if string in explicit_data2:
-                explicit_data2.remove(string)
-            else:
-                await ctx.message.delete()
-                raise IndexError(
-                    f"Explicit_data2 does not contain {string} as a value.")
-        elif content == 2:
-            if string in explicit_data3:
-                explicit_data3.remove(string)
-            else:
-                await ctx.message.delete()
-                raise IndexError(
-                    f"Explicit_data3 does not contain {string} as a value.")
-        elif content == 3:
-            if string in explicit_data4:
-                explicit_data4.remove(string)
-            else:
-                await ctx.message.delete()
-                raise IndexError(
-                    f"Explicit_data4 does not contain {string} as a value.")
-        elif content == 4:
-            if string in explicit_data5:
-                explicit_data5.remove(string)
-            else:
-                await ctx.message.delete()
-                raise IndexError(
-                    f"Explicit_data5 does not contain {string} as a value.")
-        await ctx.send(f"{ctx.author.mention} swear was removed from the filter.")
-        await ctx.message.delete()
-
-
-    @commands.command(aliases=['append_swear'])
-    @commands.has_permissions(moderate_members=True)
-    async def add_swear(self, ctx, *, string: str):
-        if content == 0:
-            await ctx.message.delete()
-            raise IndexError(f"Explicit data check is currently disabled.")
-            return
-        elif content == 1:
-            explicit_data2.add(string)
-        elif content == 2:
-            explicit_data3.add(string)
-        elif content == 3:
-            explicit_data4.add(string)
-        elif content == 4:
-            explicit_data5.add(string)
-        await ctx.send(f'{ctx.author.mention}, swear was added to the filter.')
-        await ctx.message.delete()
-
-
-    @commands.command(aliases=['append_enhanced_swears'])
-    @commands.has_permissions(moderate_members=True)
-    async def add_enhanced_swears(self, ctx, *, swears):
-        try:
-            list(swears)
-        except ValueError:
-            raise ValueError('Invalid list for "swears"')
-        test = []
-        set = convert_to_list(swears)
-        print(set)
-        for i in set:
-            for index, value in enumerate(str(i).replace(' ', '')):
-                if ' ' in i:
-                    dat = Functions.str_to_list(
-                        Functions.list_to_str(Functions.spliceOutWords(str(i))))
-                    dat[index] = '*'
-                    test.insert(0, Functions.list_to_str(dat))
-                    test.insert(0, i)
-                else:
-                    dat = Functions.str_to_list(str(i))
-                    dat[index] = '*'
-                    test.insert(0, Functions.list_to_str(dat))
-                    test.insert(0, i)
-                if content == 0:
-                    await ctx.message.delete()
-                    raise IndexError(f"Explicit data check is currently disabled.")
-                    return
-                elif content == 1:
-                    explicit_data2.add(Functions.list_to_str(dat))
-                    explicit_data2.add(i)
-                elif content == 2:
-                    explicit_data3.add(Functions.list_to_str(dat))
-                    explicit_data3.add(i)
-                elif content == 3:
-                    explicit_data5.add(Functions.list_to_str(dat))
-                    explicit_data5.add(i)
-                elif content == 4:
-                    explicit_data5.add(Functions.list_to_str(dat))
-                    explicit_data5.add(i)
-        await ctx.send(f'{ctx.author.mention}, swears was added to the filter.')
-        await ctx.message.delete()
-
-
-    @commands.command(aliases=['append_extra_enhanced_swears'])
-    @commands.has_permissions(moderate_members=True)
-    async def add_extra_enhanced_swears(self, ctx, *, swears):
-        try:
-            list(swears)
-        except ValueError:
-            raise ValueError('Invalid list for "swears"')
-        test = []
-        set = convert_to_list(swears)
-        print(set)
-        cache = []
-        list = []
-        set = {}
-        for i in set:
-            for index, value in enumerate(str(i).replace(' ', '')):
-                if ' ' in i:
-                    dat = Functions.str_to_list(
-                        Functions.list_to_str(Functions.spliceOutWords(str(i))))
-                    dat[index] = '*'
-                    list.append(Functions.list_to_str(dat))
-                    list.append(i)
-                else:
-                    dat = Functions.str_to_list(str(i))
-                    dat[index] = '*'
-                    list.append(Functions.list_to_str(dat))
-                    list.append(i)
-                cache = Functions.list_to_str(dat)
-                moveable_cache = Functions.str_to_list(cache)
-                for char in (len(i) ** 2) * 'r':
-                    moveable_cache[random.randint(0, len(i) - 1)] = '*'
-                    if check(moveable_cache):
-                        list.append(Functions.list_to_str(moveable_cache))
-                    else:
-                        continue
-                    if content == 0:
-                        await ctx.send('Explicit data check is currently disabled.')
-                    elif content == 1:
-                        explicit_data2.add(Functions.list_to_str(dat))
-                        explicit_data2.add(i)
-                        explicit_data2.add(Functions.list_to_str(moveable_cache))
-                    elif content == 2:
-                        explicit_data3.add(Functions.list_to_str(dat))
-                        explicit_data3.add(i)
-                        explicit_data3.add(Functions.list_to_str(moveable_cache))
-                    elif content == 3:
-                        explicit_data4.add(Functions.list_to_str(dat))
-                        explicit_data4.add(i)
-                        explicit_data4.add(Functions.list_to_str(moveable_cache))
-                    elif content == 4:
-                        explicit_data5.add(Functions.list_to_str(dat))
-                        explicit_data5.add(i)
-                        explicit_data5.add(Functions.list_to_str(moveable_cache))
-        await ctx.send(f'{ctx.author.mention}, swears was added to the filter.')
-        await ctx.message.delete()
 
 
 class channels_cog(commands.Cog):
@@ -2340,6 +2130,7 @@ class logs_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
     @commands.command(aliases=('fetch_logs', 'get_logs', 'pull_logs'))
     @commands.has_permissions(view_audit_log=True)
     async def logs(self, ctx):
@@ -2411,16 +2202,7 @@ class extras_cog(commands.Cog):
         await context.remove_reaction(emoji='✅', member=self.bot.user)
         await context.remove_reaction(emoji='❌', member=self.bot.user)
 
-        
-    @commands.command(aliases=['nickname'])
-    @commands.has_permissions(manage_nicknames=True)
-    async def nick(self, ctx, member: discord.Member, *, new_nick:str=None):
-        if new_nick is None:
-            new_nick = f'Member-{random.randint(0, 999999)}'
-        await member.edit(nick=new_nick)
-        await ctx.message.reply(f'{member.mention}\'s name was changed to **{new_nick}**.')
-        
-        
+
     @commands.command()
     @commands.cooldown(1, 120, commands.BucketType.channel)
     async def topic(self, ctx):
@@ -2445,6 +2227,15 @@ class extras_cog(commands.Cog):
         print(icon)
         embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.', icon_url=icon)
         await ctx.message.reply(embed=embed)
+
+
+    @commands.command(aliases=['nickname'])
+    @commands.has_permissions(manage_nicknames=True)
+    async def nick(self, ctx, member: discord.Member, *, new_nick: str=None):
+        if new_nick is None:
+            new_nick = f'Member-{random.randint(0, 999999)}'
+        await member.edit(nick=new_nick)
+        await ctx.message.reply(f'{member.mention}\'s name was changed to **{new_nick}**.')
 
 
 @tasks.loop(minutes=1)
@@ -2507,7 +2298,6 @@ def add_cogs():
     bot.add_cog(cog=owner_cog(bot), override=True)
     bot.add_cog(cog=ticket_cog(bot), override=True)
     bot.add_cog(cog=extras_cog(bot), override=True)
-
 
 
 add_cogs()
