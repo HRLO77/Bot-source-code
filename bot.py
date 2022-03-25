@@ -2188,16 +2188,15 @@ class extras_cog(commands.Cog):
         try:
             data = await self.bot.wait_for(event='raw_reaction_add', timeout=600, check=check)
         except asyncio.exceptions.TimeoutError:
-            await context.message.reply('Request automatically denied due to inactivity.')
+            await context.reply('Request automatically denied due to inactivity.')
             await ctx.author.send(f"{ctx.author.mention} The owner did not respond to the request.")
-            await context.delete()
         else:
             if '✅' in str(data.emoji):
                 await context.reply('Topic verification request approved!')
                 await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been approved!")
                 topics.append((topic, ctx.message))
             else:
-                await context.reply('Request automatically denied due to inactivity.')
+                await context.reply('Topic verification request denied!')
                 await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been denied!")
         await context.remove_reaction(emoji='✅', member=self.bot.user)
         await context.remove_reaction(emoji='❌', member=self.bot.user)
@@ -2227,7 +2226,6 @@ class extras_cog(commands.Cog):
         print(icon)
         embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.', icon_url=icon)
         await ctx.message.reply(embed=embed)
-
 
     @commands.command(aliases=['nickname'])
     @commands.has_permissions(manage_nicknames=True)
