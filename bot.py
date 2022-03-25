@@ -198,6 +198,8 @@ class event_cog(commands.Cog):
                     continue
 
         def check_for_spam(m):
+            if m.guild is None:
+                return False
             return m.author == message.author or m.content.lower().replace(' ', '') in message.content.lower().replace(' ', '') or message.content.lower().replace(' ', '') in m.content.lower().replace(' ', '') or len(m.mentions) > round(7 / filtering[str(m.guild.id)]) or (filtering[str(m.guild.id)] > 2 and m.content.isupper())
         if any(i in (str(message.content).replace(' ', '')) for i in ('dQw4w9WgXcQ', 'astley')) and not(message.author.bot):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
@@ -432,23 +434,7 @@ class event_cog(commands.Cog):
         await member.send(':wave:')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not(icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not(icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon, text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # s
 
 
     @commands.Cog.listener("on_raw_reaction_add")
@@ -510,6 +496,26 @@ class event_cog(commands.Cog):
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                     commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print('Message delete log error.')
+
+
+    @commands.Cog.listener("on_command_error")
+    async def on_command_error(self, ctx, error):
+        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+        embed.color = ctx.author.color
+        icon = self.bot.user.avatar
+        if not (icon is None):
+            icon = icon.url
+        else:
+            icon = self.bot.user.default_avatar.url
+        embed.set_author(icon_url=icon, name=self.bot.user)
+        icon = ctx.author.avatar
+        if not (icon is None):
+            icon = icon.url
+        else:
+            icon = ctx.author.default_avatar.url
+        embed.set_footer(icon_url=icon,
+                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+        await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -608,8 +614,10 @@ class ticket_cog(commands.Cog):
         self.bot = bot
         self.roles = dict()
 
-    def can_close_tickets(self, ctx):
-        async def predicate(self, ctx):
+
+    @commands.command(aliases=['cancel_ticket'])
+    async def close_ticket(self, ctx, channel: discord.TextChannel):
+        def predicate(self, ctx):
             try:
                 self.roles[ctx.guild.id]
             except KeyError:
@@ -618,7 +626,7 @@ class ticket_cog(commands.Cog):
                 else:
                     return False
             else:
-                for role in roles[ctx.guild.id]:
+                for role in self.roles[ctx.guild.id]:
                     try:
                         if ctx.guild.get_role(role) in ctx.author.roles:
                             return True
@@ -627,8 +635,17 @@ class ticket_cog(commands.Cog):
                     except (discord.NotFound, discord.Forbidden, discord.HTTPException):
                         print(f'Could not find role {role} in guild {ctx.guild.id} for ticket viewing.')
                 return False
-
-        return commands.check(predicate(self, ctx))
+        if predicate(self, ctx):
+            pass
+        else:
+            return await ctx.message.reply('You may not close this ticket.')
+        if channel.name.startswith('ticket-'):
+            async for entry in ctx.guild.audit_logs(limit=None, action=discord.AuditLogAction.channel_create, user=ctx.guild.me):
+                if entry.target == channel:
+                    await channel.delete()
+                    return await ctx.message.reply(f'`{channel.name}` closed.')
+            await ctx.send(f'Invalid channel.')
+        await ctx.send(f'Invalid channel.')
 
 
     @commands.command(aliases=('viewing_role', 'view_ticket'))
@@ -642,21 +659,6 @@ class ticket_cog(commands.Cog):
         else:
             self.roles[ctx.guild.id].append(role.id)
             await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
-
-
-    @commands.command(aliases=['cancel_ticket'])
-    async def close_ticket(self, ctx, channel: discord.TextChannel):
-        if can_close_tickets(self, ctx):
-            pass
-        else:
-            return await ctx.message.reply('You may not close this ticket.')
-        if channel.name.startswith('ticket-'):
-            async for entry in ctx.guild.audit_logs(limit=None, action=discord.AuditLogAction.channel_create, user=ctx.guild.me):
-                if entry.target == channel:
-                    await channel.delete()
-                    return await ctx.message.reply(f'`{channel.name}` closed.')
-            await ctx.send(f'Invalid channel.')
-        await ctx.send(f'Invalid channel.')
 
 
     @commands.command(aliases=('open_ticket', 'start_ticket'))
@@ -696,12 +698,16 @@ class ticket_cog(commands.Cog):
         except KeyError:
             pass
         else:
-            string = ''
+            string = str()
             if len(self.roles[ctx.guild.id]) > 1:
-                for role in self.roles[ctx.guild.id]:
-                    string = f'{string}{ctx.guild.get_role(role).mention}, '
+                for index, role in enumerate(self.roles[ctx.guild.id]):
+                    role = ctx.guild.get_role(role)
+                    if not((index + 1) == len(self.roles[ctx.guild.id])):
+                        string = f'{string}{role.mention}, '
+                    else:
+                        string = f'{string}{role.mention}'
             else:
-                string = ctx.guild.get_role(role).mention
+                string = ctx.guild.get_role(self.roles[ctx.guild.id][0]).mention
             embed.add_field(name='Roles that can view this ticket', value=string, inline=False)
         await ticket.send(content='If this channel does not recieve a message within 10 minutes, the ticket will be closed.', embed=embed)
         await ticket.set_permissions(ctx.guild.default_role, view_channel=False)
@@ -1753,11 +1759,11 @@ class print_cog(commands.Cog):
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
     embed = discord.Embed(title='Status')
-    if bot.latency * 1000 > 119:
+    if (bot.latency * 1000) > 119:
         embed.color = discord.Color.from_rgb(0,255,0)
-    elif bot.latency * 1000 > 79:
+    elif (bot.latency * 1000) > 79:
         embed.color = discord.Color.from_rgb(255,249,8)
-    elif bot.latency * 1000 > 39:
+    elif (bot.latency * 1000) > 39:
         embed.color = discord.Color.from_rgb(141,255,8)
     else:
         embed.color = discord.Color.from_rgb(000, 255, 000)
@@ -1845,7 +1851,6 @@ class channels_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
 
     @commands.command()
     @commands.has_permissions(manage_channels=True)
@@ -2157,7 +2162,6 @@ class extras_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.command(aliases=['add_topic'])
     @commands.cooldown(1, 420, commands.BucketType.user)
     async def topic_add(self, ctx, *, topic: str):
@@ -2167,7 +2171,8 @@ class extras_cog(commands.Cog):
             icon = ctx.message.author.default_avatar.url
         else:
             icon = icon.url
-        embed = discord.Embed(title='Topic verification request', color=ctx.author.color, description=f'{ctx.author.mention} is requesting verification for the topic:\n`{topic}`\n The request will be automatically denied in 10 minutes.')
+        embed = discord.Embed(title='Topic verification request', color=ctx.author.color,
+                              description=f'{ctx.author.mention} is requesting verification for the topic:\n`{topic}`\n The request will be automatically denied in 10 minutes.')
         embed.set_author(name=ctx.author, icon_url=icon)
         icon = ctx.guild.icon
         if icon is None:
@@ -2178,13 +2183,18 @@ class extras_cog(commands.Cog):
                 icon = icon.url
         else:
             icon = icon.url
-        embed.set_footer(text=f'{ctx.author} requested topic verification in {ctx.guild} at {str(ctx.message.created_at).rsplit(".")[0]}', icon_url=icon)
+        embed.set_footer(
+            text=f'{ctx.author} requested topic verification in {ctx.guild} at {str(ctx.message.created_at).rsplit(".")[0]}',
+            icon_url=icon)
         context = await owner.send(embed=embed)
         await context.add_reaction('✅')
         await context.add_reaction('❌')
         await ctx.author.send(f'{ctx.author.mention} your topic request is being verified by the owner.')
+
         def check(payload: discord.RawReactionActionEvent):
-            return payload.user_id == owner.id and payload.channel_id == context.channel.id and any(i in str(payload.emoji) for i in ('✅', '❌'))
+            return payload.user_id == owner.id and payload.channel_id == context.channel.id and any(
+                i in str(payload.emoji) for i in ('✅', '❌'))
+
         try:
             data = await self.bot.wait_for(event='raw_reaction_add', timeout=600, check=check)
         except asyncio.exceptions.TimeoutError:
@@ -2201,13 +2211,13 @@ class extras_cog(commands.Cog):
         await context.remove_reaction(emoji='✅', member=self.bot.user)
         await context.remove_reaction(emoji='❌', member=self.bot.user)
 
-
     @commands.command()
     @commands.cooldown(1, 120, commands.BucketType.channel)
     async def topic(self, ctx):
         ind = random.choice(topics)
         message = ind[1]
-        embed = discord.Embed(title=str(ind[0]), color=message.author.color, description='Want to add a topic? run `>topic_add <topic>` to request a topic verification by the owner!')
+        embed = discord.Embed(title=str(ind[0]), color=message.author.color,
+                              description='Want to add a topic? run `>topic_add <topic>` to request a topic verification by the owner!')
         icon = message.author.avatar
         if icon is None:
             icon = message.author.default_avatar.url
@@ -2224,8 +2234,11 @@ class extras_cog(commands.Cog):
         else:
             icon = icon.url
         print(icon)
-        embed.set_footer(text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.', icon_url=icon)
+        embed.set_footer(
+            text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.',
+            icon_url=icon)
         await ctx.message.reply(embed=embed)
+
 
     @commands.command(aliases=['nickname'])
     @commands.has_permissions(manage_nicknames=True)
