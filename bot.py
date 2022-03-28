@@ -222,10 +222,6 @@ class event_cog(commands.Cog):
         except (AttributeError, discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, discord.Forbidden):
             print('Message log error.')
-        if message.guild.id in list(default_roles.keys()):
-            pass
-        else:
-            default_roles[message.guild.id] = message.guild.default_role.id
         if message.guild is None:
             return
         test = str(str(message.content).replace(' ', '')).lower()
@@ -608,6 +604,7 @@ class mute_cog(commands.Cog):
 
 
 class ticket_cog(commands.Cog):
+    global default_roles
 
 
     def __init__(self, bot):
@@ -711,7 +708,10 @@ class ticket_cog(commands.Cog):
             embed.add_field(name='Roles that can view this ticket', value=string, inline=False)
         await ticket.send(content='If this channel does not recieve a message within 10 minutes, the ticket will be closed.', embed=embed)
         await ticket.set_permissions(ctx.guild.default_role, view_channel=False)
-        await ticket.set_permissions(ctx.guild.get_role(default_roles[ctx.guild.id]), view_channel=False)
+        try:
+            await ticket.set_permissions(get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id]), view_channel=False)
+        except BaseException:
+            pass
         await ticket.set_permissions(await ctx.guild.fetch_member(ctx.author.id), view_channel=True)
         try:
             roles = self.roles[ctx.guild.id]
@@ -945,6 +945,7 @@ class warn_cog(commands.Cog):
 
 
 class hush_cog(commands.Cog):
+    global default_roles
 
 
     def __init__(self, bot):
@@ -962,12 +963,18 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def hush(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
+        print(type(role), role.name)
+
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
+            print(True)
             ctx.channel = ctx.author.voice.channel
         try:
-            if ((ctx.channel.overwrites_for(role)).view_channel and (ctx.channel.overwrites_for(role)).send_messages and isinstance(ctx.channel, discord.TextChannel)) or ((ctx.channel.overwrites_for(role)).connect and (((ctx.channel.overwrites_for(role)).speak or (ctx.channel.overwrites_for(role)).stream) and isinstance(ctx.channel, discord.VoiceChannel))):
+            if (not((ctx.channel.overwrites_for(role)).view_channel == False)) and (ctx.channel.overwrites_for(role)).send_messages and isinstance(ctx.channel, discord.TextChannel) or ((not((ctx.channel.overwrites_for(role)).connect == False)) and (((ctx.channel.overwrites_for(role)).speak or (ctx.channel.overwrites_for(role)).stream) and isinstance(ctx.channel, discord.VoiceChannel))):
                 pass
             else:
                 return
@@ -1003,14 +1010,12 @@ class hush_cog(commands.Cog):
         overwrite.speak = True
         overwrite.stream = True
         try:
-            if (not(
-            (ctx.channel.overwrites_for(role)).send_messages) and (ctx.channel.overwrites_for(role)).view_channel and isinstance(ctx.channel, discord.TextChannel)) or (not(
-            (ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (((ctx.channel.overwrites_for(role)).view_channel) and (not((ctx.channel.overwrites_for(role)).send_messages) and isinstance(ctx.channel, discord.TextChannel))) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
         except KeyError:
-            pass
+            return
         await ctx.channel.set_permissions(role, overwrite=overwrite)
         await channel.send(f'{ctx.author.mention}, channel has been unhushed.')
 
@@ -1019,12 +1024,16 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def un_hush(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = ctx.guild.get_role(default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if (((ctx.channel.overwrites_for(role)).view_channel) and not((ctx.channel.overwrites_for(role)).send_messages) and isinstance(ctx.channel, discord.TextChannel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (((ctx.channel.overwrites_for(role)).view_channel) and (not((ctx.channel.overwrites_for(role)).send_messages) and isinstance(ctx.channel, discord.TextChannel))) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+
                 pass
             else:
                 return
@@ -1053,12 +1062,15 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def un_hide(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if (not((ctx.channel.overwrites_for(role)).view_channel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (((ctx.channel.overwrites_for(role)).view_channel == False)) or (((ctx.channel.overwrites_for(role)).connect == False) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
@@ -1078,12 +1090,16 @@ class hush_cog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def hide(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         print(ctx.author.voice, type(ctx.author.voice))
         if isinstance(ctx.author.voice, discord.VoiceState):
             ctx.channel = ctx.author.voice.channel
         try:
-            if ((ctx.channel.overwrites_for(role)).view_channel) or (((ctx.channel.overwrites_for(role)).connect and isinstance(ctx.channel, discord.VoiceChannel))):
+            if (not((ctx.channel.overwrites_for(role)).view_channel == False)) or ((not((ctx.channel.overwrites_for(role)).connect == False) and isinstance(ctx.channel, discord.VoiceChannel))):
+
                 pass
             else:
                 return
@@ -1104,7 +1120,7 @@ class hush_cog(commands.Cog):
         overwrite.send_messages = True
         overwrite.speak = True
         try:
-            if (not((ctx.channel.overwrites_for(role)).view_channel)) or (not((ctx.channel.overwrites_for(role)).connect) and isinstance(ctx.channel, discord.VoiceChannel)):
+            if (((ctx.channel.overwrites_for(role)).view_channel == False)) or (((ctx.channel.overwrites_for(role)).connect == False) and isinstance(ctx.channel, discord.VoiceChannel)):
                 pass
             else:
                 return
@@ -1115,7 +1131,7 @@ class hush_cog(commands.Cog):
 
 
 class server_lock_cog(commands.Cog):
-
+    global default_roles
 
     def __init__(self, bot):
         self.bot = bot
@@ -1129,12 +1145,13 @@ class server_lock_cog(commands.Cog):
         overwrite.send_messages = True
         overwrite.connect = True
         overwrite.speak = True
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         for channel in ctx.guild.channels:
             try:
-                if not (channel.overwrites_for(role).view_channel) or (
-                        not (channel.overwrites_for(role).connect) and isinstance(channel,
-                                                                                                    discord.VoiceChannel)):
+                if (((channel.overwrites_for(role)).view_channel == False)) or (((channel.overwrites_for(role)).connect == False) and isinstance(channel, discord.VoiceChannel)):
                     await channel.set_permissions(role, overwrite=overwrite)
                 else:
                     continue
@@ -1151,7 +1168,10 @@ class server_lock_cog(commands.Cog):
         overwrite.send_messages = False
         overwrite.connect = False
         overwrite.speak = False
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         for channel in ctx.guild.channels:
             try:
                 if (channel.overwrites_for(role).view_channel) or (channel.overwrites_for(role).connect and isinstance(channel, discord.VoiceChannel)):
@@ -1170,10 +1190,10 @@ class server_lock_cog(commands.Cog):
         overwrite.speak = True
         for channel in ctx.guild.channels:
             try:
-                if not(channel.overwrites_for(role).view_channel) or (not(channel.overwrites_for(role).connect) and isinstance(channel, discord.VoiceChannel)):
-                    await channel.set_permissions(role, overwrite=overwrite)
-                else:
+                if (((channel.overwrites_for(role)).view_channel == False)) or (((channel.overwrites_for(role)).connect == False) and isinstance(channel, discord.VoiceChannel)):
                     await channel.set_permissions(role, overwrite=overwrite, reason=reason)
+                else:
+                    continue
             except KeyError:
                 continue
         await ctx.send(f'{ctx.author.mention} server has been unhidden.')
@@ -1183,7 +1203,10 @@ class server_lock_cog(commands.Cog):
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def lockdown(self, ctx, time: float = 5, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         overwrite.send_messages = False
         overwrite.read_messages = True
         overwrite.send_messages_in_threads = False
@@ -1199,12 +1222,7 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (channel.overwrites_for(role)).view_channel and (
-                channel.overwrites_for(role)).send_messages and isinstance(channel,
-                                                                                                 discord.TextChannel) or (
-                channel.overwrites_for(role)).connect and (((channel.overwrites_for(
-                        role)).speak or (channel.overwrites_for(
-                        role)).stream) and isinstance(channel, discord.VoiceChannel)):
+                if (not((channel.overwrites_for(role)).view_channel == False)) or ((not((channel.overwrites_for(role)).connect == False) and isinstance(channel, discord.VoiceChannel))):
                     await channel.set_permissions(role, overwrite=overwrite, reason=reason)
                 else:
                     continue
@@ -1229,12 +1247,8 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (((channel.overwrites_for(role)).view_channel) and not (
-                (channel.overwrites_for(role)).send_messages) and isinstance(channel,
-                                                                                                   discord.TextChannel)) or (
-                        not ((channel.overwrites_for(role)).connect) and isinstance(channel,
-                                                                                                          discord.VoiceChannel)):
-                    await channel.set_permissions(role, overwrite=overwrite)
+                if (((channel.overwrites_for(role)).view_channel == False)) or (((channel.overwrites_for(role)).connect == False) and isinstance(channel, discord.VoiceChannel)):
+                    await channel.set_permissions(role, overwrite=overwrite, reason=reason)
                 else:
                     continue
             except KeyError:
@@ -1246,7 +1260,10 @@ class server_lock_cog(commands.Cog):
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def unlock(self, ctx, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
-        role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        try:
+            role = get(await ctx.guild.fetch_roles(), id=default_roles[ctx.guild.id])
+        except BaseException:
+            role = ctx.guild.default_role
         overwrite.send_messages = True
         overwrite.read_messages = True
         overwrite.send_messages_in_threads = True
@@ -1262,11 +1279,7 @@ class server_lock_cog(commands.Cog):
         overwrite.embed_links = False
         for channel in ctx.guild.channels:
             try:
-                if (((channel.overwrites_for(role)).view_channel) and not (
-                (channel.overwrites_for(role)).send_messages) and isinstance(channel,
-                                                                                                   discord.TextChannel)) or (
-                        not ((channel.overwrites_for(role)).connect) and isinstance(channel,
-                                                                                                          discord.VoiceChannel)):
+                if (((channel.overwrites_for(role)).view_channel == False)) or (((channel.overwrites_for(role)).connect == False) and isinstance(channel, discord.VoiceChannel)):
                     await channel.set_permissions(role, overwrite=overwrite)
                 else:
                     continue
@@ -1381,26 +1394,6 @@ class fetch_data_cog(commands.Cog):
     @commands.command()
     async def char(self, ctx, *, char):
         await ctx.send(f'`{char}`')
-
-
-    @commands.command(aliases=('e', 'eval'))
-    async def evaluate(self, ctx, *, command):
-        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
-                                capture_output=True, text=True, timeout=5)
-        if len(result.stdout) > 45:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
@@ -1689,6 +1682,26 @@ class owner_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command(aliases=('e', 'eval'))
+    @commands.is_owner()
+    async def evaluate(self, ctx, *, command):
+        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
+                                capture_output=True, text=True, timeout=5)
+        if len(result.stdout) > 45:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+    ```
+    {result.stderr}
+    {result.stdout}
+    ```''')
 
 
     @commands.command()
