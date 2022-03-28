@@ -654,7 +654,7 @@ class ticket_cog(commands.Cog):
             self.roles[ctx.guild.id] = [role.id]
             await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
         else:
-            if role.id in self.roles.values():
+            if role.id in list(self.roles.values()):
                 return await ctx.message.reply(f'Members with role **{role.name}** can already view opened tickets.')
             self.roles[ctx.guild.id].append(role.id)
             await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
