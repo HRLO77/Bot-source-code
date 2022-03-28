@@ -1685,7 +1685,7 @@ class owner_cog(commands.Cog):
 
     @commands.command(aliases=('e', 'eval'))
     @commands.is_owner()
-        async def evaluate(self, ctx, *, python_code: str):
+    async def evaluate(self, ctx, *, python_code: str):
         if python_code.startswith('```py'):
             python_code = python_code.lstrip('```py')
         elif python_code.startswith('```'):
@@ -1698,11 +1698,11 @@ class owner_cog(commands.Cog):
             python_code = python_code.rstrip('`')
         result = subprocess.run([sys.executable, "-c", python_code],
                                 capture_output=True, text=True, timeout=5)
-        if f'''```
+        if (f'''```
 {result.stderr}
 {result.stdout}
 ```'''.count('''
-''') - 2 > 19:
+''') - 2) > 19:
             o = open('out.txt', 'w')
             o = o.writelines(str(result.stdout))
             file = discord.File(
