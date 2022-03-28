@@ -1685,10 +1685,24 @@ class owner_cog(commands.Cog):
 
     @commands.command(aliases=('e', 'eval'))
     @commands.is_owner()
-    async def evaluate(self, ctx, *, command):
-        result = subprocess.run([sys.executable, "-c", f"{str(command).strip('`').strip('python').strip('py')}"],
+        async def evaluate(self, ctx, *, python_code: str):
+        if python_code.startswith('```py'):
+            python_code = python_code.lstrip('```py')
+        elif python_code.startswith('```'):
+            python_code = python_code.lstrip('```')
+        elif python_code.startswith('`'):
+            python_code = python_code.lstrip('`')
+        if python_code.endswith('```'):
+            python_code = python_code.rstrip('```')
+        elif python_code.endswith('`'):
+            python_code = python_code.rstrip('`')
+        result = subprocess.run([sys.executable, "-c", python_code],
                                 capture_output=True, text=True, timeout=5)
-        if len(result.stdout) > 45:
+        if f'''```
+{result.stderr}
+{result.stdout}
+```'''.count('''
+''') - 2 > 19:
             o = open('out.txt', 'w')
             o = o.writelines(str(result.stdout))
             file = discord.File(
@@ -1698,10 +1712,10 @@ class owner_cog(commands.Cog):
             return
         f = ''
         await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-    ```
-    {result.stderr}
-    {result.stdout}
-    ```''')
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command()
