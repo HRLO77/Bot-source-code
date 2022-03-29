@@ -1460,7 +1460,7 @@ class fetch_data_cog(commands.Cog):
     async def format(self, ctx, years: int=None, months: int=None, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
         current_time = datetime.now()
         try:
-            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minute, second=seconds)
+            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes, second=seconds)
         except BaseException:
             await ctx.message.reply('That isn\'t a valid datetime.')
         except:
