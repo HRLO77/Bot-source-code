@@ -1466,6 +1466,14 @@ class fetch_data_cog(commands.Cog):
         else:
             await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
+            
+    @commands.command(aliases=['check_reminder', 'check_reminders'])
+    async def reminders(self, ctx):
+        if ctx.author.id in self.reminders.keys():
+            await ctx.message.reply(f'Your reminder ends on {discord.utils.format_dt(self.reminders[ctx.author.id])}!')
+        else:
+            await ctx.message.reply('You do not currently have an active reminder.')
+            
 
     @commands.command()
     async def char(self, ctx, *, char):
