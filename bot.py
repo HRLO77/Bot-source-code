@@ -1457,8 +1457,7 @@ class fetch_data_cog(commands.Cog):
 
 
     @commands.command(aliases=('format_date', 'format_dt', 'format_time'))
-    async def format(self, ctx, years: int=None, months: int=None, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
-        current_time = datetime.now()
+    async def format(self, ctx, years: int=datetime.now().year, months: int=datetime.now().month, days: int=datetime.now().day, hours: int=datetime.now().hour, minutes: int=datetime.now().minute, seconds: int=datetime.now().second):        current_time = datetime.now()
         try:
             current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes, second=seconds)
         except BaseException:
