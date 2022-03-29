@@ -1390,8 +1390,81 @@ class help_cog(commands.Cog):
 class fetch_data_cog(commands.Cog):
 
 
+    @tasks.loop(seconds=10)
+    async def check_reminders(self):
+        current_time = datetime.now()
+        await self.bot.wait_until_ready()
+        for key in self.reminders.keys():
+            if self.reminders[key] < current_time:
+                try:
+                    user = self.bot.get_user(key)
+                except BaseException:
+                    print(f'Couldn\'t find member {key} for reminder checking.')
+                else:
+                    await user.send(f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders[key])})')
+                self.to_del.append(key)
+
+
+    @tasks.loop(seconds=5)
+    async def clear_reminders(self):
+        for index, key in enumerate(self.to_del):
+            del self.reminders[key]
+            self.to_del.pop(index)
+
+
     def __init__(self, bot):
         self.bot = bot
+        self.reminders = dict()
+        self.to_del = list()
+        self.check_reminders.start()
+        self.clear_reminders.start()
+
+
+    @commands.command(aliases=('start_reminder', 'reminder'))
+    async def remind(self, ctx, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
+        if ctx.author.id in self.reminders.keys():
+            if isinstance(self.bot.command_prefix, list) or isinstance(self.bot.command_prefix, tuple):
+                return await ctx.message.reply(f'You already have an active reminder! Please run `{self.bot.command_prefix[-1]}close_timer` to close your current reminder')
+            else:
+                return await ctx.message.reply(f'You already have an active reminder! Please run `{self.bot.command_prefix}close_timer` to close your current reminder')
+        if days is None:
+            days = 0
+        if hours is None:
+            hours = 0
+        if minutes is None:
+            minutes = 0
+        if seconds is None:
+            seconds = 0
+        if minutes is None and hours is None and days is None and seconds is None:
+            minutes = 1
+        current_time = datetime.now()
+        try:
+            current_time = current_time.replace(minute=current_time.minute + minutes, hour= current_time.hour+hours, day=current_time.day + days, second=current_time.second + seconds)
+        except BaseException:
+            return await ctx.message.reply('Cannot set timer.')
+        self.reminders[ctx.author.id] = current_time
+        print(current_time)
+        return await ctx.author.send(f'Your timer was set for {discord.utils.format_dt(current_time)}!')
+
+
+    @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder'))
+    async def clear_reminder(self, ctx):
+        if ctx.author.id in self.reminders.keys():
+            self.to_del.append(ctx.author.id)
+            await ctx.message.reply('Reminder deletion added to queue.')
+        else:
+            await ctx.message.reply('You don\'t currently have a reminder set.')
+
+
+    @commands.command(aliases=('format_date', 'formate_dt', 'formate_time'))
+    async def format(self, ctx, years: int=None, months: int=None, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
+        current_time = datetime.now()
+        try:
+            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minute, second=seconds)
+        except BaseException:
+            await ctx.message.reply('That isn\'t a valid datetime.')
+        except:
+            await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
 
     @commands.command()
