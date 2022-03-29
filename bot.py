@@ -1462,7 +1462,7 @@ class fetch_data_cog(commands.Cog):
             current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes, second=seconds)
         except BaseException:
             await ctx.message.reply('That isn\'t a valid datetime.')
-        except:
+        else:
             await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
 
