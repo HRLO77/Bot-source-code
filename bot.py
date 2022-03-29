@@ -1456,7 +1456,7 @@ class fetch_data_cog(commands.Cog):
             await ctx.message.reply('You don\'t currently have a reminder set.')
 
 
-    @commands.command(aliases=('format_date', 'formate_dt', 'formate_time'))
+    @commands.command(aliases=('format_date', 'format_dt', 'format_time'))
     async def format(self, ctx, years: int=None, months: int=None, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
         current_time = datetime.now()
         try:
