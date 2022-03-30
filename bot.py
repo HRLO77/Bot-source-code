@@ -1420,26 +1420,40 @@ class reminder_cog(commands.Cog):
 
 
     @commands.command(aliases=('start_reminder', 'reminder'))
-    async def remind(self, ctx, days: int = None, hours: int = None, minutes: int = None, seconds: int = None):
-        if days is None:
-            days = 0
-        if hours is None:
-            hours = 0
-        if minutes is None:
-            minutes = 0
-        if seconds is None:
-            seconds = 0
-        if minutes is None and hours is None and days is None and seconds is None:
-            minutes = 1
+    async def remind(self, ctx, months: int=None, days: int = None, hours: int = None, minutes: int = None, seconds: int = None):
         current_time = datetime.now()
-        try:
-            current_time = current_time.replace(minute=current_time.minute + minutes, hour=current_time.hour + hours,
-                                                day=current_time.day + days, second=current_time.second + seconds)
-        except BaseException:
-            return await ctx.message.reply('Cannot set reminder.')
-        else:
-            if current_time < datetime.now():
-                await ctx.message.reply('Please enter values that are in the future.')
+        if months is None:
+            try:
+                current_time = current_time.replace(month=current_time.day + months)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if days is None:
+            try:
+                current_time = current_time.replace(day=current_time.day + days)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if hours is None:
+            try:
+                current_time = current_time.replace(hour=current_time.hour + hours)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if minutes is None:
+            try:
+                current_time = current_time.replace(minute=current_time.minute + minutes)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if not seconds is None:
+            try:
+                current_time = current_time.replace(second=current_time.second + seconds)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if minutes is None and hours is None and days is None and seconds is None:
+            try:
+                current_time = current_time.replace(minute=current_time.minute + 1)
+            except BaseException:
+                return await ctx.message.reply('Cannot set reminder.')
+        if current_time < datetime.now():
+            return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders[(ctx.author.id, random.randint(0, 99999))] = current_time
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
 
