@@ -1480,8 +1480,8 @@ class reminder_cog(commands.Cog):
                     string = f'{string}{discord.utils.format_dt(self.reminders[key])}, '
                 else:
                     string = f'{string}{discord.utils.format_dt(self.reminders[key])}.'
-            context = await ctx.message.reply(
-                f'{string} You have 60 seconds to reply to this message with the reminder to cancel(I.E 4, 7, 1).')
+            context = await ctx.author.send(
+                f'{string} {ctx.author.mention} You have 60 seconds to reply to this message with the reminder to cancel(I.E 4, 7, 1).')
 
             def check(m):
                 if m.author.id == ctx.author.id:
@@ -1500,10 +1500,10 @@ class reminder_cog(commands.Cog):
                 try:
                     message = await self.bot.wait_for(event='message', timeout=60, check=check)
                 except asyncio.exceptions.TimeoutError:
-                    return await content.reply('Reminder deletion cancelled.')
+                    return await context.reply('Reminder deletion cancelled.')
                 else:
-                    self.to_del.append(keys[int(message.content)])
-                    return await context.reply(
+                    self.to_del.append(keys[int(message.content) - 1])
+                    return await message.reply(
                         f'Reminder deletion queued for {discord.utils.format_dt(self.reminders[keys[int(message.content)]])}')
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
