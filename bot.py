@@ -2,6 +2,7 @@
 #
 # ensurepip.bootstrap()
 import os
+import calender
 from better_profanity import profanity
 profanity.MAX_NUMBER_COMBINATIONS = 20
 import math
@@ -1419,39 +1420,44 @@ class reminder_cog(commands.Cog):
         self.clear_reminders.start()
 
 
-    @commands.command(aliases=('start_reminder', 'reminder'))
-    async def remind(self, ctx, months: int=None, days: int = None, hours: int = None, minutes: int = None, seconds: int = None):
+        @commands.command(aliases=('start_reminder', 'reminder'))
+    async def remind(self, ctx, days: int = 0, hours: int = 0, minutes: int = 1, seconds: int = 0):
         current_time = datetime.now()
-        if not(months is None):
-            try:
-                current_time = current_time.replace(month=current_time.month + months)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
-        if not(days is None):
-            try:
-                current_time = current_time.replace(day=current_time.day + days)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
-        if not(hours is None):
-            try:
-                current_time = current_time.replace(hour=current_time.hour + hours)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
-        if not(minutes is None):
-            try:
-                current_time = current_time.replace(minute=current_time.minute + minutes)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
-        if not (seconds is None):
-            try:
-                current_time = current_time.replace(second=current_time.second + seconds)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
-        if months is None and minutes is None and hours is None and days is None and seconds is None:
-            try:
-                current_time = current_time.replace(minute=current_time.minute + 1)
-            except BaseException:
-                return await ctx.message.reply('Cannot set reminder.')
+
+        class Time:
+            def GetTime(self, d, h, m, s):
+                self.__h = int(h)
+                self.__m = int(m)
+                self.__s = int(s)
+                self.__d = int(d)
+
+            def PutResult(self):
+                return (self.__months, self.__d, self.__h, self.__m, self.__s)
+
+            def __init__(self, d, h, m, s):
+                self.GetTime(d, h, m, s)
+                R = self
+                R.__h = self.__h
+                R.__m = self.__m
+                R.__s = self.__s
+                R.__d = self.__d
+
+                R.__m = R.__m + (R.__s // round(60 - current_time.second))
+                R.__s = R.__s % round(60 - current_time.second)
+
+                R.__h = R.__h + round(R.__m // (60 - current_time.minute))
+                R.__m = R.__m % round(60 - current_time.minute)
+
+                R.__d = R.__d + (R.__h // (24 - current_time.hour))
+                R.__h = R.__h % round(24 - current_time.hour)
+
+                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month + 1)[-1])
+                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month + 1)[-1])
+                return None
+        time = Time(d=days + current_time.day, h=hours, m=minutes + current_time.minute, s=seconds + current_time.second)
+        time = time.PutResult()
+        print(time)
+        current_time = current_time.replace(month=time[0] + current_time.month, day=time[1], hour=time[2], minute=time[3], second=time[4])
         if current_time < datetime.now():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders[(ctx.author.id, random.randint(0, 99999))] = current_time
