@@ -1835,7 +1835,13 @@ class owner_cog(commands.Cog):
 
     @commands.command(aliases=('e', 'eval'))
     @commands.is_owner()
-    async def evaluate(self, ctx, *, python_code: str):
+    async def evaluate(self, ctx, *, python_code: str = None):
+        if not (ctx.message.attachments is None) and python_code is None:
+            for index, attachment in enumerate(ctx.message.attachments):
+                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                    file = await attachment.save(fp=fr'./{name}')
+                    python_code = open(fr'./{name}', 'r').read()
         if python_code.startswith('```py'):
             python_code = python_code.lstrip('```py')
         elif python_code.startswith('```'):
@@ -1849,9 +1855,9 @@ class owner_cog(commands.Cog):
         result = subprocess.run([sys.executable, "-c", python_code],
                                 capture_output=True, text=True, timeout=5)
         if (f'''```
-    {result.stderr}
-    {result.stdout}
-            ```'''.count('''
+{result.stderr}
+{result.stdout}
+```'''.count('''
             ''') - 2) > 19:
             o = open('out.txt', 'w')
             o = o.writelines(str(result.stdout))
@@ -1862,10 +1868,10 @@ class owner_cog(commands.Cog):
             return
         f = ''
         await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-            ```
-    {result.stderr}
-    {result.stdout}
-            ```''')
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command()
