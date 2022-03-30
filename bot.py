@@ -1420,7 +1420,7 @@ class reminder_cog(commands.Cog):
         self.clear_reminders.start()
 
 
-        @commands.command(aliases=('start_reminder', 'reminder'))
+    @commands.command(aliases=('start_reminder', 'reminder'))
     async def remind(self, ctx, days: int = 0, hours: int = 0, minutes: int = 1, seconds: int = 0):
         current_time = datetime.now()
 
