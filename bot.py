@@ -1422,32 +1422,32 @@ class reminder_cog(commands.Cog):
     @commands.command(aliases=('start_reminder', 'reminder'))
     async def remind(self, ctx, months: int=None, days: int = None, hours: int = None, minutes: int = None, seconds: int = None):
         current_time = datetime.now()
-        if months is None:
+        if not(months is None):
             try:
-                current_time = current_time.replace(month=current_time.day + months)
+                current_time = current_time.replace(month=current_time.month + months)
             except BaseException:
                 return await ctx.message.reply('Cannot set reminder.')
-        if days is None:
+        if not(days is None):
             try:
                 current_time = current_time.replace(day=current_time.day + days)
             except BaseException:
                 return await ctx.message.reply('Cannot set reminder.')
-        if hours is None:
+        if not(hours is None):
             try:
                 current_time = current_time.replace(hour=current_time.hour + hours)
             except BaseException:
                 return await ctx.message.reply('Cannot set reminder.')
-        if minutes is None:
+        if not(minutes is None):
             try:
                 current_time = current_time.replace(minute=current_time.minute + minutes)
             except BaseException:
                 return await ctx.message.reply('Cannot set reminder.')
-        if not seconds is None:
+        if not (seconds is None):
             try:
                 current_time = current_time.replace(second=current_time.second + seconds)
             except BaseException:
                 return await ctx.message.reply('Cannot set reminder.')
-        if minutes is None and hours is None and days is None and seconds is None:
+        if months is None and minutes is None and hours is None and days is None and seconds is None:
             try:
                 current_time = current_time.replace(minute=current_time.minute + 1)
             except BaseException:
