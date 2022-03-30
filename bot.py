@@ -1,7 +1,7 @@
 # import ensurepip
 #
 # ensurepip.bootstrap()
-# import os
+import os
 from better_profanity import profanity
 profanity.MAX_NUMBER_COMBINATIONS = 20
 import math
