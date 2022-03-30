@@ -1387,8 +1387,7 @@ class help_cog(commands.Cog):
         await ctx.send('https://github.com/HRLO77/Bot-source-code')
 
 
-class fetch_data_cog(commands.Cog):
-
+class reminder_cog(commands.Cog):
 
     @tasks.loop(seconds=10)
     async def check_reminders(self):
@@ -1397,13 +1396,13 @@ class fetch_data_cog(commands.Cog):
         for key in self.reminders.keys():
             if self.reminders[key] < current_time:
                 try:
-                    user = self.bot.get_user(key)
+                    user = await self.bot.fetch_user(key[0])
                 except BaseException:
-                    print(f'Couldn\'t find member {key} for reminder checking.')
+                    print(f'Couldn\'t find member {key[0]} for reminder checking.')
                 else:
-                    await user.send(f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders[key])})')
+                    await user.send(
+                        f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders[key])})')
                 self.to_del.append(key)
-
 
     @tasks.loop(seconds=5)
     async def clear_reminders(self):
@@ -1421,12 +1420,7 @@ class fetch_data_cog(commands.Cog):
 
 
     @commands.command(aliases=('start_reminder', 'reminder'))
-    async def remind(self, ctx, days: int=None, hours: int=None, minutes: int=None, seconds: int=None):
-        if ctx.author.id in self.reminders.keys():
-            if isinstance(self.bot.command_prefix, list) or isinstance(self.bot.command_prefix, tuple):
-                return await ctx.message.reply(f'You already have an active reminder! Please run `{self.bot.command_prefix[-1]}close_timer` to close your current reminder')
-            else:
-                return await ctx.message.reply(f'You already have an active reminder! Please run `{self.bot.command_prefix}close_timer` to close your current reminder')
+    async def remind(self, ctx, days: int = None, hours: int = None, minutes: int = None, seconds: int = None):
         if days is None:
             days = 0
         if hours is None:
@@ -1439,41 +1433,113 @@ class fetch_data_cog(commands.Cog):
             minutes = 1
         current_time = datetime.now()
         try:
-            current_time = current_time.replace(minute=current_time.minute + minutes, hour= current_time.hour+hours, day=current_time.day + days, second=current_time.second + seconds)
+            current_time = current_time.replace(minute=current_time.minute + minutes, hour=current_time.hour + hours,
+                                                day=current_time.day + days, second=current_time.second + seconds)
         except BaseException:
-            return await ctx.message.reply('Cannot set timer.')
-        self.reminders[ctx.author.id] = current_time
-        print(current_time)
-        return await ctx.author.send(f'Your timer was set for {discord.utils.format_dt(current_time)}!')
-
-
-    @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder'))
-    async def clear_reminder(self, ctx):
-        if ctx.author.id in self.reminders.keys():
-            self.to_del.append(ctx.author.id)
-            await ctx.message.reply('Reminder deletion added to queue.')
+            return await ctx.message.reply('Cannot set reminder.')
         else:
-            await ctx.message.reply('You don\'t currently have a reminder set.')
+            if current_time < datetime.now():
+                await ctx.message.reply('Please enter values that are in the future.')
+        self.reminders[(ctx.author.id, random.randint(0, 99999))] = current_time
+        return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
 
+
+    @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder', 'close_reminder'))
+    async def clear_reminder(self, ctx):
+        reminders = 0
+        for key in self.reminders.keys():
+            if ctx.author.id == key[0]:
+                reminders += 1
+        if reminders == 1:
+            for key in self.reminders.keys():
+                if ctx.author.id == key[0]:
+                    self.to_del.append(key)
+            return await ctx.message.reply('Reminder deletion added to queue.')
+        elif reminders > 1:
+            keys = list()
+            for key in self.reminders.keys():
+                if ctx.author.id == key[0]:
+                    keys.append(key)
+            string = f'You have **{len(keys)}** reminders - '
+            for index, key in enumerate(keys):
+                if (index + 1) != len(keys):
+                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}, '
+                else:
+                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}.'
+            context = await ctx.message.reply(
+                f'{string} You have 60 seconds to reply to this message with the reminder to cancel(I.E 4, 7, 1).')
+
+            def check(m):
+                if m.author.id == ctx.author.id:
+                    if m.reference is None:
+                        return False
+                    elif m.reference.message_id == context.id:
+                        try:
+                            if int(m.content) < len(keys) + 1 and int(m.content) > 0:
+                                return True
+                            else:
+                                raise ValueError
+                        except BaseException:
+                            return False
+
+            while True:
+                try:
+                    message = await self.bot.wait_for(event='message', timeout=60, check=check)
+                except asyncio.exceptions.TimeoutError:
+                    return await content.reply('Reminder deletion cancelled.')
+                else:
+                    self.to_del.append(keys[int(message.content)])
+                    return await context.reply(
+                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders[keys[int(message.content)]])}')
+        else:
+            await ctx.message.reply('You don\'t currently have any reminders set.')
 
     @commands.command(aliases=('format_date', 'format_dt', 'format_time'))
-    async def format(self, ctx, years: int=datetime.now().year, months: int=datetime.now().month, days: int=datetime.now().day, hours: int=datetime.now().hour, minutes: int=datetime.now().minute, seconds: int=datetime.now().second):
+    async def format(self, ctx, years: int = datetime.now().year, months: int = datetime.now().month,
+                     days: int = datetime.now().day, hours: int = datetime.now().hour,
+                     minutes: int = datetime.now().minute, seconds: int = datetime.now().second):
         current_time = datetime.now()
         try:
-            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes, second=seconds)
+            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes,
+                                                second=seconds)
         except BaseException:
             await ctx.message.reply('That isn\'t a valid datetime.')
-        else:
+        except:
             await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
-            
     @commands.command(aliases=['check_reminder', 'check_reminders'])
     async def reminders(self, ctx):
-        if ctx.author.id in self.reminders.keys():
-            await ctx.message.reply(f'Your reminder ends on {discord.utils.format_dt(self.reminders[ctx.author.id])}!')
+        reminders = 0
+        for key in self.reminders.keys():
+            if ctx.author.id == key[0]:
+                reminders += 1
+        if reminders == 1:
+            for key in self.reminders.keys():
+                if ctx.author.id == key[0]:
+                    return await ctx.author.send(
+                        f'{ctx.author.mention} Your reminder ends on {discord.utils.format_dt(self.reminders[key])}!')
+        elif reminders > 1:
+            keys = list()
+            for key in self.reminders.keys():
+                if ctx.author.id == key[0]:
+                    keys.append(key)
+            string = f'You have **{len(keys)}** reminders - '
+            for index, key in enumerate(keys):
+                if (index + 1) != len(keys):
+                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}, '
+                else:
+                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}.'
+            return await ctx.author.send(f'{ctx.author.mention} {string}')
         else:
-            await ctx.message.reply('You do not currently have an active reminder.')
-            
+            return await ctx.message.reply('You do not currently have an active reminder.')
+
+
+class fetch_data_cog(commands.Cog):
+
+
+    def __init__(self, bot):
+        self.bot = bot
+
 
     @commands.command()
     async def char(self, ctx, *, char):
@@ -1783,10 +1849,10 @@ class owner_cog(commands.Cog):
         result = subprocess.run([sys.executable, "-c", python_code],
                                 capture_output=True, text=True, timeout=5)
         if (f'''```
-{result.stderr}
-{result.stdout}
-```'''.count('''
-''') - 2) > 19:
+    {result.stderr}
+    {result.stdout}
+            ```'''.count('''
+            ''') - 2) > 19:
             o = open('out.txt', 'w')
             o = o.writelines(str(result.stdout))
             file = discord.File(
@@ -1796,10 +1862,10 @@ class owner_cog(commands.Cog):
             return
         f = ''
         await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
+            ```
+    {result.stderr}
+    {result.stdout}
+            ```''')
 
 
     @commands.command()
@@ -2397,6 +2463,7 @@ def remove_cogs():
     bot.remove_cog(owner_cog(bot))
     bot.remove_cog(ticket_cog(bot))
     bot.remove_cog(extras_cog(bot))
+    bot.remove_cog(reminder_cog(bot))
 
 
 def add_cogs():
@@ -2420,6 +2487,7 @@ def add_cogs():
     bot.add_cog(cog=owner_cog(bot), override=True)
     bot.add_cog(cog=ticket_cog(bot), override=True)
     bot.add_cog(cog=extras_cog(bot), override=True)
+    bot.add_cog(cog=reminder_cog(bot), override=True)
 
 
 add_cogs()
