@@ -1841,7 +1841,6 @@ class owner_cog(commands.Cog):
                 if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
                     name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
                     file = await attachment.save(fp=fr'./{name}')
-                    os.remove(fr'./{name}')
                     python_code = open(fr'./{name}', 'r').read()
         if python_code.startswith('```py'):
             python_code = python_code.lstrip('```py')
