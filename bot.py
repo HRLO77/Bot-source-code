@@ -1504,7 +1504,7 @@ class reminder_cog(commands.Cog):
                 else:
                     self.to_del.append(keys[int(message.content) - 1])
                     return await message.reply(
-                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders[keys[int(message.content)]])}')
+                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders[keys[int(message.content) - 1]])}')
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
