@@ -1451,13 +1451,55 @@ class reminder_cog(commands.Cog):
                 R.__d = R.__d + (R.__h // (24 - current_time.hour))
                 R.__h = R.__h % round(24 - current_time.hour)
 
-                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month + 1)[-1])
-                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month + 1)[-1])
+                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
+                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
+                try:
+                    datetime.now().replace(month=R.__months, day=R.__d)
+                except BaseException:
+                    self.GetTime(d, h, m, s)
+                    R = self
+                    R.__h = self.__h
+                    R.__m = self.__m
+                    R.__s = self.__s
+                    R.__d = self.__d
+
+                    R.__m = R.__m + (R.__s // round(60 - current_time.second))
+                    R.__s = R.__s % round(60 - current_time.second)
+
+                    R.__h = R.__h + round(R.__m // (60 - current_time.minute))
+                    R.__m = R.__m % round(60 - current_time.minute)
+
+                    R.__d = R.__d + (R.__h // (24 - current_time.hour))
+                    R.__h = R.__h % round(24 - current_time.hour)
+
+                    R.__months = R.__d // 30
+                    R.__d = R.__d % 30
+
                 return None
-        time = Time(d=days + current_time.day, h=hours, m=minutes + current_time.minute, s=seconds + current_time.second)
-        time = time.PutResult()
-        print(time)
-        current_time = current_time.replace(month=time[0] + current_time.month, day=time[1], hour=time[2], minute=time[3], second=time[4])
+        try:
+            time = Time(d=days, h=hours, m=minutes, s=seconds)
+            time = time.PutResult()
+            print(time)
+            current_time = current_time.replace(month=time[0] + current_time.month, day=time[1] + current_time.day, hour=time[2] + current_time.hour,
+                                                minute=time[3] + current_time.minute, second=time[4] + current_time.second)
+        except BaseException:
+            try:
+                current_time = current_time.replace(day = days + current_time.day, minute=minutes + current_time.minute, second=seconds + current_time.second, hour=hours + current_time.hour)
+            except BaseException:
+                try:
+                    current_time = current_time.replace(day=days,
+                                                        minute=minutes,
+                                                        second=seconds,
+                                                        hour=hours)
+                except BaseException:
+                    await ctx.message.reply('This is currently an **unresolved** bug, don\'t report this.')
+                    return
+        # if not(days is None):
+        #
+        # else:
+        #     time2 = Time(d=current_time.day, h=hours + current_time.hour, m=minutes + current_time.minute, s=seconds + current_time.second)
+        #     time2.PutResult()
+        #     current_time = current_time.replace(month=time[0] + current_time.month, day=time2[1], hour=time[2], minute=time[3], second=time[4])
         if current_time < datetime.now():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders[(ctx.author.id, random.randint(0, 99999))] = current_time
