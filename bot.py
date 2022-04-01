@@ -902,21 +902,21 @@ class warn_cog(commands.Cog):
             data[str(ctx.guild.id)] = {"0": 0}
             with open('warns.json', 'w') as file:
                 json.dump(data, file)
-            await ctx.send(f'{ctx.author.mention} there are no warns in this server.')
+            await ctx.message.reply(f'There are no warns in this server.')
             return
         try:
             dictionary[str(member.id)] -= count
         except (KeyError, TypeError):
             with open('warns.json', 'w') as file:
                 json.dump(data, file)
-            await ctx.send(f'{ctx.author.mention} there are no warns in this server for {member.mention}.')
+            await ctx.message.reply(f'There are no warns in this server for {member.mention}.')
             return
         if dictionary[str(member.id)] <= 0:
             del dictionary[str(member.id)]
         data[str(ctx.guild.id)] = dictionary
         with open('warns.json', 'w') as file:
             json.dump(data, file)
-        await ctx.send(f'{ctx.author.mention} {member.mention} has been unwarned **{count}** times.')
+        await ctx.message.reply(f'{member.mention} has been unwarned **{count}** times.')
 
 
     @commands.command(aliases=('get_warns', 'pull_warns', 'warns'))
@@ -927,7 +927,7 @@ class warn_cog(commands.Cog):
         try:
             dictionary = data[str(ctx.guild.id)]
         except (KeyError, TypeError):
-            await ctx.send(f'{ctx.author.mention} no warns from this server.')
+            await ctx.message.reply(f'No warns from this server.')
             return
         else:
             if member is None:
@@ -948,10 +948,10 @@ class warn_cog(commands.Cog):
                     content=f'{ctx.author.mention} warns from current bot session in **{ctx.guild}**:', file=file)
             else:
                 try:
-                    await ctx.send(
-                        f'{ctx.author.mention}, {member.mention} has **{dictionary[str(member.id)]}** warns.')
+                    await ctx.author.send(
+                        f'{member.mention} has **{dictionary[str(member.id)]}** warns in **{ctx.guild}**.')
                 except KeyError:
-                    await ctx.send(f'{ctx.author.mention} there are no warns in this server for  {member.mention}.')
+                    await ctx.message.reply(f'There are no warns in this server for  {member.mention}.')
 
 
 class hush_cog(commands.Cog):
