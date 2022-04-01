@@ -137,6 +137,12 @@ class event_cog(commands.Cog):
         self.bot = bot
 
 
+    @commands.Cog.listener("on_disconnect")
+    async def on_disconnect(self):
+        print('Wolfram Alpha session closed.')
+        session.terminate()
+
+
     @commands.Cog.listener("on_guild_add")
     async def on_guild_join(self, guild):
         reset_logs(guild.id)
@@ -154,7 +160,7 @@ class event_cog(commands.Cog):
         print(f'We have logged in as {self.bot.user}')
         await self.bot.change_presence(activity=discord.Game(f'{self.bot.command_prefix[-1]}fetch_docs'))
         full_delete()
-        with open('warns.json', 'r+') as json_file:
+        with open('warns.json', 'w+') as json_file:
             try:
                 data = json.load(json_file)
             except (json.JSONDecodeError):
@@ -164,7 +170,7 @@ class event_cog(commands.Cog):
             else:
                 for guild in self.bot.guilds:
                     if str(guild.id) in data.keys():
-                        pass
+                        continue
                     else:
                         data[str(guild.id)] = {"0": 0}
             json.dump(data, json_file)
