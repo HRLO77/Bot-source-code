@@ -2010,26 +2010,28 @@ class print_cog(commands.Cog):
 
 class alarm_cog(commands.Cog):
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def check_alarms(self):
         await self.bot.wait_until_ready()
         now = datetime.now()
+        print(self.alarms)
         for key in self.alarms.keys():
             data = self.alarms[key]
             for day in data[0]:
-                if self.DAYS_INT[day] == now.weekday():
-                    if data[1] == now.hour:
-                        if now.minute == data[2]:
+                if(int(self.DAYS_INT[day]) - 1) == now.weekday():
+                    if int(data[1]) == now.hour:
+                        if int(now.minute) == data[2] or int(now.minute) + 1 == data[2]:
                             try:
-                                user = (self.bot.fetch_user(key[0]))
+                                user = (await self.bot.fetch_user(key[0]))
                                 await user.send(f'{user.mention} alarm `{data[3]}` has gone off!')
                             except (discord.NotFound, discord.Forbidden):
                                 print(f'Could not find user {key[0]} for alarm.')
                                 self.to_del.append(key)
 
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(minutes=1, seconds=5)
     async def clear_queue(self):
+        await self.bot.wait_until_ready()
         for key in self.to_del:
             del self.alarms[key]
 
@@ -2134,6 +2136,7 @@ class alarm_cog(commands.Cog):
                     for key in self.alarms.keys():
                         if m.content.lower() in self.alarms[key][3].lower():
                             if self.alarms[key] in data:
+                                print(key)
                                 self.to_del.append(key)
                                 return await context.reply(f'alarm `{m.content}` queued for deletion.')
 
