@@ -2006,6 +2006,162 @@ class print_cog(commands.Cog):
             with open('rules.json', 'w') as json_file:
                 json.dump(data, json_file)
 
+                
+
+class alarm_cog(commands.Cog):
+
+    @tasks.loop(seconds=10)
+    async def check_alarms(self):
+        await self.bot.wait_until_ready()
+        now = datetime.now()
+        for key in self.alarms.keys():
+            data = self.alarms[key]
+            for day in data[0]:
+                if self.DAYS_INT[day] == now.weekday():
+                    if data[1] == now.hour:
+                        if now.minute == data[2]:
+                            try:
+                                user = (self.bot.fetch_user(key[0]))
+                                await user.send(f'{user.mention} alarm `{data[3]}` has gone off!')
+                            except (discord.NotFound, discord.Forbidden):
+                                print(f'Could not find user {key[0]} for alarm.')
+                                self.to_del.append(key)
+
+
+    @tasks.loop(seconds=5)
+    async def clear_queue(self):
+        for key in self.to_del:
+            del self.alarms[key]
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.alarms = dict()
+        self.to_del = list()
+        self.DAYS_STRING = {'1️⃣': 'Monday', '2️⃣': 'Tuesday', '3️⃣': 'Wednesday', '4️⃣': 'Thursday', '5️⃣': 'Friday', '6️⃣': 'Saturday', '7️⃣': 'Sunday'}
+        self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
+        self.clear_queue.start()
+        self.check_alarms.start()
+
+
+    @commands.command(aliases=('set_alarm', 'new_alarm'))
+    async def alarm(self, ctx, *, name: str=f'alarm-{random.randint(0, 99999)}'):
+        days = list()
+        hour = 0
+        minute = 0
+        context = await ctx.message.reply('React to this message with every day of the week(Mon-Sun) you want, and confirm.')
+        for emoji in ('1️⃣', '2️⃣', '3️⃣','4️⃣', '5️⃣', '6️⃣', '7️⃣', '✅'):
+            await context.add_reaction(emoji)
+        while True:
+            try:
+                reaction = await self.bot.wait_for(event='raw_reaction_add', timeout=60, check= lambda raw_reaction: raw_reaction.user_id == ctx.author.id and any(i in str(raw_reaction.emoji) for i in ('1️⃣', '2️⃣', '3️⃣','4️⃣', '5️⃣', '6️⃣', '7️⃣', '✅')) and raw_reaction.message_id == context.id)
+            except asyncio.exceptions.TimeoutError:
+                return await context.reply('Alarm creation cancelled due to inactivity.')
+            else:
+                if '✅' in str(reaction.emoji) and len(days) > 0 and len(days) < 8:
+                    break
+                elif not(str(reaction.emoji) in days):
+                    days.append(str(reaction.emoji))
+        await context.clear_reactions()
+        context = await context.edit(content='Reply to this message with the hour you want your alarm to go off.')
+        while True:
+            try:
+                message = await self.bot.wait_for(event='message', timeout=60, check=lambda m: m.content.isdigit() and m.author.id == ctx.author.id)
+            except asyncio.exceptions.TimeoutError:
+                return await context.reply('Alarm creation cancelled due to inactivity.')
+            else:
+                if int(message.content) > -1 and int(message.content) < 24:
+                    hour = int(message.content)
+                    break
+                else:
+                    await message.delete()
+        context = await context.edit(content='Reply to this message with the minute you want your alarm to go off.')
+        while True:
+            try:
+                message = await self.bot.wait_for(event='message', timeout=60, check=lambda m: m.content.isdigit() and m.author.id == ctx.author.id)
+            except asyncio.exceptions.TimeoutError:
+                return await context.reply('Alarm creation cancelled due to inactivity.')
+            else:
+                if message.reference is None:
+                    continue
+                if message.reference.message_id == context.id :
+                    pass
+                else:
+                    continue
+                if int(message.content) > -1 and int(message.content) < 60:
+                    minute = int(message.content)
+                    break
+                else:
+                    await message.delete()
+        for index, emoji in enumerate(days):
+            days[index] = self.DAYS_STRING[emoji]
+        self.alarms[(ctx.author.id, random.randint(0, 99999))] = (days, hour, minute, name)
+        await context.edit(content=f'Alarm `{name}` successfully set!')
+
+
+    @commands.command(aliases=('clear_alarm', 'delete_alarm', 'remove_alarm'))
+    async def del_alarm(self, ctx):
+        found = False
+        for key in self.alarms.keys():
+            if ctx.author.id == key[0]:
+                found = True
+                break
+        if found:
+            pass
+        else:
+            return await ctx.message.reply('You do not currently have any alarms set.')
+        alarms = list()
+        for key in self.alarms.keys():
+            if ctx.author.id == key[0]:
+                alarms.append(key)
+        string = ''
+        data = list()
+        for key in alarms:
+            data.append(self.alarms[key])
+        string = f'You have **{len(data)}** alarms - '
+        for index, value in enumerate(data):
+                string = f'{string}alarm `{value[3]}` goes off **{len(value[0])}** days a week on {str(value[1]).zfill(2)}:{str(value[2]).zfill(2)}\n'
+        context = await ctx.message.reply(content=string + '\n Reply with the name of the alarm you want to delete.')
+        while True:
+            try:
+                m = await self.bot.wait_for('message', timeout=60, check=lambda m: m.author.id == ctx.author.id)
+            except asyncio.exceptions.TimeoutError:
+                return await context.reply('Deletion cancelled due to inactivity.')
+            else:
+                if m.reference is None:
+                    continue
+                elif m.reference.message_id == context.id:
+                    for key in self.alarms.keys():
+                        if m.content.lower() in self.alarms[key][3].lower():
+                            if self.alarms[key] in data:
+                                self.to_del.append(key)
+                                return await context.reply(f'alarm `{m.content}` queued for deletion.')
+
+
+    @commands.command(aliases=('check_alarms', 'view_alarms'))
+    async def alarms(self, ctx):
+        found = False
+        for key in self.alarms.keys():
+            if ctx.author.id == key[0]:
+                found = True
+                break
+        if found:
+            pass
+        else:
+            return await ctx.message.reply('You do not currently have any alarms set.')
+        alarms = list()
+        for key in self.alarms.keys():
+            if ctx.author.id == key[0]:
+                alarms.append(key)
+        string = ''
+        data = list()
+        for key in alarms:
+            data.append(self.alarms[key])
+        string = f'You have **{len(data)}** alarms - '
+        for index, value in enumerate(data):
+                string = f'{string}alarm `{value[3]}` goes off **{len(value[0])}** days a week on {str(value[1]).zfill(2)}:{str(value[2]).zfill(2)}\n'
+        await ctx.message.reply(content=string)
+                
 
 @bot.command(aliases=('call', 'request'))
 async def ping(ctx):
@@ -2538,7 +2694,9 @@ def remove_cogs():
     bot.remove_cog(ticket_cog(bot))
     bot.remove_cog(extras_cog(bot))
     bot.remove_cog(reminder_cog(bot))
+    bot.remove_cog(alarm_cog(bot))
 
+    
 
 def add_cogs():
     bot.add_cog(cog=event_cog(bot), override=True)
@@ -2562,7 +2720,9 @@ def add_cogs():
     bot.add_cog(cog=ticket_cog(bot), override=True)
     bot.add_cog(cog=extras_cog(bot), override=True)
     bot.add_cog(cog=reminder_cog(bot), override=True)
+    bot.add_cog(cog=alarm_cog(bot), override=True)
 
+    
 
 add_cogs()
 
