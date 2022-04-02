@@ -2012,13 +2012,12 @@ class alarm_cog(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_alarms(self):
-        await self.bot.wait_until_ready()
         now = datetime.now()
         print(self.alarms)
         for key in self.alarms.keys():
             data = self.alarms[key]
             for day in data[0]:
-                if (int(self.DAYS_INT[day]) - 1) == now.weekday():
+                if(int(self.DAYS_INT[day]) - 1) == now.weekday():
                     if int(data[1]) == now.hour:
                         if int(now.minute) == data[2] or int(now.minute) + 1 == data[2]:
                             try:
@@ -2031,7 +2030,6 @@ class alarm_cog(commands.Cog):
 
     @tasks.loop(minutes=1, seconds=5)
     async def clear_queue(self):
-        await self.bot.wait_until_ready()
         for key in self.to_del:
             del self.alarms[key]
 
@@ -2042,6 +2040,10 @@ class alarm_cog(commands.Cog):
         self.to_del = list()
         self.DAYS_STRING = {'1️⃣': 'Monday', '2️⃣': 'Tuesday', '3️⃣': 'Wednesday', '4️⃣': 'Thursday', '5️⃣': 'Friday', '6️⃣': 'Saturday', '7️⃣': 'Sunday'}
         self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
+        await self.bot_wait_for()
+        while True:
+            if datetime.now().second == 0:
+                break
         self.clear_queue.start()
         self.check_alarms.start()
 
