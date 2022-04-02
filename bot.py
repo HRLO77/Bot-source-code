@@ -2018,7 +2018,7 @@ class alarm_cog(commands.Cog):
         for key in self.alarms.keys():
             data = self.alarms[key]
             for day in data[0]:
-                if(int(self.DAYS_INT[day]) - 1) == now.weekday():
+                if (int(self.DAYS_INT[day]) - 1) == now.weekday():
                     if int(data[1]) == now.hour:
                         if int(now.minute) == data[2] or int(now.minute) + 1 == data[2]:
                             try:
