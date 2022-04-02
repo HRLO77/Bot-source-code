@@ -2012,8 +2012,8 @@ class alarm_cog(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_alarms(self):
+        await self.bot_wait_for()
         now = datetime.now()
-        print(self.alarms)
         for key in self.alarms.keys():
             data = self.alarms[key]
             for day in data[0]:
@@ -2026,21 +2026,21 @@ class alarm_cog(commands.Cog):
                             except (discord.NotFound, discord.Forbidden):
                                 print(f'Could not find user {key[0]} for alarm.')
                                 self.to_del.append(key)
-
-
+                        
+                    
     @tasks.loop(minutes=1, seconds=5)
     async def clear_queue(self):
+        await self.bot_wait_for()
         for key in self.to_del:
             del self.alarms[key]
-
-
+            
+             
     def __init__(self, bot):
         self.bot = bot
         self.alarms = dict()
         self.to_del = list()
         self.DAYS_STRING = {'1️⃣': 'Monday', '2️⃣': 'Tuesday', '3️⃣': 'Wednesday', '4️⃣': 'Thursday', '5️⃣': 'Friday', '6️⃣': 'Saturday', '7️⃣': 'Sunday'}
         self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
-        await self.bot_wait_for()
         while True:
             if datetime.now().second == 0:
                 break
