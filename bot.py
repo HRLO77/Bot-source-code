@@ -1400,24 +1400,24 @@ class reminder_cog(commands.Cog):
     async def check_reminders(self):
         await self.bot.wait_until_ready()
         for index, key in enumerate(self.to_del):
-            del self.reminders_dict_dict[key]
+            del self.reminders_dict[key]
             self.to_del.pop(index)
         current_time = datetime.now()
-        for key in self.reminders_dict_dict.keys():
-            if self.reminders_dict_dict[key] < current_time:
+        for key in self.reminders_dict.keys():
+            if self.reminders_dict[key] < current_time:
                 try:
                     user = await self.bot.fetch_user(key[0])
                 except BaseException:
                     print(f'Couldn\'t find member {key[0]} for reminder checking.')
                 else:
                     await user.send(
-                        f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders_dict_dict[key])})')
+                        f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders_dict[key])})')
                 self.to_del.append(key)
 
 
     def __init__(self, bot):
         self.bot = bot
-        self.reminders_dict_dict = dict()
+        self.reminders_dict = dict()
         self.to_del = list()
         self.check_reminders.start()
 
@@ -1504,7 +1504,7 @@ class reminder_cog(commands.Cog):
         #     current_time = current_time.replace(month=time[0] + current_time.month, day=time2[1], hour=time[2], minute=time[3], second=time[4])
         if current_time < datetime.now():
             return await ctx.message.reply('Please enter values that are in the future.')
-        self.reminders_dict_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
+        self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
 
 
