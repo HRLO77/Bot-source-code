@@ -1396,34 +1396,30 @@ class help_cog(commands.Cog):
 
 class reminder_cog(commands.Cog):
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=1)
     async def check_reminders(self):
-        current_time = datetime.now()
         await self.bot.wait_until_ready()
-        for key in self.reminders.keys():
-            if self.reminders[key] < current_time:
+        for index, key in enumerate(self.to_del):
+            del self.reminders_dict_dict[key]
+            self.to_del.pop(index)
+        current_time = datetime.now()
+        for key in self.reminders_dict_dict.keys():
+            if self.reminders_dict_dict[key] < current_time:
                 try:
                     user = await self.bot.fetch_user(key[0])
                 except BaseException:
                     print(f'Couldn\'t find member {key[0]} for reminder checking.')
                 else:
                     await user.send(
-                        f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders[key])})')
+                        f'{user.mention} your reminder is up! ({discord.utils.format_dt(self.reminders_dict_dict[key])})')
                 self.to_del.append(key)
-
-    @tasks.loop(seconds=5)
-    async def clear_reminders(self):
-        for index, key in enumerate(self.to_del):
-            del self.reminders[key]
-            self.to_del.pop(index)
 
 
     def __init__(self, bot):
         self.bot = bot
-        self.reminders = dict()
+        self.reminders_dict_dict = dict()
         self.to_del = list()
         self.check_reminders.start()
-        self.clear_reminders.start()
 
 
     @commands.command(aliases=('start_reminder', 'reminder'))
@@ -1508,32 +1504,32 @@ class reminder_cog(commands.Cog):
         #     current_time = current_time.replace(month=time[0] + current_time.month, day=time2[1], hour=time[2], minute=time[3], second=time[4])
         if current_time < datetime.now():
             return await ctx.message.reply('Please enter values that are in the future.')
-        self.reminders[(ctx.author.id, random.randint(0, 99999))] = current_time
+        self.reminders_dict_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
 
 
     @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder', 'close_reminder'))
     async def clear_reminder(self, ctx):
         reminders = 0
-        for key in self.reminders.keys():
+        for key in self.reminders_dict.keys():
             if ctx.author.id == key[0]:
                 reminders += 1
         if reminders == 1:
-            for key in self.reminders.keys():
+            for key in self.reminders_dict.keys():
                 if ctx.author.id == key[0]:
                     self.to_del.append(key)
             return await ctx.message.reply('Reminder deletion added to queue.')
         elif reminders > 1:
             keys = list()
-            for key in self.reminders.keys():
+            for key in self.reminders_dict.keys():
                 if ctx.author.id == key[0]:
                     keys.append(key)
             string = f'You have **{len(keys)}** reminders - '
             for index, key in enumerate(keys):
                 if (index + 1) != len(keys):
-                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}, '
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}, '
                 else:
-                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}.'
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}.'
             context = await ctx.author.send(
                 f'{string} {ctx.author.mention} You have 60 seconds to reply to this message with the reminder to cancel(I.E 4, 7, 1).')
 
@@ -1558,7 +1554,7 @@ class reminder_cog(commands.Cog):
                 else:
                     self.to_del.append(keys[int(message.content) - 1])
                     return await message.reply(
-                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders[keys[int(message.content) - 1]])}')
+                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders_dict[keys[int(message.content) - 1]])}')
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
@@ -1578,25 +1574,25 @@ class reminder_cog(commands.Cog):
     @commands.command(aliases=['check_reminder', 'check_reminders'])
     async def reminders(self, ctx):
         reminders = 0
-        for key in self.reminders.keys():
+        for key in self.reminders_dict.keys():
             if ctx.author.id == key[0]:
                 reminders += 1
         if reminders == 1:
-            for key in self.reminders.keys():
+            for key in self.reminders_dict.keys():
                 if ctx.author.id == key[0]:
                     return await ctx.author.send(
-                        f'{ctx.author.mention} Your reminder ends on {discord.utils.format_dt(self.reminders[key])}!')
+                        f'{ctx.author.mention} Your reminder ends on {discord.utils.format_dt(self.reminders_dict[key])}!')
         elif reminders > 1:
             keys = list()
-            for key in self.reminders.keys():
+            for key in self.reminders_dict.keys():
                 if ctx.author.id == key[0]:
                     keys.append(key)
             string = f'You have **{len(keys)}** reminders - '
             for index, key in enumerate(keys):
                 if (index + 1) != len(keys):
-                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}, '
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}, '
                 else:
-                    string = f'{string}{discord.utils.format_dt(self.reminders[key])}.'
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}.'
             return await ctx.author.send(f'{ctx.author.mention} {string}')
         else:
             return await ctx.message.reply('You do not currently have an active reminder.')
@@ -2010,41 +2006,45 @@ class print_cog(commands.Cog):
 
 class alarm_cog(commands.Cog):
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=1)
     async def check_alarms(self):
-        await self.bot_wait_for()
+        await self.bot.wait_until_ready()
+        for index, key in enumerate(self.to_del):
+            del self.alarms_dict[key]
+            self.to_del.pop(index)
         now = datetime.now()
-        for key in self.alarms.keys():
-            data = self.alarms[key]
+        for key in self.alarms_dict.keys():
+            data = self.alarms_dict[key]
             for day in data[0]:
-                if(int(self.DAYS_INT[day]) - 1) == now.weekday():
-                    if int(data[1]) == now.hour:
-                        if int(now.minute) == data[2] or int(now.minute) + 1 == data[2]:
-                            try:
-                                user = (await self.bot.fetch_user(key[0]))
-                                await user.send(f'{user.mention} alarm `{data[3]}` has gone off!')
-                            except (discord.NotFound, discord.Forbidden):
-                                print(f'Could not find user {key[0]} for alarm.')
-                                self.to_del.append(key)
-                        
-                    
-    @tasks.loop(minutes=1, seconds=5)
-    async def clear_queue(self):
-        await self.bot_wait_for()
-        for key in self.to_del:
-            del self.alarms[key]
-            
-             
+                if data[4]:
+                    if (int(self.DAYS_INT[day]) - 1) == now.weekday():
+                        if int(data[1]) == now.hour:
+                            if int(now.minute) == data[2]:
+                                try:
+                                    user = (await self.bot.fetch_user(key[0]))
+                                    await user.send(f'{user.mention} alarm `{data[3]}` has gone off!')
+                                    self.alarms_dict[key] = [data[0], data[1], data[2], data[3], False]
+                                    await asyncio.sleep(60)
+                                    try:
+                                        self.alarms_dict[key]
+                                    except KeyError:
+                                        return
+                                    else:
+                                        self.alarms_dict[key] = [data[0], data[1], data[2], data[3], True]
+                                    return
+                                except (discord.NotFound, discord.Forbidden):
+                                    print(f'Could not find user {key[0]} for alarm.')
+                                    self.to_del.append(key)
+
+
     def __init__(self, bot):
         self.bot = bot
-        self.alarms = dict()
+        self.alarms_dict = dict()
         self.to_del = list()
-        self.DAYS_STRING = {'1️⃣': 'Monday', '2️⃣': 'Tuesday', '3️⃣': 'Wednesday', '4️⃣': 'Thursday', '5️⃣': 'Friday', '6️⃣': 'Saturday', '7️⃣': 'Sunday'}
-        self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
-        while True:
-            if datetime.now().second == 0:
-                break
-        self.clear_queue.start()
+        self.DAYS_STRING = {'1️⃣': 'Monday', '2️⃣': 'Tuesday', '3️⃣': 'Wednesday', '4️⃣': 'Thursday', '5️⃣': 'Friday',
+                            '6️⃣': 'Saturday', '7️⃣': 'Sunday'}
+        self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6,
+                         'Sunday': 7}
         self.check_alarms.start()
 
 
@@ -2099,14 +2099,14 @@ class alarm_cog(commands.Cog):
                     await message.delete()
         for index, emoji in enumerate(days):
             days[index] = self.DAYS_STRING[emoji]
-        self.alarms[(ctx.author.id, random.randint(0, 99999))] = (days, hour, minute, name)
+        self.alarms_dict[(ctx.author.id, random.randint(0, 99999))] = [days, hour, minute, name, True]
         await context.edit(content=f'Alarm `{name}` successfully set!')
 
 
     @commands.command(aliases=('clear_alarm', 'delete_alarm', 'remove_alarm'))
     async def del_alarm(self, ctx):
         found = False
-        for key in self.alarms.keys():
+        for key in self.alarms_dict.keys():
             if ctx.author.id == key[0]:
                 found = True
                 break
@@ -2115,13 +2115,13 @@ class alarm_cog(commands.Cog):
         else:
             return await ctx.message.reply('You do not currently have any alarms set.')
         alarms = list()
-        for key in self.alarms.keys():
+        for key in self.alarms_dict.keys():
             if ctx.author.id == key[0]:
                 alarms.append(key)
         string = ''
         data = list()
         for key in alarms:
-            data.append(self.alarms[key])
+            data.append(self.alarms_dict[key])
         string = f'You have **{len(data)}** alarms - '
         for index, value in enumerate(data):
                 string = f'{string}alarm `{value[3]}` goes off **{len(value[0])}** days a week on {str(value[1]).zfill(2)}:{str(value[2]).zfill(2)}\n'
@@ -2135,9 +2135,9 @@ class alarm_cog(commands.Cog):
                 if m.reference is None:
                     continue
                 elif m.reference.message_id == context.id:
-                    for key in self.alarms.keys():
-                        if m.content.lower() in self.alarms[key][3].lower():
-                            if self.alarms[key] in data:
+                    for key in self.alarms_dict.keys():
+                        if m.content.lower() in self.alarms_dict[key][3].lower():
+                            if self.alarms_dict[key] in data:
                                 print(key)
                                 self.to_del.append(key)
                                 return await context.reply(f'alarm `{m.content}` queued for deletion.')
@@ -2146,7 +2146,7 @@ class alarm_cog(commands.Cog):
     @commands.command(aliases=('check_alarms', 'view_alarms'))
     async def alarms(self, ctx):
         found = False
-        for key in self.alarms.keys():
+        for key in self.alarms_dict.keys():
             if ctx.author.id == key[0]:
                 found = True
                 break
@@ -2155,13 +2155,13 @@ class alarm_cog(commands.Cog):
         else:
             return await ctx.message.reply('You do not currently have any alarms set.')
         alarms = list()
-        for key in self.alarms.keys():
+        for key in self.alarms_dict.keys():
             if ctx.author.id == key[0]:
                 alarms.append(key)
         string = ''
         data = list()
         for key in alarms:
-            data.append(self.alarms[key])
+            data.append(self.alarms_dict[key])
         string = f'You have **{len(data)}** alarms - '
         for index, value in enumerate(data):
                 string = f'{string}alarm `{value[3]}` goes off **{len(value[0])}** days a week on {str(value[1]).zfill(2)}:{str(value[2]).zfill(2)}\n'
