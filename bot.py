@@ -2,13 +2,13 @@
 #
 # ensurepip.bootstrap()
 import os
-import calender
+import calendar
 from better_profanity import profanity
 profanity.MAX_NUMBER_COMBINATIONS = 20
+from disnake.ui import Button
 import math
 from disnake.ext import tasks
 from disnake.utils import get
-import secrets
 import tracemalloc
 import sys
 import subprocess
@@ -501,24 +501,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon,
-                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon,
+    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -526,9 +526,10 @@ class kick_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to kicking members.'
 
 
-    @commands.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'))
+    @commands.command(aliases=('remove', 'kick_user', 'kick_member', 'remove_user', 'remove_member'), description = 'Removes <member> from the current guild.', brief = 'Kicks <member>.')
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason='None'):
         user = await bot.fetch_user(member.id)
@@ -543,7 +544,7 @@ class kick_cog(commands.Cog):
             print(f'Cannot direct message {str(member)}.')
 
 
-    @commands.command(aliases=('remove_members', 'kick_users', 'remove_users'))
+    @commands.command(aliases=('remove_members', 'kick_users', 'remove_users'), description = 'Removes multiple member ids from the current guild.', brief = 'Kicks multiple members.')
     @commands.has_permissions(kick_members=True)
     async def kick_members(self, ctx, *, member_ids):
         try:
@@ -578,9 +579,10 @@ class mute_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to muting members/managing timeouts.'
 
 
-    @commands.command()
+    @commands.command(description = 'Adds a timeout to <member> for minutes specified with reason [reason].', brief = 'Mutes a member.')
     @commands.has_permissions(moderate_members=True)
     async def mute(self, ctx, member: discord.Member, time: float = 10, *, reason='None'):
         print(member, time, reason)
@@ -596,7 +598,7 @@ class mute_cog(commands.Cog):
     **{reason}**.''')
 
 
-    @commands.command()
+    @commands.command(description = 'Removes timeout from <member>.', brief = 'Unmutes a member.')
     @commands.has_permissions(moderate_members=True)
     async def unmute(self, ctx, member: discord.Member, *, reason='None'):
         await member.timeout(duration=None, reason=reason)
@@ -617,9 +619,10 @@ class ticket_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.roles = dict()
+        self.description = 'Commands that are related to managing/creating tickets in the current server.'
 
 
-    @commands.command(aliases=['cancel_ticket'])
+    @commands.command(aliases=['cancel_ticket'], description = 'Closes an opened ticket channel passed.', brief = 'Closes an opened ticket.')
     async def close_ticket(self, ctx, channel: discord.TextChannel):
         def predicate(self, ctx):
             try:
@@ -652,7 +655,7 @@ class ticket_cog(commands.Cog):
         await ctx.send(f'Invalid channel.')
 
 
-    @commands.command(aliases=('viewing_role', 'view_ticket'))
+    @commands.command(aliases=('viewing_role', 'view_ticket'), description = 'Allows <role> to view/close opened tickets.', brief = 'Allows a role to manage tickets.')
     @commands.has_permissions(moderate_members=True)
     async def ticket_role(self, ctx, role: discord.Role):
         try:
@@ -668,7 +671,7 @@ class ticket_cog(commands.Cog):
             await ctx.message.reply(f'Members with role **{role.name}** can now view opened tickets.')
 
 
-    @commands.command(aliases=('open_ticket', 'start_ticket'))
+    @commands.command(aliases=('open_ticket', 'start_ticket'), description = 'Opens a ticket channel in the current guild.', brief = 'Creates a ticket.')
     @commands.cooldown(1, 600, commands.BucketType.member)
     async def ticket(self, ctx, *, reason: str):
         bot_author = ctx.guild.me
@@ -756,8 +759,9 @@ class messages_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to managing/viewing messages.'
 
-    @commands.command()
+    @commands.command(description = 'Finds the last message deleted in the current guild/channel passed.', brief = 'Finds the last message deleted.')
     @commands.has_permissions(view_audit_log=True)
     async def snipe(self, ctx, channel: discord.TextChannel = None):
         global sniped_messages
@@ -804,13 +808,13 @@ class messages_cog(commands.Cog):
                     await ctx.send(f'{ctx.author.mention} could not retrieve the last sent message.')
 
 
-    @commands.command(aliases=('delete', 'purge', 'clean'))
+    @commands.command(aliases=('delete', 'purge', 'clean'), description = 'Deletes a [limit] messages with [bulk] bulk deletion.', brief = 'Deletes messages in the current channel.')
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int = 10, bulk: bool = False):
         await ctx.channel.purge(limit=amount + 1, bulk=bulk)
 
 
-    @commands.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'))
+    @commands.command(aliases=('purge_messages', 'clean_messages', 'delete_messages'), description = 'Clears a list of message ids passed.', brief = 'Deletes message ids.')
     @commands.has_permissions(manage_messages=True)
     async def clear_messages(self, ctx, *, message_ids):
         try:
@@ -824,7 +828,7 @@ class messages_cog(commands.Cog):
             await message.delete()
 
 
-    @commands.command(aliases=['purgeban'])
+    @commands.command(aliases=['purgeban'], description = 'Same as clear, but deletes message from a certain member in the channel.', brief = 'Deletes messages from a member.')
     @commands.has_permissions(manage_messages=True)
     async def purge_ban(self, ctx, member: discord.Member, limit: int = 10, bulk: bool = False):
         list_messages = []
@@ -857,9 +861,10 @@ class warn_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to managing warnings in the current guild.'
 
 
-    @commands.command(aliases=('alert', 'notify', 'inform'))
+    @commands.command(aliases=('alert', 'notify', 'inform'), description = 'Adds a warn to a <member> with reason <reason>', brief = 'Warns a member.')
     @commands.has_permissions(view_audit_log=True)
     async def warn(self, ctx, member: discord.Member, *, reason='None'):
         with open('warns.json', 'r') as json_file:
@@ -890,7 +895,7 @@ class warn_cog(commands.Cog):
             print(f'Cannot direct message {str(member)}.')
 
 
-    @commands.command()
+    @commands.command(description = 'Removes [count] warns from <member>.', brief = 'Removes warnings from member.')
     @commands.has_permissions(view_audit_log=True)
     async def unwarn(self, ctx, member: discord.Member, count: int = 1):
         count = abs(count)
@@ -919,7 +924,7 @@ class warn_cog(commands.Cog):
         await ctx.message.reply(f'{member.mention} has been unwarned **{count}** times.')
 
 
-    @commands.command(aliases=('get_warns', 'pull_warns', 'warns'))
+    @commands.command(aliases=('get_warns', 'pull_warns', 'warns'), description = 'Returns warns for an entire guild, or member.', brief = 'Returns warns.')
     @commands.has_permissions(view_audit_log=True)
     async def fetch_warns(self, ctx, member: discord.Member = None):
         with open('warns.json', 'r') as json_file:
@@ -960,16 +965,17 @@ class hush_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to moderating entire channels.'
 
 
-    @commands.command(aliases=('set_role', 'set_default_role', 'defaulted_role', 'mute_role', 'muted_role'))
+    @commands.command(aliases=('set_role', 'set_default_role', 'defaulted_role', 'mute_role', 'muted_role'), description = 'Sets mute_role (default role for muting/hiding in cogs) for the current guild.', brief = 'Sets mute_role.')
     @commands.has_permissions(moderate_members=True)
     async def default_role(self, ctx, role: discord.Role):
         default_roles[ctx.guild.id] = role.id
         await ctx.send(f'Default role for muting is now **{role.name}**.')
 
 
-    @commands.command(aliases=('silence', 'mute_channel', 'silence_channel'))
+    @commands.command(aliases=('silence', 'mute_channel', 'silence_channel'), description = 'Disables mute_role from sending messages in the current channels.', brief = 'Stops mute_role from sending messages in current channel.')
     @commands.has_permissions(moderate_members=True)
     async def hush(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
@@ -1030,7 +1036,7 @@ class hush_cog(commands.Cog):
         await channel.send(f'{ctx.author.mention}, channel has been unhushed.')
 
 
-    @commands.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'))
+    @commands.command(aliases=('un_silence', 'unmute_channel', 'un_silence_channel', 'unhush'), description = 'Allows mute_role for current guild to send messages in current channel.', brief = 'Allows mute_role to send messages.')
     @commands.has_permissions(moderate_members=True)
     async def un_hush(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
@@ -1068,7 +1074,7 @@ class hush_cog(commands.Cog):
     **{reason}**''')
 
 
-    @commands.command(aliases=['unhide'])
+    @commands.command(aliases=['unhide'], description = 'Allows mute_role for current guild to view the current channel.', brief = 'Allows mute_role to view current channel.')
     @commands.has_permissions(moderate_members=True)
     async def un_hide(self, ctx, *, reason: str = 'None'):
         channel = ctx.channel
@@ -1096,7 +1102,7 @@ class hush_cog(commands.Cog):
     **{reason}**''')
 
 
-    @commands.command()
+    @commands.command(description = 'Hides the current channel from mute_role for current guild.', brief = 'Hides current channel.')
     @commands.has_permissions(moderate_members=True)
     async def hide(self, ctx, time: float = 5, *, reason: str = 'None'):
         channel = ctx.channel
@@ -1145,9 +1151,10 @@ class server_lock_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that are related to moderating all channels in the current guild.'
 
 
-    @commands.command(aliases=('unhide_guild', 'unhideserver', 'unhideguild', 'server_unhide', 'server_un_hide', 'serverunhide', 'guild_un_hide', 'guild_unhide', 'guildunhide'))
+    @commands.command(aliases=('unhide_guild', 'unhideserver', 'unhideguild', 'server_unhide', 'server_un_hide', 'serverunhide', 'guild_un_hide', 'guild_unhide', 'guildunhide'), description = 'Allows mute_role for current guild. to view the current guild.', brief = 'Allows mute_role to view guild.')
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def unhide_server(self, ctx, time: float = 5, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
@@ -1170,7 +1177,7 @@ class server_lock_cog(commands.Cog):
         await ctx.send(f'{ctx.author.mention} server has been unhidden.')
 
 
-    @commands.command(aliases=('hide_guild', 'hideserver', 'hideguild', 'guildhide', 'serverhide', 'guild_hide', 'server_hide'))
+    @commands.command(aliases=('hide_guild', 'hideserver', 'hideguild', 'guildhide', 'serverhide', 'guild_hide', 'server_hide'), description = 'Makes current guilds mute_role unable to view current guild.', brief = 'Prevents mute_role from viewing current guild.')
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def hide_server(self, ctx, time: float = 5, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
@@ -1209,7 +1216,7 @@ class server_lock_cog(commands.Cog):
         await ctx.send(f'{ctx.author.mention} server has been unhidden.')
 
 
-    @commands.command(aliases=('server_lockdown', 'lock', 'server_lock', 'server_hush'))
+    @commands.command(aliases=('server_lockdown', 'lock', 'server_lock', 'server_hush'), description = 'Disables current guilds mute_role to send messages in channels.', brief = 'Locks guild.')
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def lockdown(self, ctx, time: float = 5, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
@@ -1266,7 +1273,7 @@ class server_lock_cog(commands.Cog):
         await ctx.send(f'{ctx.author.mention} server has been unlocked.')
 
 
-    @commands.command(aliases=('server_unlock', 'server_unhush', 'server_un_hush'))
+    @commands.command(aliases=('server_unlock', 'server_unhush', 'server_un_hush'), description = 'Allows current guilds mute_role to send messages in the current guild.', brief = 'Unlocks guild.')
     @commands.has_permissions(manage_channels=True, moderate_members=True)
     async def unlock(self, ctx, *, reason: str = 'None'):
         overwrite = discord.PermissionOverwrite()
@@ -1303,9 +1310,10 @@ class ban_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description='Commands that are related to bans.'
 
 
-    @commands.command(aliases=('ban_users', 'ban_people'))
+    @commands.command(aliases=('ban_users', 'ban_people'), description='Bans multiple <member_ids> from the current guild.', brief='Bans multiple members.')
     @commands.has_permissions(ban_members=True)
     async def ban_members(self, ctx, *, member_ids):
         try:
@@ -1326,7 +1334,7 @@ class ban_cog(commands.Cog):
         await ctx.send(f'{ctx.author.mention} banned members.')
 
 
-    @commands.command(aliases=('unban_users', 'unban_people'))
+    @commands.command(aliases=('unban_users', 'unban_people'), description='Unbans multiple <user_ids> from the current guild.', brief='Unbans multiple users.')
     @commands.has_permissions(ban_members=True)
     async def unban_members(self, ctx, *, user_ids):
         try:
@@ -1346,7 +1354,7 @@ class ban_cog(commands.Cog):
         await ctx.send('Unbanned members.')
 
 
-    @commands.command(aliases=('ban_user', 'ban_member'))
+    @commands.command(aliases=('ban_user', 'ban_member'), description='Bans <member> because <reason>.', brief='Bans a member.')
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, *, reason='None'):
         await member.ban(reason=reason)
@@ -1360,14 +1368,14 @@ class ban_cog(commands.Cog):
             print(f'Cannot direct message {str(member)}.')
 
 
-    @commands.command()
+    @commands.command(description='Unbans <user> for the current guild because [reason]. If [link] is True, DMs the user a link to the guild.', brief='Unbans a user.')
     @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, user: discord.User, *, reason: str = 'None'):
+    async def unban(self, ctx, user: discord.User, link: bool=False, *, reason: str = 'None'):
         await ctx.guild.unban(user=user, reason=reason)
         await ctx.send(f'''**{ctx.message.author.mention}** unbanned **{user.mention}** because:
 **{reason}**''')
         try:
-            await user.send(f'''**{user.mention}** you were unbanned by **{ctx.message.author.mention}** because:
+            await user.send(f'''**{user.mention}** you were unbanned by **{ctx.author.mention}** because:
     **{reason}**''')
         except (
                         discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1375,6 +1383,8 @@ class ban_cog(commands.Cog):
                         commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {user}.')
             return
+        if link:
+            await user.send(f'{(await (ctx.guild.channels[0]).create_invite()).url}')
 
 
 class help_cog(commands.Cog):
@@ -1382,16 +1392,17 @@ class help_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that have info on the bot.'
 
 
-    @commands.command(aliases=('get_docs', 'pull_docs'))
+    @commands.command(aliases=('get_docs', 'pull_docs'), description='Returns a pastebin document of commands, usages, aliases and arguments.', brief='Returns a pastebin of commands.')
     async def fetch_docs(self, ctx):
-        await ctx.send('https://pastebin.com/9w4Fp110')
+        await ctx.message.reply('https://pastebin.com/9w4Fp110')
 
 
-    @commands.command(aliases=('get_code', 'pull_code'))
+    @commands.command(aliases=('get_code', 'pull_code'), description='Returns a github repository belonging to HRLO77#3508 that includes the bots source code.', brief='Returns a github repository of source code.')
     async def fetch_code(self, ctx):
-        await ctx.send('https://github.com/HRLO77/Bot-source-code')
+        await ctx.message.reply('https://github.com/HRLO77/Bot-source-code')
 
 
 class reminder_cog(commands.Cog):
@@ -1420,9 +1431,10 @@ class reminder_cog(commands.Cog):
         self.reminders_dict = dict()
         self.to_del = list()
         self.check_reminders.start()
+        self.description = 'Commands that are related to reminders.'
 
 
-    @commands.command(aliases=('start_reminder', 'reminder'))
+    @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
     async def remind(self, ctx, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
         current_time = datetime.now()
 
@@ -1508,7 +1520,7 @@ class reminder_cog(commands.Cog):
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
 
 
-    @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder', 'close_reminder'))
+    @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder', 'close_reminder'), description='Adds a reminder to deletion queue.', brief='Deletes a reminder.')
     async def clear_reminder(self, ctx):
         reminders = 0
         for key in self.reminders_dict.keys():
@@ -1558,7 +1570,7 @@ class reminder_cog(commands.Cog):
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
-    @commands.command(aliases=('format_date', 'format_dt', 'format_time'))
+    @commands.command(aliases=('format_date', 'format_dt', 'format_time'), description='Formats arguments passed into discord timestamp formating.', brief='Returns a timestamp.')
     async def format(self, ctx, years: int = datetime.now().year, months: int = datetime.now().month,
                      days: int = datetime.now().day, hours: int = datetime.now().hour,
                      minutes: int = datetime.now().minute, seconds: int = datetime.now().second):
@@ -1571,7 +1583,7 @@ class reminder_cog(commands.Cog):
         except:
             await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
-    @commands.command(aliases=['check_reminder', 'check_reminders'])
+    @commands.command(aliases=('check_reminder', 'check_reminders'), description='DMs a list of reminders the current user has.', brief='Returns reminders set.')
     async def reminders(self, ctx):
         reminders = 0
         for key in self.reminders_dict.keys():
@@ -1603,14 +1615,57 @@ class fetch_data_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.description = 'Commands that return info or data.'
 
 
-    @commands.command()
+    @commands.command(aliases=('charinfo', 'char_info'), description='Returns the unicode version of <char> passed', brief='Unicode version of a character.')
     async def char(self, ctx, *, char):
         await ctx.send(f'`{char}`')
 
 
-    @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'))
+    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
+    async def evaluate(self, ctx, *, python_code: str):
+        async def evaluate(self, ctx, *, python_code: str = None):
+            if not (ctx.message.attachments is None) and python_code is None:
+                for index, attachment in enumerate(ctx.message.attachments):
+                    if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                        name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                        file = await attachment.save(fp=fr'./{name}')
+                        os.remove(fr'./{name}')
+                        python_code = open(fr'./{name}', 'r').read()
+            if python_code.startswith('```py'):
+                python_code = python_code.lstrip('```py')
+            elif python_code.startswith('```'):
+                python_code = python_code.lstrip('```')
+            elif python_code.startswith('`'):
+                python_code = python_code.lstrip('`')
+            if python_code.endswith('```'):
+                python_code = python_code.rstrip('```')
+            elif python_code.endswith('`'):
+                python_code = python_code.rstrip('`')
+            result = subprocess.run([sys.executable, "-c", python_code],
+                                    capture_output=True, text=True, timeout=5)
+            if (f'''```
+{result.stderr}
+{result.stdout}
+```'''.count('''
+''') - 2) > 19:
+                o = open('out.txt', 'w')
+                o = o.writelines(str(result.stdout))
+                file = discord.File(
+                    r'./out.txt')
+                await ctx.send(content='Program output too long, full output in text document:', file=file)
+                o = ''
+                return
+            f = ''
+            await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
+
+
+    @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'), description='Returns info and extra details of the current guild.', brief='Info on guild.')
     async def server(self, ctx):
         embed = discord.Embed(title=f'Server info')
         icon = ctx.guild.icon.url
@@ -1638,7 +1693,7 @@ class fetch_data_cog(commands.Cog):
         await ctx.message.reply(embed=embed)
 
 
-    @commands.command(aliases=('get_member_history', 'pull_member_history'))
+    @commands.command(aliases=('get_member_history', 'pull_member_history'), description='Returns [limit] message from <member> in the current channel. If [links] is True, returns link to messages.', brief='Returns messages <member> sent.')
     async def fetch_member_history(self, ctx, member: discord.Member, limit: int = 10, links=False):
         try:
             bool(links)
@@ -1661,12 +1716,7 @@ class fetch_data_cog(commands.Cog):
                     messages.append(message.id)
 
 
-    @commands.command(aliases=('get_message', 'pull_message'))
-    async def fetch_message(self, ctx, message_id: discord.Message):
-        await ctx.send(f'https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{message_id}')
-
-
-    @commands.command(aliases=('bm', 'mark', 'book'))
+    @commands.command(aliases=('bm', 'mark', 'book'), description='DMs a bookmark of the [message_id] (or replying message) and extra details.', brief='Bookmarks message.')
     async def bookmark(self, ctx, message_id: int = -1):
         if message_id == -1:
             message_id = int(ctx.message.reference.message_id)
@@ -1748,17 +1798,17 @@ class fetch_data_cog(commands.Cog):
 
 
 
-    @commands.command(aliases=('channel_member_count', 'channel_member#'))
+    @commands.command(aliases=('channel_member_count', 'channel_member#'), description='Number of members that can view the current channel.', brief='Members in the current channel.')
     async def channel_members(self, ctx):
         await ctx.send(f'{len(ctx.message.channel.members)} members are in the channel.')
 
 
-    @commands.command(aliases=('members', 'member#'))
+    @commands.command(aliases=('members', 'member#'), description='Number of members in the current guild.', brief='Number of members in the current guild.')
     async def member_count(self, ctx):
         await ctx.send(f'{ctx.guild.member_count} members are in the guild.')
 
 
-    @commands.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on', 'member_info', 'member_data'))
+    @commands.command(aliases=('get_member', 'pull_member', 'member', 'info', 'info_on', 'member_info', 'member_data'), description='Returns data on member <member> for the current guild.', brief='Info on <member>.')
     async def fetch_member(self, ctx, member: discord.Member):
         def is_author(payload: discord.RawReactionActionEvent):
             return (payload.guild_id is None) and ('👋' in str(payload.emoji)) and (payload.user_id == ctx.author.id)
@@ -1846,7 +1896,7 @@ class fetch_data_cog(commands.Cog):
                 await ctx.author.send(f'{ctx.author.mention} successfully sent the message!')
 
 
-    @commands.command(aliases=('get_user', 'pull_user', 'user', 'user_info', 'info_on_user', 'user_data'))
+    @commands.command(aliases=('get_user', 'pull_user', 'user', 'user_info', 'info_on_user', 'user_data'), description='Returns data on user <user>.', brief='Info on <user>.')
     async def fetch_user(self, ctx, User: discord.User):
         def is_author(payload: discord.RawReactionActionEvent):
             return (payload.guild_id is None) and ('👋' in str(payload.emoji)) and (payload.user_id == ctx.author.id)
@@ -1897,48 +1947,8 @@ class owner_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=('e', 'eval'))
-    @commands.is_owner()
-    async def evaluate(self, ctx, *, python_code: str = None):
-        if not (ctx.message.attachments is None) and python_code is None:
-            for index, attachment in enumerate(ctx.message.attachments):
-                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
-                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
-                    file = await attachment.save(fp=fr'./{name}')
-                    python_code = open(fr'./{name}', 'r').read()
-        if python_code.startswith('```py'):
-            python_code = python_code.lstrip('```py')
-        elif python_code.startswith('```'):
-            python_code = python_code.lstrip('```')
-        elif python_code.startswith('`'):
-            python_code = python_code.lstrip('`')
-        if python_code.endswith('```'):
-            python_code = python_code.rstrip('```')
-        elif python_code.endswith('`'):
-            python_code = python_code.rstrip('`')
-        result = subprocess.run([sys.executable, "-c", python_code],
-                                capture_output=True, text=True, timeout=5)
-        if (f'''```
-{result.stderr}
-{result.stdout}
-```'''.count('''
-            ''') - 2) > 19:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
 
-
-    @commands.command()
+    @commands.command(description='Owners only: Resets cooldown for command <command>.', brief='Resets a commands cooldown.')
     @commands.is_owner()
     async def reset_cooldown(self, ctx, *, command):
         command = self.bot.get_command(command)
@@ -1949,14 +1959,14 @@ class owner_cog(commands.Cog):
         await ctx.message.reply('Cooldown reset.')
 
 
-    @commands.command(aliases=('terminate_bot', 'kill_bot', 'cut_bot'))
+    @commands.command(aliases=('terminate_bot', 'kill_bot', 'cut_bot'), description='Owners only: attempts to terminate the bots connection to the API.')
     @commands.is_owner()
     async def close_bot(self, ctx):
         await ctx.send('Bot terminating...')
         await bot.close()
 
 
-    @commands.command()
+    @commands.command(description='Owners only: Reloads the bots cogs.', brief='Owners only.')
     @commands.is_owner()
     async def restart_bot(self, ctx):
         await ctx.send(f'Reloading bot...')
@@ -1972,7 +1982,7 @@ class print_cog(commands.Cog):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(description='Sends a message as the bot in the current channel.', brief='Sends a message as the bot.')
     async def print_out(self, ctx, *, message):
         member = await ctx.guild.fetch_member(ctx.message.author.id)
         new_message = await ctx.message.channel.send(message)
@@ -1981,7 +1991,7 @@ class print_cog(commands.Cog):
         await ctx.message.delete()
 
 
-    @commands.command()
+    @commands.command(description='Sends an embed as the bot in the current channel. [title] can be wrapped in quotes for multiples words.', brief='Sends an embed as the bot.')
     async def print_embed(self, ctx, title: str, *, text: str):
         icon = ctx.author.avatar
         if not(icon is None):
@@ -2002,7 +2012,506 @@ class print_cog(commands.Cog):
             with open('rules.json', 'w') as json_file:
                 json.dump(data, json_file)
 
-                
+
+@bot.command(aliases=('call', 'request'), description='Returns bots latency and other stats.', brief='Bots latency.')
+async def ping(ctx):
+    embed = discord.Embed(title='Status')
+    if (bot.latency * 1000) > 119:
+        embed.color = discord.Color.from_rgb(0,255,0)
+    elif (bot.latency * 1000) > 79:
+        embed.color = discord.Color.from_rgb(255,249,8)
+    elif (bot.latency * 1000) > 39:
+        embed.color = discord.Color.from_rgb(141,255,8)
+    else:
+        embed.color = discord.Color.from_rgb(000, 255, 000)
+    embed.add_field(name='Ping', value=str(round(bot.latency * 1000)) + ' ms.')
+    embed.add_field(name='Ratelimited', value=f'{bot.is_ws_ratelimited()}')
+    try:
+        await bot.fetch_user(bot.user.id)
+    except BaseException:
+        embed.add_field(name='Connection', value='Down')
+    else:
+        embed.add_field(name='Connection', value='Working')
+    async with ctx.message.channel.typing():
+        try:
+            await bot.wait_for(event='socket_event_type', timeout=10)
+        except asyncio.exceptions.TimeoutError:
+            embed.add_field(name='Websocket', value='Not recieving')
+        else:
+            embed.add_field(name='Websocket', value='Recieving')
+
+        await asyncio.sleep(2)
+    if success['last']:
+        embed.add_field(name='Background ping', value=f'Last ping: Successful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
+    else:
+        embed.add_field(name='Background ping', value=f'Last ping: Unsuccessful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
+    await ctx.message.reply(embed=embed)
+
+
+class reacting_cog(commands.Cog):
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands related to managing reacting object keys in the current guild.'
+
+
+    @commands.command(aliases=('update_react', 'add_react'), description = 'Adds a reacting object key for a message id.', brief = 'Creates a reacting object key.')
+    @commands.has_permissions(manage_messages=True, manage_emojis=True)
+    async def set_react(self, ctx, reacting_message_id: int, default_role_id: int, emoji_to_react: str):
+        reacting[(ctx.guild.id, reacting_message_id)] = (
+            default_role_id, emoji_to_react)
+        await ctx.send(
+            f'{ctx.author.mention} updated reacting object index: `{(ctx.guild.id, reacting_message_id)}: {(default_role_id, emoji_to_react)}`')
+
+
+    @commands.command(aliases=('delete_react', 'rm_react', 'del_react'), description = 'Removes reacting data key for message id passed.', brief = 'Removes reacting data key for a message.')
+    @commands.has_permissions(manage_messages=True, manage_emojis=True)
+    async def remove_react(self, ctx, reacting_message_id: int):
+        del reacting[(ctx.guild.id, reacting_message_id)]
+        await ctx.send(f'{ctx.author.mention} deleted reacting object key: `{(ctx.guild.id, reacting_message_id)}`')
+
+
+    @commands.command(aliases=('react_obj', 'react_object', 'react_dictionary'), description = 'Returns the object of reacting data for the current guild or message passed.', brief = 'Dictionary object for current guild or message.')
+    async def react_dict(self, ctx, message_id: discord.Message = None):
+        if message_id is None:
+            d = dict()
+            for key in reacting.keys():
+                if key[0] == ctx.guild.id:
+                    d[key] = reacting[key]
+            await ctx.send(f"Reacting dictionary for current guild- `{d}`")
+        else:
+            await ctx.send(f"Reacting dictionary for message {message_id.id} `{'({0},{1}): {2}'.format(ctx.guild.id, message_id.id, reacting[(ctx.guild.id, message_id.id)])}`")
+
+
+class filters_cog(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands related to filters for the current guild.'
+
+    @commands.command(aliases=('spam_filter', 'spam_check'), description = 'Sets spam filter level for the current guild.', brief = 'Sets spam filter level for the current guild.')
+    @commands.has_permissions(manage_messages=True, moderate_members=True)
+    async def spam(self, ctx, value):
+        global filtering
+        try:
+            filtering[str(ctx.guild.id)]
+        except KeyError:
+            filtering[str(ctx.guild.id)] = 1
+        if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
+            filtering[str(ctx.guild.id)] = int(value)
+        else:
+            raise ValueError('Invalid value for "spam_check".')
+        await ctx.send(f'Spam filter level has been set to {value}.')
+
+
+class channels_cog(commands.Cog):
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands that are related to modifying/managing channels in the current guild.'
+
+    @commands.command(description = 'Creates a text channel', brief = 'Creates a text channel.')
+    @commands.has_permissions(manage_channels=True)
+    async def create_text_channel(self, ctx, name, *, reason='None'):
+        await ctx.guild.create_text_channel(name=name, reason=reason)
+        await ctx.send(f"{ctx.author.mention} create a text channel {name}.")
+
+
+    @commands.command(description = 'Creates a VC.', brief = 'Creates a VC.')
+    @commands.has_permissions(manage_channels=True)
+    async def create_vc(self, ctx, name, *, reason='None'):
+        await ctx.guild.create_voice_channel(name=name, reason=reason)
+        await ctx.send(f"{ctx.author.mention} create a vc {name}.")
+
+
+    @commands.command(aliases=('get_channels', 'pull_channels'), description = 'Returns all channels in the current guild. With links specified by [links]', brief = 'Returns all of the channels.')
+    async def fetch_channels(self, ctx, links=False):
+        try:
+            bool(links)
+        except ValueError:
+            raise ValueError('Invalid boolean for "links".')
+        channels = []
+        for i in ctx.guild.channels:
+            if links:
+                channels.insert(
+                    0, f'https://discord.com/channels/{ctx.guild.id}/{i.id}')
+            else:
+                channels.insert(0, i.id)
+        await ctx.send(channels)
+
+
+    @commands.command(aliases=('remove_channels', 'end_channels'), description = 'Deletes multiple channels with ids passed.', brief = 'Deletes multiple channels.')
+    @commands.has_permissions(manage_channels=True)
+    async def delete_channels(self, ctx, *, channels):
+        try:
+            list(channels)
+        except ValueError:
+            raise ValueError('Invalid list for "channels".')
+        tup = convert_to_list(channels)
+        print(tup)
+        for i in tup:
+            print(i)
+            channel = await ctx.guild.fetch_channel(int(i))
+            await channel.delete()
+        await ctx.send('Deleted channels.')
+
+
+    @commands.command(aliases=('channel_clear', 'channel_clean'), description = 'Deletes and clones a channel.', brief = 'Deletes and clones a channel.')
+    @commands.has_permissions(manage_channels=True)
+    async def channel_purge(self, ctx, channel: discord.GroupChannel = None, *, reason='None'):
+        if channel is None:
+            channel = ctx.channel
+        channel = ctx.channel
+        new_channel = await channel.clone(name=channel.name, reason=reason)
+        await channel.delete()
+
+
+    @commands.command(aliases=('channel_del', 'channel_remove', 'channel_rm'), description = 'Deletes <channel> from the current guild.', brief = 'Deletes a channel.')
+    @commands.has_permissions(manage_channels=True)
+    async def channel_delete(self, ctx, channel: discord.GroupChannel = None, *, reason='None'):
+        if channel is None:
+            channel = ctx.channel
+        await channel.delete()
+
+
+class roles_cog(commands.Cog):
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands that are related to managing roles.'
+
+
+    @commands.command(description = 'Creates a role.', brief = 'Creates a role.')
+    @commands.has_permissions(manage_roles=True)
+    async def create_role(self, ctx, name, *, reason='None'):
+        await ctx.guild.create_role(name=name, reason=reason)
+        await ctx.send(f"{ctx.author.mention} created role {name}.")
+
+
+    @commands.command(aliases=('del_role', 'rm_role', 'remove_role'), description = 'Deletes a role.', brief = 'Deletes a role.')
+    @commands.has_permissions(manage_roles=True)
+    async def delete_role(self, ctx, role: discord.Role, *, reason='None'):
+        await ctx.send(f'{ctx.author.mention} deleted role {role.name}.')
+        await role.delete(reason=reason)
+
+
+    #   overwrite = discord.PermissionOverwrite()
+    #   overwrite.send_messages = True
+    #   overwrite.read_messages = True
+    #   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
+
+
+    @commands.command(aliases=('add_role', 'append_role'), description = 'Pushes a role on members specified.', brief = 'Adds a role to members.')
+    @commands.has_permissions(manage_roles=True)
+    async def push_role(self, ctx, role: discord.Role, *, member_ids='all'):
+        if member_ids.lower() == 'all':
+            pass
+        else:
+            try:
+                tuple(member_ids)
+            except ValueError:
+                raise ValueError('Invalid list for "member_ids".')
+            tup = convert_to_list(member_ids)
+            for i in tup:
+                member = await ctx.guild.fetch_member(int(i))
+                try:
+                    await member.add_roles(role)
+                except (
+                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                        ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                    print(
+                        f'An error occurred while pushing role {role.name} onto {str(member)}.')
+                    pass
+            await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto members.')
+            return
+        for i in ctx.guild.members:
+            try:
+                await i.add_roles(role)
+            except (
+                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
+                    ValueError,
+                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
+                print(
+                    f'An error occurred while pushing role {role.name} onto {str(i)}.')
+                pass
+        await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
+
+
+class rules_cog(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands that are related to checking rules and modifying them.'
+
+
+    @commands.command(description = 'Returns a rule number [rule_int] from rules for the current guild.', brief = 'Returns a single rule.')
+    async def rule(self, ctx, rule_int: int = None):
+        with open('rules.json', 'r') as json_file:
+            data = json.load(json_file)
+        try:
+            data[str(ctx.guild.id)]
+        except KeyError:
+            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+        with open("rules.txt", 'w') as rules:
+            rules.writelines(data[str(ctx.guild.id)])
+        with open("rules.txt", 'r+') as rules:
+            await ctx.send(rules.readlines()[rule_int - 1])
+
+
+    @commands.command(description = 'Returns an embed with the current guilds rules.', brief = 'Rules for the current guild.')
+    async def rules(self, ctx):
+        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
+        with open('rules.json', 'r') as json_file:
+            data = json.load(json_file)
+        try:
+            data[str(ctx.guild.id)]
+        except KeyError:
+            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+            return
+        with open("rules.txt", 'w') as rules:
+            rules.writelines(data[str(ctx.guild.id)])
+        with open("rules.txt", 'r+') as rules:
+            embed = discord.Embed(title='RULES:', description=rules.read())
+            icon = bot_author.avatar
+            if not(icon is None):
+                icon = icon.url
+            else:
+                icon = bot_author.default_avatar.url
+            embed.set_author(name=str(bot_author), icon_url=icon)
+            embed.set_footer(icon_url=icon,
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+            await ctx.send(embed=embed)
+
+
+    @commands.command(aliases=['rule_append'], description = 'Adds a rule to the curren set of guild rules.', brief = 'Creates a new rule.')
+    @commands.has_permissions(moderate_members=True, view_audit_log=True)
+    async def rule_add(self, ctx, *, text: str = 'None'):
+        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
+        with open('rules.json', 'r') as json_file:
+            data = json.load(json_file)
+        try:
+            data[str(ctx.guild.id)]
+        except KeyError:
+            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+            return
+        data[str(ctx.guild.id)] = f'{data[str(ctx.guild.id)]}\n{text}'
+        with open('rules.json', 'w') as json_file:
+            json.dump(data, json_file)
+        with open("rules.txt", 'w') as rules:
+            rules.writelines(data[str(ctx.guild.id)])
+        with open("rules.txt", 'r+') as rules:
+            embed = discord.Embed(title='RULES:', description=rules.read())
+            icon = bot_author.avatar
+            if not(icon is None):
+                icon = icon.url
+            else:
+                icon = bot_author.default_avatar.url
+            embed.set_author(name=str(bot_author), icon_url=icon)
+            embed.set_footer(icon_url=icon,
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+            await ctx.send(embed=embed)
+
+
+    @commands.command(aliases=['rule_change'], description = 'Replaces rule number [rule_ind] with a new rule.', brief = 'Replaces a rule.')
+    @commands.has_permissions(moderate_members=True, view_audit_log=True)
+    async def rule_replace(self, ctx, rule_ind: int, *, read: str):
+        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
+        with open('rules.json', 'r') as json_file:
+            data = json.load(json_file)
+        try:
+            data[str(ctx.guild.id)]
+        except KeyError:
+            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
+            return
+        listed = str(data[str(ctx.guild.id)]).rsplit('\n')
+        listed[rule_ind - 1] = read
+        text = ''
+        for index, value in enumerate(listed):
+            if index != len(listed) - 1:
+                text = f'{text}{value}\n'
+            else:
+                text = f'{text}{value}'
+        data[str(ctx.guild.id)] = text
+        with open('rules.json', 'w') as json_file:
+            json.dump(data, json_file)
+        with open("rules.txt", 'w') as rules:
+            for i in listed:
+                rules.writelines(f'{i}\n')
+        with open("rules.txt", 'r+') as rules:
+            embed = discord.Embed(title='RULES:', description=rules.read())
+            icon = bot_author.avatar
+            if not(icon is None):
+                icon = icon.url
+            else:
+                icon = bot_author.default_avatar.url
+            embed.set_author(name=str(bot_author), icon_url=icon)
+            embed.set_footer(icon_url=icon,
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+            await ctx.send(embed=embed)
+
+
+    @commands.command(aliases=('rule_rm', 'rule_delete', 'rule_del'), description = 'Removes rule number [rule_ind] for current guild rules.', brief = 'Removes a rule.')
+    @commands.has_permissions(moderate_members=True, view_audit_log=True)
+    async def rule_remove(self, ctx, rule_ind: int = 0):
+        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
+        with open('rules.json', 'r') as json_file:
+            data = json.load(json_file)
+        try:
+            data[str(ctx.guild.id)]
+        except KeyError:
+            await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
+            return
+        listed = str(data[str(ctx.guild.id)]).rsplit('\n')
+        listed.pop(rule_ind - 1)
+        text = ''
+        for index, value in enumerate(listed):
+            if index != len(listed) - 1:
+                text = f'{text}{value}\n'
+            else:
+                text = f'{text}{value}'
+        data[str(ctx.guild.id)] = text
+        with open('rules.json', 'w') as json_file:
+            json.dump(data, json_file)
+        with open("rules.txt", 'w') as rules:
+            for i in listed:
+                rules.writelines(f'{i}\n')
+        with open("rules.txt", 'r+') as rules:
+            embed = discord.Embed(title='RULES:', description=rules.read())
+            icon = bot_author.avatar
+            if not(icon is None):
+                icon = icon.url
+            else:
+                icon = bot_author.default_avatar.url
+            embed.set_author(name=str(bot_author), icon_url=icon)
+            embed.set_footer(icon_url=icon,
+                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
+            await ctx.send(embed=embed)
+
+
+class logs_cog(commands.Cog):
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands that have to do with guild logs.'
+
+
+    @commands.command(aliases=('fetch_logs', 'get_logs', 'pull_logs'), description = 'Returns a .txt file of logs collected from the current bot session in the current guild.', brief = 'Returns logs for current guild.')
+    @commands.has_permissions(view_audit_log=True)
+    async def logs(self, ctx):
+        with (open('logs.json', 'r')) as json_file:
+            data = json.load(json_file)
+        with open('logs.txt', 'w') as file:
+            file.write(str(data[str(ctx.guild.id)]))
+        await ctx.author.send(content=f'{ctx.author.mention} logs from the current bot session for **{ctx.guild}**:', file=discord.File(r'./logs.txt'))
+
+
+    @commands.command(aliases=('delete_logs', 'del_logs', 'rm_logs', 'remove_logs'), description = 'Deletes all logs for the current guild.', brief = 'Deletes logs from current guild.')
+    @commands.has_permissions(view_audit_log=True)
+    async def clear_logs(self, ctx):
+        with (open('logs.json', 'r')) as json_file:
+            data = json.load(json_file)
+            data[str(ctx.guild.id)] = 0
+        with (open('logs.json', 'w')) as json_file:
+            json.dump(data, json_file)
+        await ctx.send(f'{ctx.author.mention} cleared all logs from bot session in **{ctx.guild}**.')
+
+
+class extras_cog(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.description = 'Commands that do not fall into any other category.'
+
+    @commands.command(aliases=['add_topic'], description = 'Requests a topic verification to be added by the bot owner.', brief = 'Adds a topic.')
+    @commands.cooldown(1, 420, commands.BucketType.user)
+    async def topic_add(self, ctx, *, topic: str):
+        owner = await self.bot.fetch_user(self.bot.owner_id)
+        icon = ctx.message.author.avatar
+        if icon is None:
+            icon = ctx.message.author.default_avatar.url
+        else:
+            icon = icon.url
+        embed = discord.Embed(title='Topic verification request', color=ctx.author.color,
+                              description=f'{ctx.author.mention} is requesting verification for the topic:\n`{topic}`\n The request will be automatically denied in 10 minutes.')
+        embed.set_author(name=ctx.author, icon_url=icon)
+        icon = ctx.guild.icon
+        if icon is None:
+            icon = ctx.message.author.avatar
+            if icon is None:
+                icon = ctx.message.author.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        embed.set_footer(
+            text=f'{ctx.author} requested topic verification in {ctx.guild} at {str(ctx.message.created_at).rsplit(".")[0]}',
+            icon_url=icon)
+        context = await owner.send(embed=embed)
+        await context.add_reaction('✅')
+        await context.add_reaction('❌')
+        await ctx.author.send(f'{ctx.author.mention} your topic request is being verified by the owner.')
+
+        def check(payload: discord.RawReactionActionEvent):
+            return payload.user_id == owner.id and payload.channel_id == context.channel.id and any(
+                i in str(payload.emoji) for i in ('✅', '❌'))
+
+        try:
+            data = await self.bot.wait_for(event='raw_reaction_add', timeout=600, check=check)
+        except asyncio.exceptions.TimeoutError:
+            await context.reply('Request automatically denied due to inactivity.')
+            await ctx.author.send(f"{ctx.author.mention} The owner did not respond to the request.")
+        else:
+            if '✅' in str(data.emoji):
+                await context.reply('Topic verification request approved!')
+                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been approved!")
+                topics.append((topic, ctx.message))
+            else:
+                await context.reply('Topic verification request denied!')
+                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been denied!")
+        await context.remove_reaction(emoji='✅', member=self.bot.user)
+        await context.remove_reaction(emoji='❌', member=self.bot.user)
+
+    @commands.command(description = 'Finds a random topic from a list entered by users.', brief = 'Picks a random topic.')
+    @commands.cooldown(1, 120, commands.BucketType.channel)
+    async def topic(self, ctx):
+        ind = random.choice(topics)
+        message = ind[1]
+        embed = discord.Embed(title=str(ind[0]), color=message.author.color,
+                              description='Want to add a topic? run `>topic_add <topic>` to request a topic verification by the owner!')
+        icon = message.author.avatar
+        if icon is None:
+            icon = message.author.default_avatar.url
+        else:
+            icon = icon.url
+        embed.set_author(icon_url=icon, name=message.author)
+        icon = message.guild.icon
+        if icon is None:
+            icon = message.author.avatar
+            if icon is None:
+                icon = message.author.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        print(icon)
+        embed.set_footer(
+            text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.',
+            icon_url=icon)
+        await ctx.message.reply(embed=embed)
+
+
+    @commands.command(aliases=['nickname'], description = 'Sets <member>s nickname to [new_nick].', brief = 'Renames a member.')
+    @commands.has_permissions(manage_nicknames=True)
+    async def nick(self, ctx, member: discord.Member, *, new_nick: str=None):
+        if new_nick is None:
+            new_nick = f'Member-{random.randint(0, 999999)}'
+        await member.edit(nick=new_nick)
+        await ctx.message.reply(f'{member.mention}\'s name was changed to **{new_nick}**.')
+
 
 class alarm_cog(commands.Cog):
 
@@ -2046,9 +2555,10 @@ class alarm_cog(commands.Cog):
         self.DAYS_INT = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6,
                          'Sunday': 7}
         self.check_alarms.start()
+        self.description = 'Commands related to the bots alarm system.'
 
 
-    @commands.command(aliases=('set_alarm', 'new_alarm'))
+    @commands.command(aliases=('set_alarm', 'new_alarm'), description = 'Creates a new alarm with name [name].', brief = 'Creates an alarm.')
     async def alarm(self, ctx, *, name: str=f'alarm-{random.randint(0, 99999)}'):
         days = list()
         hour = 0
@@ -2103,7 +2613,7 @@ class alarm_cog(commands.Cog):
         await context.edit(content=f'Alarm `{name}` successfully set!')
 
 
-    @commands.command(aliases=('clear_alarm', 'delete_alarm', 'remove_alarm'))
+    @commands.command(aliases=('clear_alarm', 'delete_alarm', 'remove_alarm'), description = 'Deletes an alarm.', brief = 'Deletes an alarm.')
     async def del_alarm(self, ctx):
         found = False
         for key in self.alarms_dict.keys():
@@ -2143,7 +2653,7 @@ class alarm_cog(commands.Cog):
                                 return await context.reply(f'alarm `{m.content}` queued for deletion.')
 
 
-    @commands.command(aliases=('check_alarms', 'view_alarms'))
+    @commands.command(aliases=('check_alarms', 'view_alarms'), description = 'Returns all alarms for current member.', brief = 'Returns all alarms.')
     async def alarms(self, ctx):
         found = False
         for key in self.alarms_dict.keys():
@@ -2166,499 +2676,6 @@ class alarm_cog(commands.Cog):
         for index, value in enumerate(data):
                 string = f'{string}alarm `{value[3]}` goes off **{len(value[0])}** days a week on {str(value[1]).zfill(2)}:{str(value[2]).zfill(2)}\n'
         await ctx.message.reply(content=string)
-                
-
-@bot.command(aliases=('call', 'request'))
-async def ping(ctx):
-    embed = discord.Embed(title='Status')
-    if (bot.latency * 1000) > 119:
-        embed.color = discord.Color.from_rgb(0,255,0)
-    elif (bot.latency * 1000) > 79:
-        embed.color = discord.Color.from_rgb(255,249,8)
-    elif (bot.latency * 1000) > 39:
-        embed.color = discord.Color.from_rgb(141,255,8)
-    else:
-        embed.color = discord.Color.from_rgb(000, 255, 000)
-    embed.add_field(name='Ping', value=str(round(bot.latency * 1000)) + ' ms.')
-    embed.add_field(name='Ratelimited', value=f'{bot.is_ws_ratelimited()}')
-    try:
-        await bot.fetch_user(bot.user.id)
-    except BaseException:
-        embed.add_field(name='Connection', value='Down')
-    else:
-        embed.add_field(name='Connection', value='Working')
-    async with ctx.message.channel.typing():
-        try:
-            await bot.wait_for(event='socket_event_type', timeout=10)
-        except asyncio.exceptions.TimeoutError:
-            embed.add_field(name='Websocket', value='Not recieving')
-        else:
-            embed.add_field(name='Websocket', value='Recieving')
-
-        await asyncio.sleep(2)
-    if success['last']:
-        embed.add_field(name='Background ping', value=f'Last ping: Successful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
-    else:
-        embed.add_field(name='Background ping', value=f'Last ping: Unsuccessful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
-    await ctx.message.reply(embed=embed)
-
-
-class reacting_cog(commands.Cog):
-
-
-    def __init__(self, bot):
-        self.bot = bot
-
-
-    @commands.command(aliases=('update_react', 'add_react'))
-    @commands.has_permissions(manage_messages=True, manage_emojis=True)
-    async def set_react(self, ctx, reacting_message_id: int, default_role_id: int, emoji_to_react: str):
-        reacting[(ctx.guild.id, reacting_message_id)] = (
-            default_role_id, emoji_to_react)
-        await ctx.send(
-            f'{ctx.author.mention} updated reacting object index: `{(ctx.guild.id, reacting_message_id)}: {(default_role_id, emoji_to_react)}`')
-
-
-    @commands.command(aliases=('delete_react', 'rm_react', 'del_react'))
-    @commands.has_permissions(manage_messages=True, manage_emojis=True)
-    async def remove_react(self, ctx, reacting_message_id: int):
-        del reacting[(ctx.guild.id, reacting_message_id)]
-        await ctx.send(f'{ctx.author.mention} deleted reacting object index: `{(ctx.guild.id, reacting_message_id)}`')
-
-
-    @commands.command(aliases=('react_obj', 'react_object', 'react_dictionary'))
-    async def react_dict(self, ctx, message_id: discord.Message = None):
-        if message_id is None:
-            d = dict()
-            for key in reacting.keys():
-                if key[0] == ctx.guild.id:
-                    d[key] = reacting[key]
-            await ctx.send(f"Reacting dictionary for current guild- `{d}`")
-        else:
-            await ctx.send(f"Reacting dictionary for message {message_id.id} `{'({0},{1}): {2}'.format(ctx.guild.id, message_id.id, reacting[(ctx.guild.id, message_id.id)])}`")
-
-
-class filters_cog(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command(aliases=('spam_filter', 'spam_check'))
-    @commands.has_permissions(manage_messages=True, moderate_members=True)
-    async def spam(self, ctx, value):
-        global filtering
-        try:
-            filtering[str(ctx.guild.id)]
-        except KeyError:
-            filtering[str(ctx.guild.id)] = 1
-        if int(value) and int('-1') < int(value) < 5 or int(value) == 0:
-            filtering[str(ctx.guild.id)] = int(value)
-        else:
-            raise ValueError('Invalid value for "spam_check".')
-        await ctx.send(f'Spam filter level has been set to {value}.')
-
-
-class channels_cog(commands.Cog):
-
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    async def create_text_channel(self, ctx, name, *, reason='None'):
-        await ctx.guild.create_text_channel(name=name, reason=reason)
-        await ctx.send(f"{ctx.author.mention} create a text channel {name}.")
-
-
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    async def create_vc(self, ctx, name, *, reason='None'):
-        await ctx.guild.create_voice_channel(name=name, reason=reason)
-        await ctx.send(f"{ctx.author.mention} create a vc {name}.")
-
-
-    @commands.command(aliases=('get_channels', 'pull_channels'))
-    async def fetch_channels(self, ctx, links=False):
-        try:
-            bool(links)
-        except ValueError:
-            raise ValueError('Invalid boolean for "links".')
-        channels = []
-        for i in ctx.guild.channels:
-            if links:
-                channels.insert(
-                    0, f'https://discord.com/channels/{ctx.guild.id}/{i.id}')
-            else:
-                channels.insert(0, i.id)
-        await ctx.send(channels)
-
-
-    @commands.command(aliases=('remove_channels', 'end_channels'))
-    @commands.has_permissions(manage_channels=True)
-    async def delete_channels(self, ctx, *, channels):
-        try:
-            list(channels)
-        except ValueError:
-            raise ValueError('Invalid list for "channels".')
-        tup = convert_to_list(channels)
-        print(tup)
-        for i in tup:
-            print(i)
-            channel = await ctx.guild.fetch_channel(int(i))
-            await channel.delete()
-        await ctx.send('Deleted channels.')
-
-
-    @commands.command(aliases=('channel_clear', 'channel_clean'))
-    @commands.has_permissions(manage_channels=True)
-    async def channel_purge(self, ctx, channel: discord.GroupChannel = None, *, reason='None'):
-        if channel is None:
-            channel = ctx.channel
-        channel = ctx.channel
-        new_channel = await channel.clone(name=channel.name, reason=reason)
-        await channel.delete()
-
-
-    @commands.command(aliases=('channel_del', 'channel_remove', 'channel_rm'))
-    @commands.has_permissions(manage_channels=True)
-    async def channel_delete(self, ctx, channel: discord.GroupChannel = None, *, reason='None'):
-        if channel is None:
-            channel = ctx.channel
-        await channel.delete()
-
-
-class roles_cog(commands.Cog):
-
-
-    def __init__(self, bot):
-        self.bot = bot
-
-
-    @commands.command()
-    @commands.has_permissions(manage_roles=True)
-    async def create_role(self, ctx, name, *, reason='None'):
-        await ctx.guild.create_role(name=name, reason=reason)
-        await ctx.send(f"{ctx.author.mention} created role {name}.")
-
-
-    @commands.command(aliases=('del_role', 'rm_role', 'remove_role'))
-    @commands.has_permissions(manage_roles=True)
-    async def delete_role(self, ctx, role: discord.Role, *, reason='None'):
-        await ctx.send(f'{ctx.author.mention} deleted role {role.name}.')
-        await role.delete(reason=reason)
-
-
-    #   overwrite = discord.PermissionOverwrite()
-    #   overwrite.send_messages = True
-    #   overwrite.read_messages = True
-    #   await ctx.message.channel.set_permissions(member/role, overwrite=overwrite)
-
-
-    @commands.command(aliases=('add_role', 'append_role'))
-    @commands.has_permissions(manage_roles=True)
-    async def push_role(self, ctx, role: discord.Role, *, member_ids='all'):
-        if member_ids.lower() == 'all':
-            pass
-        else:
-            try:
-                tuple(member_ids)
-            except ValueError:
-                raise ValueError('Invalid list for "member_ids".')
-            tup = convert_to_list(member_ids)
-            for i in tup:
-                member = await ctx.guild.fetch_member(int(i))
-                try:
-                    await member.add_roles(role)
-                except (
-                        discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                        ValueError, commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                    print(
-                        f'An error occurred while pushing role {role.name} onto {str(member)}.')
-                    pass
-            await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto members.')
-            return
-        for i in ctx.guild.members:
-            try:
-                await i.add_roles(role)
-            except (
-                    discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
-                    ValueError,
-                    commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-                print(
-                    f'An error occurred while pushing role {role.name} onto {str(i)}.')
-                pass
-        await ctx.send(f'{ctx.author.mention} pushed **{role.name}** onto everyone.')
-
-
-class rules_cog(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-
-
-    @commands.command()
-    async def rule(self, ctx, rule_int: int = None):
-        with open('rules.json', 'r') as json_file:
-            data = json.load(json_file)
-        try:
-            data[str(ctx.guild.id)]
-        except KeyError:
-            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
-        with open("rules.txt", 'w') as rules:
-            rules.writelines(data[str(ctx.guild.id)])
-        with open("rules.txt", 'r+') as rules:
-            await ctx.send(rules.readlines()[rule_int - 1])
-
-
-    @commands.command()
-    async def rules(self, ctx):
-        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('rules.json', 'r') as json_file:
-            data = json.load(json_file)
-        try:
-            data[str(ctx.guild.id)]
-        except KeyError:
-            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
-            return
-        with open("rules.txt", 'w') as rules:
-            rules.writelines(data[str(ctx.guild.id)])
-        with open("rules.txt", 'r+') as rules:
-            embed = discord.Embed(title='RULES:', description=rules.read())
-            icon = bot_author.avatar
-            if not(icon is None):
-                icon = icon.url
-            else:
-                icon = bot_author.default_avatar.url
-            embed.set_author(name=str(bot_author), icon_url=icon)
-            embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
-            await ctx.send(embed=embed)
-
-
-    @commands.command(aliases=['rule_append'])
-    @commands.has_permissions(moderate_members=True, view_audit_log=True)
-    async def rule_add(self, ctx, *, text: str = 'None'):
-        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('rules.json', 'r') as json_file:
-            data = json.load(json_file)
-        try:
-            data[str(ctx.guild.id)]
-        except KeyError:
-            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
-            return
-        data[str(ctx.guild.id)] = f'{data[str(ctx.guild.id)]}\n{text}'
-        with open('rules.json', 'w') as json_file:
-            json.dump(data, json_file)
-        with open("rules.txt", 'w') as rules:
-            rules.writelines(data[str(ctx.guild.id)])
-        with open("rules.txt", 'r+') as rules:
-            embed = discord.Embed(title='RULES:', description=rules.read())
-            icon = bot_author.avatar
-            if not(icon is None):
-                icon = icon.url
-            else:
-                icon = bot_author.default_avatar.url
-            embed.set_author(name=str(bot_author), icon_url=icon)
-            embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
-            await ctx.send(embed=embed)
-
-
-    @commands.command(aliases=['rule_change'])
-    @commands.has_permissions(moderate_members=True, view_audit_log=True)
-    async def rule_replace(self, ctx, rule_ind: int, *, read: str):
-        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('rules.json', 'r') as json_file:
-            data = json.load(json_file)
-        try:
-            data[str(ctx.guild.id)]
-        except KeyError:
-            await ctx.send(f'{ctx.author.mention} this server does not have set rules yet.')
-            return
-        listed = str(data[str(ctx.guild.id)]).rsplit('\n')
-        listed[rule_ind - 1] = read
-        text = ''
-        for index, value in enumerate(listed):
-            if index != len(listed) - 1:
-                text = f'{text}{value}\n'
-            else:
-                text = f'{text}{value}'
-        data[str(ctx.guild.id)] = text
-        with open('rules.json', 'w') as json_file:
-            json.dump(data, json_file)
-        with open("rules.txt", 'w') as rules:
-            for i in listed:
-                rules.writelines(f'{i}\n')
-        with open("rules.txt", 'r+') as rules:
-            embed = discord.Embed(title='RULES:', description=rules.read())
-            icon = bot_author.avatar
-            if not(icon is None):
-                icon = icon.url
-            else:
-                icon = bot_author.default_avatar.url
-            embed.set_author(name=str(bot_author), icon_url=icon)
-            embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
-            await ctx.send(embed=embed)
-
-
-    @commands.command(aliases=('rule_rm', 'rule_delete', 'rule_del'))
-    @commands.has_permissions(moderate_members=True, view_audit_log=True)
-    async def rule_remove(self, ctx, rule_ind: int = 0):
-        bot_author = await ctx.guild.fetch_member(self.bot.user.id)
-        with open('rules.json', 'r') as json_file:
-            data = json.load(json_file)
-        try:
-            data[str(ctx.guild.id)]
-        except KeyError:
-            await ctx.send(f'{ctx.author.mention} this server does nto have set rules yet.')
-            return
-        listed = str(data[str(ctx.guild.id)]).rsplit('\n')
-        listed.pop(rule_ind - 1)
-        text = ''
-        for index, value in enumerate(listed):
-            if index != len(listed) - 1:
-                text = f'{text}{value}\n'
-            else:
-                text = f'{text}{value}'
-        data[str(ctx.guild.id)] = text
-        with open('rules.json', 'w') as json_file:
-            json.dump(data, json_file)
-        with open("rules.txt", 'w') as rules:
-            for i in listed:
-                rules.writelines(f'{i}\n')
-        with open("rules.txt", 'r+') as rules:
-            embed = discord.Embed(title='RULES:', description=rules.read())
-            icon = bot_author.avatar
-            if not(icon is None):
-                icon = icon.url
-            else:
-                icon = bot_author.default_avatar.url
-            embed.set_author(name=str(bot_author), icon_url=icon)
-            embed.set_footer(icon_url=icon,
-                             text=f'Message sent by {self.bot.user} at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel in {ctx.guild}.')
-            await ctx.send(embed=embed)
-
-
-class logs_cog(commands.Cog):
-
-
-    def __init__(self, bot):
-        self.bot = bot
-
-
-    @commands.command(aliases=('fetch_logs', 'get_logs', 'pull_logs'))
-    @commands.has_permissions(view_audit_log=True)
-    async def logs(self, ctx):
-        with (open('logs.json', 'r')) as json_file:
-            data = json.load(json_file)
-        with open('logs.txt', 'w') as file:
-            file.write(str(data[str(ctx.guild.id)]))
-        await ctx.author.send(content=f'{ctx.author.mention} logs from the current bot session for **{ctx.guild}**:', file=discord.File(r'./logs.txt'))
-
-
-    @commands.command(aliases=('delete_logs', 'del_logs', 'rm_logs', 'remove_logs'))
-    @commands.has_permissions(view_audit_log=True)
-    async def clear_logs(self, ctx):
-        with (open('logs.json', 'r')) as json_file:
-            data = json.load(json_file)
-            data[str(ctx.guild.id)] = 0
-        with (open('logs.json', 'w')) as json_file:
-            json.dump(data, json_file)
-        await ctx.send(f'{ctx.author.mention} cleared all logs from bot session in **{ctx.guild}**.')
-
-
-class extras_cog(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command(aliases=['add_topic'])
-    @commands.cooldown(1, 420, commands.BucketType.user)
-    async def topic_add(self, ctx, *, topic: str):
-        owner = await self.bot.fetch_user(self.bot.owner_id)
-        icon = ctx.message.author.avatar
-        if icon is None:
-            icon = ctx.message.author.default_avatar.url
-        else:
-            icon = icon.url
-        embed = discord.Embed(title='Topic verification request', color=ctx.author.color,
-                              description=f'{ctx.author.mention} is requesting verification for the topic:\n`{topic}`\n The request will be automatically denied in 10 minutes.')
-        embed.set_author(name=ctx.author, icon_url=icon)
-        icon = ctx.guild.icon
-        if icon is None:
-            icon = ctx.message.author.avatar
-            if icon is None:
-                icon = ctx.message.author.default_avatar.url
-            else:
-                icon = icon.url
-        else:
-            icon = icon.url
-        embed.set_footer(
-            text=f'{ctx.author} requested topic verification in {ctx.guild} at {str(ctx.message.created_at).rsplit(".")[0]}',
-            icon_url=icon)
-        context = await owner.send(embed=embed)
-        await context.add_reaction('✅')
-        await context.add_reaction('❌')
-        await ctx.author.send(f'{ctx.author.mention} your topic request is being verified by the owner.')
-
-        def check(payload: discord.RawReactionActionEvent):
-            return payload.user_id == owner.id and payload.channel_id == context.channel.id and any(
-                i in str(payload.emoji) for i in ('✅', '❌'))
-
-        try:
-            data = await self.bot.wait_for(event='raw_reaction_add', timeout=600, check=check)
-        except asyncio.exceptions.TimeoutError:
-            await context.reply('Request automatically denied due to inactivity.')
-            await ctx.author.send(f"{ctx.author.mention} The owner did not respond to the request.")
-        else:
-            if '✅' in str(data.emoji):
-                await context.reply('Topic verification request approved!')
-                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been approved!")
-                topics.append((topic, ctx.message))
-            else:
-                await context.reply('Topic verification request denied!')
-                await ctx.author.send(f"{ctx.author.mention} Your topic verification request has been denied!")
-        await context.remove_reaction(emoji='✅', member=self.bot.user)
-        await context.remove_reaction(emoji='❌', member=self.bot.user)
-
-    @commands.command()
-    @commands.cooldown(1, 120, commands.BucketType.channel)
-    async def topic(self, ctx):
-        ind = random.choice(topics)
-        message = ind[1]
-        embed = discord.Embed(title=str(ind[0]), color=message.author.color,
-                              description='Want to add a topic? run `>topic_add <topic>` to request a topic verification by the owner!')
-        icon = message.author.avatar
-        if icon is None:
-            icon = message.author.default_avatar.url
-        else:
-            icon = icon.url
-        embed.set_author(icon_url=icon, name=message.author)
-        icon = message.guild.icon
-        if icon is None:
-            icon = message.author.avatar
-            if icon is None:
-                icon = message.author.default_avatar.url
-            else:
-                icon = icon.url
-        else:
-            icon = icon.url
-        print(icon)
-        embed.set_footer(
-            text=f'{message.author} added a topic in {message.guild} on {str(message.created_at).rsplit(" ")[0]}.',
-            icon_url=icon)
-        await ctx.message.reply(embed=embed)
-
-
-    @commands.command(aliases=['nickname'])
-    @commands.has_permissions(manage_nicknames=True)
-    async def nick(self, ctx, member: discord.Member, *, new_nick: str=None):
-        if new_nick is None:
-            new_nick = f'Member-{random.randint(0, 999999)}'
-        await member.edit(nick=new_nick)
-        await ctx.message.reply(f'{member.mention}\'s name was changed to **{new_nick}**.')
 
 
 @tasks.loop(minutes=1)
@@ -2701,7 +2718,6 @@ def remove_cogs():
     bot.remove_cog(reminder_cog(bot))
     bot.remove_cog(alarm_cog(bot))
 
-    
 
 def add_cogs():
     bot.add_cog(cog=event_cog(bot), override=True)
@@ -2727,7 +2743,7 @@ def add_cogs():
     bot.add_cog(cog=reminder_cog(bot), override=True)
     bot.add_cog(cog=alarm_cog(bot), override=True)
 
-    
+
 
 add_cogs()
 
