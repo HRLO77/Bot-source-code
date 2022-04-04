@@ -501,24 +501,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    # @commands.Cog.listener("on_command_error")
-    # async def on_command_error(self, ctx, error):
-    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-    #     embed.color = ctx.author.color
-    #     icon = self.bot.user.avatar
-    #     if not (icon is None):
-    #         icon = icon.url
-    #     else:
-    #         icon = self.bot.user.default_avatar.url
-    #     embed.set_author(icon_url=icon, name=self.bot.user)
-    #     icon = ctx.author.avatar
-    #     if not (icon is None):
-    #         icon = icon.url
-    #     else:
-    #         icon = ctx.author.default_avatar.url
-    #     embed.set_footer(icon_url=icon,
-    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-    #     await ctx.send(embed=embed)
+    @commands.Cog.listener("on_command_error")
+    async def on_command_error(self, ctx, error):
+        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+        embed.color = ctx.author.color
+        icon = self.bot.user.avatar
+        if not (icon is None):
+            icon = icon.url
+        else:
+            icon = self.bot.user.default_avatar.url
+        embed.set_author(icon_url=icon, name=self.bot.user)
+        icon = ctx.author.avatar
+        if not (icon is None):
+            icon = icon.url
+        else:
+            icon = ctx.author.default_avatar.url
+        embed.set_footer(icon_url=icon,
+                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+        await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
