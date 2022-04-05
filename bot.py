@@ -1308,9 +1308,97 @@ class server_lock_cog(commands.Cog):
 class ban_cog(commands.Cog):
 
 
+    @tasks.loop(seconds=1)
+    async def check_bans(self):
+        await self.bot.wait_until_ready()
+        for index, key in enumerate(self.to_del):
+            del self.bans[key]
+            self.to_del.pop(index)
+        now = datetime.now()
+        for member in self.bans.keys():
+            if self.bans[member] < now:
+                try:
+                    await member.unban(reason='Temp ban complete.')
+                    self.to_del.append(member)
+                except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                    print(f'Could not unban user {member.id} for guild {member.guild.id}.')
+
     def __init__(self, bot):
         self.bot = bot
         self.description='Commands that are related to bans.'
+        self.bans = dict()
+        self.to_del = list()
+        self.check_bans.start()
+
+
+    @commands.command(description='Bans a member for time specified. [reason] MUST be wrapped in double quotes.', brief='Temporarily bans a member.')
+    @commands.has_permissions(ban_members=True)
+    async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, reason: str='None'):
+        current_time = datetime.now()
+        class Time:
+            def GetTime(self, y, m, d):
+                self.__y = int(y)
+                self.__m = int(m)
+                self.__d = int(d)
+
+            def PutResult(self):
+                return (self.__y, self.__m, self.__d)
+
+            def __init__(self, y, m, d):
+                self.GetTime(y, m, d)
+                R = self
+                R.__y = self.__y
+                R.__m = self.__m
+                R.__d = self.__d
+
+                R.__m = R.__d // round(int(calendar.monthrange(current_time.year, current_time.month)[-1]) - current_time.day)
+                R.__d = R.__d % round(int(calendar.monthrange(current_time.year, current_time.month)[-1]) - current_time.day)
+
+                R.__y = R.__y + (R.__m // round(12 - current_time.month))
+                R.__m = R.__m % round(12 - current_time.month)
+
+
+                try:
+                    datetime.now().replace(month=current_time.month + R.__m, day=current_time.day + R.__d)
+                except BaseException:
+                    self.GetTime(y, m, d)
+                    R = self
+                    R.__y = self.__y
+                    R.__m = self.__m
+                    R.__d = self.__d
+
+                    R.__m = R.__d // 30
+                    R.__d = R.__d % 30
+
+                    R.__y = R.__y + (R.__m // round(12 - current_time.month))
+                    R.__m = R.__m % round(12 - current_time.month)
+                return None
+        T1 = Time(y=years, m=months, d=days)
+        T1 = T1.PutResult()
+        try:
+            current_time =  current_time.replace(year=T1[0] + current_time.year, month=T1[1] + current_time.month, day=T1[2] + current_time.day)
+        except BaseException:
+            context = await ctx.message.reply('Failed to tempban, proceed with regular ban?')
+            await context.add_reaction('✅')
+            await context.add_reaction('❌')
+            try:
+                reaction = await self.bot.wait_for('raw_reaction_add', timeout=60, check=lambda payload: payload.message_id == context.id and pyaload.user_id == ctx.author.id and any(i in str(payload.emoji) for i in ('❌', '✅')))
+            except asyncio.exceptions.TimeoutError:
+                await context.clear_reactions()
+                await context.reply('Ban cancelled.')
+            else:
+                if '✅' in str(payload.emoji):
+                    await context.reply(f'{member.mention} has been banned because **{reason}**')
+                    await member.send(f'{member.mention} you\'ve been banned in **{ctx.guild}** because **{reason}** by **{ctx.author.mention}**.')
+                    await member.ban(reason='Tempban failed.')
+                else:
+                    await context.reply('Ban cancelled.')
+        else:
+            await member.send(
+                f'{member.mention} you\'ve been temp-banned in **{ctx.guild}** until {discord.utils.format_dt(current_time)} because **{reason}** by **{ctx.author.mention}**.')
+            self.bans[member] = current_time
+            await ctx.message.reply(f'{member.mention} has been temp-banned until {discord.utils.format_dt(current_time)}.')
+            await member.ban(reason=f'Tempban reason: {reason}.')
 
 
     @commands.command(aliases=('ban_users', 'ban_people'), description='Bans multiple <member_ids> from the current guild.', brief='Bans multiple members.')
@@ -1468,7 +1556,7 @@ class reminder_cog(commands.Cog):
                 R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
                 R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
                 try:
-                    datetime.now().replace(month=R.__months, day=R.__d)
+                    datetime.now().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
                 except BaseException:
                     self.GetTime(d, h, m, s)
                     R = self
