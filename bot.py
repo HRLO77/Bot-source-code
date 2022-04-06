@@ -1711,48 +1711,6 @@ class fetch_data_cog(commands.Cog):
         await ctx.send(f'`{char}`')
 
 
-    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
-    async def evaluate(self, ctx, *, python_code: str):
-        async def evaluate(self, ctx, *, python_code: str = None):
-            if not (ctx.message.attachments is None) and python_code is None:
-                for index, attachment in enumerate(ctx.message.attachments):
-                    if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
-                        name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
-                        file = await attachment.save(fp=fr'./{name}')
-                        os.remove(fr'./{name}')
-                        python_code = open(fr'./{name}', 'r').read()
-            if python_code.startswith('```py'):
-                python_code = python_code.lstrip('```py')
-            elif python_code.startswith('```'):
-                python_code = python_code.lstrip('```')
-            elif python_code.startswith('`'):
-                python_code = python_code.lstrip('`')
-            if python_code.endswith('```'):
-                python_code = python_code.rstrip('```')
-            elif python_code.endswith('`'):
-                python_code = python_code.rstrip('`')
-            result = subprocess.run([sys.executable, "-c", python_code],
-                                    capture_output=True, text=True, timeout=5)
-            if (f'''```
-{result.stderr}
-{result.stdout}
-```'''.count('''
-''') - 2) > 19:
-                o = open('out.txt', 'w')
-                o = o.writelines(str(result.stdout))
-                file = discord.File(
-                    r'./out.txt')
-                await ctx.send(content='Program output too long, full output in text document:', file=file)
-                o = ''
-                return
-            f = ''
-            await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
-
-
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'), description='Returns info and extra details of the current guild.', brief='Info on guild.')
     async def server(self, ctx):
         embed = discord.Embed(title=f'Server info')
@@ -2034,6 +1992,48 @@ class owner_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+        
+    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
+    @commands.is_owner()
+    async def evaluate(self, ctx, *, python_code: str):
+        if not (ctx.message.attachments is None) and python_code is None:
+            for index, attachment in enumerate(ctx.message.attachments):
+                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                    file = await attachment.save(fp=fr'./{name}')
+                    os.remove(fr'./{name}')
+                    python_code = open(fr'./{name}', 'r').read()
+        if python_code.startswith('```py'):
+            python_code = python_code.lstrip('```py')
+        elif python_code.startswith('```'):
+            python_code = python_code.lstrip('```')
+        elif python_code.startswith('`'):
+            python_code = python_code.lstrip('`')
+        if python_code.endswith('```'):
+            python_code = python_code.rstrip('```')
+        elif python_code.endswith('`'):
+            python_code = python_code.rstrip('`')
+        result = subprocess.run([sys.executable, "-c", python_code],
+                                capture_output=True, text=True, timeout=5)
+        if (f'''```
+{result.stderr}
+{result.stdout}
+```'''.count('''
+''') - 2) > 19:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command(description='Owners only: Resets cooldown for command <command>.', brief='Resets a commands cooldown.')
