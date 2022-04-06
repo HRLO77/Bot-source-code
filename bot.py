@@ -212,17 +212,17 @@ class event_cog(commands.Cog):
             await message.channel.send(f'{message.author.mention} {random.choice(rickrolls)}.')
             await message.author.send(f'{message.author.mention} bruh why?')
         try:
-            print('Full message log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+            print('Full message log: \n', datetime.utcnow(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                   message.channel, message.author, message.content,
                   message.author.bot, (filtering[str(message.guild.id)]),
                   message.jump_url)
-            log(('Full message log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+            log(('Full message log: \n', datetime.utcnow(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                  message.channel, message.author, message.content,
                  message.author.bot, (filtering[str(message.guild.id)]),
                  message.jump_url), message.guild.id)
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print('Direct message log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
+            print('Direct message log: \n', datetime.utcnow(), message.guild, message.channel, message.author, message.id, message.channel.id,
                   message.content, message.author.bot,
                   message.jump_url)
             return
@@ -349,17 +349,17 @@ class event_cog(commands.Cog):
         global spam
         global content
         try:
-            print('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+            print('Full message edit log: \n', datetime.utcnow(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                   message.channel, message.author, message.content,
                   message.author.bot, (filtering[str(message.guild.id)]),
                   f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}')
-            log(('Full message edit log: \n', datetime.now(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
+            log(('Full message edit log: \n', datetime.utcnow(), message.guild.id, message.channel.id, message.author.id, message.id, message.guild,
                  message.channel, message.author, message.content,
                  message.author.bot,
                  f'https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}'), message.guild.id)
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
-            print('Direct message edit log: \n', datetime.now(), message.guild, message.channel, message.author, message.id, message.channel.id,
+            print('Direct message edit log: \n', datetime.utcnow(), message.guild, message.channel, message.author, message.id, message.channel.id,
                   message.content, message.author.bot,
                   f'https://discord.com/channels/@me/{message.channel.id}/{message.id}')
             return
@@ -487,12 +487,12 @@ class event_cog(commands.Cog):
             sniped_messages[(guild.id, int(payload.channel_id))] = payload
             sniped_messages[guild.id] = payload
         try:
-            print('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot)
-            log(('Full delete log: \n', datetime.now(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot), payload.guild_id)
+            print('Full delete log: \n', datetime.utcnow(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot)
+            log(('Full delete log: \n', datetime.utcnow(), payload.guild_id, payload.channel_id, payload.cached_message.author.id, guild.name, (await guild.fetch_channel(payload.channel_id)).name, payload.cached_message.author, payload.cached_message.content, payload.cached_message.author.bot), payload.guild_id)
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             if not(payload.cached_message is None):
-                print('Direct message delete log: \n', datetime.now(), payload.channel_id, payload.cached_message.author.id,
+                print('Direct message delete log: \n', datetime.utcnow(), payload.channel_id, payload.cached_message.author.id,
                           payload.cached_message.channel, payload.cached_message.author, payload.cached_message.content)
             else:
                 print('Message delete log error.')
@@ -501,24 +501,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon,
-                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon,
+    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -1314,7 +1314,7 @@ class ban_cog(commands.Cog):
         for index, key in enumerate(self.to_del):
             del self.bans[key]
             self.to_del.pop(index)
-        now = datetime.now()
+        now = datetime.utcnow()
         for member in self.bans.keys():
             if self.bans[member] < now:
                 try:
@@ -1334,7 +1334,7 @@ class ban_cog(commands.Cog):
     @commands.command(description='Bans a member for time specified. [reason] MUST be wrapped in double quotes.', brief='Temporarily bans a member.')
     @commands.has_permissions(ban_members=True)
     async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, reason: str='None'):
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
         class Time:
             def GetTime(self, y, m, d):
                 self.__y = int(y)
@@ -1359,7 +1359,7 @@ class ban_cog(commands.Cog):
 
 
                 try:
-                    datetime.now().replace(month=current_time.month + R.__m, day=current_time.day + R.__d)
+                    datetime.utcnow().replace(month=current_time.month + R.__m, day=current_time.day + R.__d)
                 except BaseException:
                     self.GetTime(y, m, d)
                     R = self
@@ -1501,7 +1501,7 @@ class reminder_cog(commands.Cog):
         for index, key in enumerate(self.to_del):
             del self.reminders_dict[key]
             self.to_del.pop(index)
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
         for key in self.reminders_dict.keys():
             if self.reminders_dict[key] < current_time:
                 try:
@@ -1524,7 +1524,7 @@ class reminder_cog(commands.Cog):
 
     @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
     async def remind(self, ctx, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
 
         class Time:
             def GetTime(self, d, h, m, s):
@@ -1556,7 +1556,7 @@ class reminder_cog(commands.Cog):
                 R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
                 R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
                 try:
-                    datetime.now().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
+                    datetime.utcnow().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
                 except BaseException:
                     self.GetTime(d, h, m, s)
                     R = self
@@ -1602,7 +1602,7 @@ class reminder_cog(commands.Cog):
         #     time2 = Time(d=current_time.day, h=hours + current_time.hour, m=minutes + current_time.minute, s=seconds + current_time.second)
         #     time2.PutResult()
         #     current_time = current_time.replace(month=time[0] + current_time.month, day=time2[1], hour=time[2], minute=time[3], second=time[4])
-        if current_time < datetime.now():
+        if current_time < datetime.utcnow():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
@@ -1659,10 +1659,10 @@ class reminder_cog(commands.Cog):
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
     @commands.command(aliases=('format_date', 'format_dt', 'format_time'), description='Formats arguments passed into discord timestamp formating.', brief='Returns a timestamp.')
-    async def format(self, ctx, years: int = datetime.now().year, months: int = datetime.now().month,
-                     days: int = datetime.now().day, hours: int = datetime.now().hour,
-                     minutes: int = datetime.now().minute, seconds: int = datetime.now().second):
-        current_time = datetime.now()
+    async def format(self, ctx, years: int = datetime.utcnow().year, months: int = datetime.utcnow().month,
+                     days: int = datetime.utcnow().day, hours: int = datetime.utcnow().hour,
+                     minutes: int = datetime.utcnow().minute, seconds: int = datetime.utcnow().second):
+        current_time = datetime.utcnow()
         try:
             current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes,
                                                 second=seconds)
@@ -1709,6 +1709,48 @@ class fetch_data_cog(commands.Cog):
     @commands.command(aliases=('charinfo', 'char_info'), description='Returns the unicode version of <char> passed', brief='Unicode version of a character.')
     async def char(self, ctx, *, char):
         await ctx.send(f'`{char}`')
+
+
+    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
+    async def evaluate(self, ctx, *, python_code: str):
+        async def evaluate(self, ctx, *, python_code: str = None):
+            if not (ctx.message.attachments is None) and python_code is None:
+                for index, attachment in enumerate(ctx.message.attachments):
+                    if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                        name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                        file = await attachment.save(fp=fr'./{name}')
+                        os.remove(fr'./{name}')
+                        python_code = open(fr'./{name}', 'r').read()
+            if python_code.startswith('```py'):
+                python_code = python_code.lstrip('```py')
+            elif python_code.startswith('```'):
+                python_code = python_code.lstrip('```')
+            elif python_code.startswith('`'):
+                python_code = python_code.lstrip('`')
+            if python_code.endswith('```'):
+                python_code = python_code.rstrip('```')
+            elif python_code.endswith('`'):
+                python_code = python_code.rstrip('`')
+            result = subprocess.run([sys.executable, "-c", python_code],
+                                    capture_output=True, text=True, timeout=5)
+            if (f'''```
+{result.stderr}
+{result.stdout}
+```'''.count('''
+''') - 2) > 19:
+                o = open('out.txt', 'w')
+                o = o.writelines(str(result.stdout))
+                file = discord.File(
+                    r'./out.txt')
+                await ctx.send(content='Program output too long, full output in text document:', file=file)
+                o = ''
+                return
+            f = ''
+            await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'), description='Returns info and extra details of the current guild.', brief='Info on guild.')
@@ -1992,48 +2034,6 @@ class owner_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
-    @commands.command(aliases=('e', 'eval'), description='Owners only: Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Owners only: Evaluates output of <python_code>.')
-    @commands.is_owner()
-    async def evaluate(self, ctx, *, python_code: str):
-        if not (ctx.message.attachments is None) and python_code is None:
-            for index, attachment in enumerate(ctx.message.attachments):
-                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
-                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
-                    file = await attachment.save(fp=fr'./{name}')
-                    os.remove(fr'./{name}')
-                    python_code = open(fr'./{name}', 'r').read()
-        if python_code.startswith('```py'):
-            python_code = python_code.lstrip('```py')
-        elif python_code.startswith('```'):
-            python_code = python_code.lstrip('```')
-        elif python_code.startswith('`'):
-            python_code = python_code.lstrip('`')
-        if python_code.endswith('```'):
-            python_code = python_code.rstrip('```')
-        elif python_code.endswith('`'):
-            python_code = python_code.rstrip('`')
-        result = subprocess.run([sys.executable, "-c", python_code],
-                                capture_output=True, text=True, timeout=5)
-        if (f'''```
-{result.stderr}
-{result.stdout}
-```'''.count('''
-''') - 2) > 19:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
 
 
     @commands.command(description='Owners only: Resets cooldown for command <command>.', brief='Resets a commands cooldown.')
@@ -2609,7 +2609,7 @@ class alarm_cog(commands.Cog):
         for index, key in enumerate(self.to_del):
             del self.alarms_dict[key]
             self.to_del.pop(index)
-        now = datetime.now()
+        now = datetime.utcnow()
         for key in self.alarms_dict.keys():
             data = self.alarms_dict[key]
             for day in data[0]:
