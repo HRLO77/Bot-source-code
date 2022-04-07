@@ -1,6 +1,7 @@
 # import ensurepip
 #
 # ensurepip.bootstrap()
+import disnake
 import os
 import calendar
 from better_profanity import profanity
