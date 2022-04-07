@@ -1434,6 +1434,9 @@ class ban_cog(commands.Cog):
             print(i)
             user = await bot.fetch_user(int(i))
             await ctx.guild.unban(user)
+            for key in self.bans.keys():
+                if key.id == user.id:
+                    self.to_del.append(key)
             try:
                 await user.send(f'''{user.mention} you were unbanned from **{ctx.guild}** by **{ctx.author}**!''')
             except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
@@ -1460,6 +1463,9 @@ class ban_cog(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, user: discord.User, link: bool=False, *, reason: str = 'None'):
         await ctx.guild.unban(user=user, reason=reason)
+        for key in self.bans.keys():
+            if key.id == user.id:
+                self.to_del.append(key)
         await ctx.send(f'''**{ctx.message.author.mention}** unbanned **{user.mention}** because:
 **{reason}**''')
         try:
