@@ -1313,11 +1313,11 @@ class ban_cog(commands.Cog):
     async def check_bans(self):
         await self.bot.wait_until_ready()
         for index, key in enumerate(self.to_del):
-            del self.bans[key]
+            del self.bans_dict[key]
             self.to_del.pop(index)
         now = datetime.utcnow()
-        for member in self.bans.keys():
-            if self.bans[member] < now:
+        for member in self.bans_dict.keys():
+            if self.bans_dict[member] < now:
                 try:
                     await member.unban(reason='Temp ban complete.')
                     self.to_del.append(member)
@@ -1327,7 +1327,7 @@ class ban_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description='Commands that are related to bans.'
-        self.bans = dict()
+        self.bans_dict = dict()
         self.to_del = list()
         self.check_bans.start()
 
@@ -1397,12 +1397,12 @@ class ban_cog(commands.Cog):
         else:
             await member.send(
                 f'{member.mention} you\'ve been temp-banned in **{ctx.guild}** until {discord.utils.format_dt(current_time)} because **{reason}** by **{ctx.author.mention}**.')
-            self.bans[member] = current_time
+            self.bans_dict[member] = current_time
             await ctx.message.reply(f'{member.mention} has been temp-banned until {discord.utils.format_dt(current_time)}.')
             await member.ban(reason=f'Tempban reason: {reason}.')
 
-
-    @commands.command(aliases=('fetch_bans', 'get_bans', 'pull_bans'), description='Fetches a list of bans in the current guild.', brief='Returns all bans.')
+    @commands.command(aliases=('fetch_bans', 'get_bans', 'pull_bans'),
+                      description='Fetches a list of bans in the current guild.', brief='Returns all bans.')
     @commands.has_permissions(ban_members=True)
     async def bans(self, ctx):
         bot = await ctx.guild.fetch_member(self.bot.user.id)
@@ -1427,21 +1427,24 @@ class ban_cog(commands.Cog):
                     banned.append(
                         f'**{entry.target.name}** was banned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason} until {disnake.utils.format_dt(self.bans_dict[key])}.')
                     continue
-            banned.append(f'**{entry.target.name}** was banned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
+            banned.append(
+                f'**{entry.target.name}** was banned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
         unbans = await ctx.guild.audit_logs(limit=None, action=disnake.AuditLogAction.unban).flatten()
         unbanned = list()
         for entry in bans:
             if not isinstance(entry.reason, str) or entry.reason == '':
                 entry.reason = 'None'
-            banned.append(f'**{entry.target.name}** was unbanned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
+            banned.append(
+                f'**{entry.target.name}** was unbanned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
         if len(banned) > 0:
             embed.add_field(name='Bans', value="\n".join(banned))
         if len(unbanned) > 0:
             embed.add_field(name='Unbans', value="\n".join(unbanned))
-        embed.set_footer(text=f'All entries logged before {datetime.datetime.now().strftime("20%y-%m-%d %r")}', icon_url=icon)
-        await ctx.message.reply(embed=embed)            
-            
-            
+        embed.set_footer(text=f'All entries logged before {datetime.datetime.now().strftime("20%y-%m-%d %r")}',
+                         icon_url=icon)
+        await ctx.message.reply(embed=embed)
+
+
     @commands.command(aliases=('ban_users', 'ban_people'), description='Bans multiple <member_ids> from the current guild.', brief='Bans multiple members.')
     @commands.has_permissions(ban_members=True)
     async def ban_members(self, ctx, *, member_ids):
@@ -1475,7 +1478,7 @@ class ban_cog(commands.Cog):
             print(i)
             user = await bot.fetch_user(int(i))
             await ctx.guild.unban(user)
-            for key in self.bans.keys():
+            for key in self.bans_dict.keys():
                 if key.id == user.id:
                     self.to_del.append(key)
             try:
@@ -1504,7 +1507,7 @@ class ban_cog(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, user: discord.User, link: bool=False, *, reason: str = 'None'):
         await ctx.guild.unban(user=user, reason=reason)
-        for key in self.bans.keys():
+        for key in self.bans_dict.keys():
             if key.id == user.id:
                 self.to_del.append(key)
         await ctx.send(f'''**{ctx.message.author.mention}** unbanned **{user.mention}** because:
