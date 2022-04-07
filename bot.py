@@ -1440,7 +1440,7 @@ class ban_cog(commands.Cog):
             embed.add_field(name='Bans', value="\n".join(banned))
         if len(unbanned) > 0:
             embed.add_field(name='Unbans', value="\n".join(unbanned))
-        embed.set_footer(text=f'All entries logged before {datetime.datetime.now().strftime("20%y-%m-%d %r")}',
+        embed.set_footer(text=f'All entries logged before {datetime.utcnow().strftime("20%y-%m-%d %r")}',
                          icon_url=icon)
         await ctx.message.reply(embed=embed)
 
