@@ -1401,6 +1401,46 @@ class ban_cog(commands.Cog):
             await member.ban(reason=f'Tempban reason: {reason}.')
 
 
+    @commands.command(aliases=('fetch_bans', 'get_bans', 'pull_bans'), description='Fetches a list of bans in the current guild.', brief='Returns all bans.')
+    @commands.has_permissions(ban_members=True)
+    async def bans(self, ctx):
+        bot = await ctx.guild.fetch_member(self.bot.user.id)
+        embed = disnake.Embed(color=bot.color)
+        icon = ctx.guild.icon
+        if icon is None:
+            icon = bot.avatar
+            if icon is None:
+                icon = bot.default_avatar.url
+            else:
+                icon = icon.url
+        else:
+            icon = icon.url
+        embed.set_author(icon_url=icon, name=ctx.guild)
+        bans = await ctx.guild.audit_logs(limit=None, action=disnake.AuditLogAction.ban).flatten()
+        banned = list()
+        for entry in bans:
+            if not isinstance(entry.reason, str) or entry.reason == '':
+                entry.reason = 'None'
+            for key in self.bans_dict.keys():
+                if key.id == entry.target.id:
+                    banned.append(
+                        f'**{entry.target.name}** was banned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason} until {disnake.utils.format_dt(self.bans_dict[key])}.')
+                    continue
+            banned.append(f'**{entry.target.name}** was banned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
+        unbans = await ctx.guild.audit_logs(limit=None, action=disnake.AuditLogAction.unban).flatten()
+        unbanned = list()
+        for entry in bans:
+            if not isinstance(entry.reason, str) or entry.reason == '':
+                entry.reason = 'None'
+            banned.append(f'**{entry.target.name}** was unbanned by **{entry.user.name}**, at {disnake.utils.format_dt(entry.created_at)} because {entry.reason}.')
+        if len(banned) > 0:
+            embed.add_field(name='Bans', value="\n".join(banned))
+        if len(unbanned) > 0:
+            embed.add_field(name='Unbans', value="\n".join(unbanned))
+        embed.set_footer(text=f'All entries logged before {datetime.datetime.now().strftime("20%y-%m-%d %r")}', icon_url=icon)
+        await ctx.message.reply(embed=embed)            
+            
+            
     @commands.command(aliases=('ban_users', 'ban_people'), description='Bans multiple <member_ids> from the current guild.', brief='Bans multiple members.')
     @commands.has_permissions(ban_members=True)
     async def ban_members(self, ctx, *, member_ids):
