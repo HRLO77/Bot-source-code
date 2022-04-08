@@ -1517,8 +1517,9 @@ class reminder_cog(commands.Cog):
     @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
     async def remind(self, ctx, years: int=0, months: int=0, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
         current_time = datetime.utcnow()
-        current_time = current_time + timedelta(days = days + months*30 + (years*365 + int(calendar.isleap(current_time.year))), hours = hours, minutes = minutes, seconds = seconds)        if current_time < datetime.utcnow():
-        return await ctx.message.reply('Please enter values that are in the future.')
+        current_time = current_time + timedelta(days = days + months*30 + (years*365 + int(calendar.isleap(current_time.year))), hours = hours, minutes = minutes, seconds = seconds)        
+        if current_time < datetime.utcnow():
+            return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
         return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)} UTC!')
 
