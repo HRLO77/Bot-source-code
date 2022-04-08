@@ -1331,7 +1331,7 @@ class ban_cog(commands.Cog):
         self.check_bans.start()
 
 
-    @commands.command(aliases=['tempban'], description='Bans a member for time specified. [reason] MUST be wrapped in double quotes.', brief='Temporarily bans a member.')
+    @commands.command(aliases=['tempban'], description='Bans a member for time specified..', brief='Temporarily bans a member.')
     @commands.has_permissions(ban_members=True)
     async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, hours: int=0, reason: str='None'):
         current_time = datetime.utcnow()
