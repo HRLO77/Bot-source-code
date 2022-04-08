@@ -1,7 +1,6 @@
 # import ensurepip
 #
 # ensurepip.bootstrap()
-import disnake
 import os
 import calendar
 from better_profanity import profanity
@@ -13,7 +12,7 @@ from disnake.utils import get
 import tracemalloc
 import sys
 import subprocess
-import datetime
+from datetime import timedelta
 from disnake.ext import commands
 import disnake as discord
 import random
@@ -81,7 +80,7 @@ def log(to_log: tuple, guild):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
 
 topics = list()
 success = {True: 0, False: 0, 'last': False}
@@ -502,24 +501,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon,
-                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon,
+    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -1336,70 +1335,13 @@ class ban_cog(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, reason: str='None'):
         current_time = datetime.utcnow()
-        class Time:
-            def GetTime(self, y, m, d):
-                self.__y = int(y)
-                self.__m = int(m)
-                self.__d = int(d)
+        current_time = current_time + timedelta(days = days, months=months, years=years)
+        await member.send(
+            f'{member.mention} you\'ve been temp-banned in **{ctx.guild}** until {discord.utils.format_dt(current_time)} because **{reason}** by **{ctx.author.mention}**.')
+        self.bans_dict[member] = current_time
+        await ctx.message.reply(f'{member.mention} has been temp-banned until {discord.utils.format_dt(current_time)}.')
+        await member.ban(reason=f'Tempban reason: {reason}.')
 
-            def PutResult(self):
-                return (self.__y, self.__m, self.__d)
-
-            def __init__(self, y, m, d):
-                self.GetTime(y, m, d)
-                R = self
-                R.__y = self.__y
-                R.__m = self.__m
-                R.__d = self.__d
-
-                R.__m = R.__d // round(int(calendar.monthrange(current_time.year, current_time.month)[-1]) - current_time.day)
-                R.__d = R.__d % round(int(calendar.monthrange(current_time.year, current_time.month)[-1]) - current_time.day)
-
-                R.__y = R.__y + (R.__m // round(12 - current_time.month))
-                R.__m = R.__m % round(12 - current_time.month)
-
-
-                try:
-                    datetime.utcnow().replace(month=current_time.month + R.__m, day=current_time.day + R.__d)
-                except BaseException:
-                    self.GetTime(y, m, d)
-                    R = self
-                    R.__y = self.__y
-                    R.__m = self.__m
-                    R.__d = self.__d
-
-                    R.__m = R.__d // 30
-                    R.__d = R.__d % 30
-
-                    R.__y = R.__y + (R.__m // round(12 - current_time.month))
-                    R.__m = R.__m % round(12 - current_time.month)
-                return None
-        T1 = Time(y=years, m=months, d=days)
-        T1 = T1.PutResult()
-        try:
-            current_time =  current_time.replace(year=T1[0] + current_time.year, month=T1[1] + current_time.month, day=T1[2] + current_time.day)
-        except BaseException:
-            context = await ctx.message.reply('Failed to tempban, proceed with regular ban?')
-            await context.add_reaction('✅')
-            await context.add_reaction('❌')
-            try:
-                reaction = await self.bot.wait_for('raw_reaction_add', timeout=60, check=lambda payload: payload.message_id == context.id and pyaload.user_id == ctx.author.id and any(i in str(payload.emoji) for i in ('❌', '✅')))
-            except asyncio.exceptions.TimeoutError:
-                await context.clear_reactions()
-                await context.reply('Ban cancelled.')
-            else:
-                if '✅' in str(payload.emoji):
-                    await context.reply(f'{member.mention} has been banned because **{reason}**')
-                    await member.send(f'{member.mention} you\'ve been banned in **{ctx.guild}** because **{reason}** by **{ctx.author.mention}**.')
-                    await member.ban(reason='Tempban failed.')
-                else:
-                    await context.reply('Ban cancelled.')
-        else:
-            await member.send(
-                f'{member.mention} you\'ve been temp-banned in **{ctx.guild}** until {discord.utils.format_dt(current_time)} because **{reason}** by **{ctx.author.mention}**.')
-            self.bans_dict[member] = current_time
-            await ctx.message.reply(f'{member.mention} has been temp-banned until {discord.utils.format_dt(current_time)}.')
-            await member.ban(reason=f'Tempban reason: {reason}.')
 
     @commands.command(aliases=('fetch_bans', 'get_bans', 'pull_bans'),
                       description='Fetches a list of bans in the current guild.', brief='Returns all bans.')
@@ -1575,87 +1517,11 @@ class reminder_cog(commands.Cog):
     @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
     async def remind(self, ctx, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
         current_time = datetime.utcnow()
-
-        class Time:
-            def GetTime(self, d, h, m, s):
-                self.__h = int(h)
-                self.__m = int(m)
-                self.__s = int(s)
-                self.__d = int(d)
-
-            def PutResult(self):
-                return (self.__months, self.__d, self.__h, self.__m, self.__s)
-
-            def __init__(self, d, h, m, s):
-                self.GetTime(d, h, m, s)
-                R = self
-                R.__h = self.__h
-                R.__m = self.__m
-                R.__s = self.__s
-                R.__d = self.__d
-
-                R.__m = R.__m + (R.__s // round(60 - current_time.second))
-                R.__s = R.__s % round(60 - current_time.second)
-
-                R.__h = R.__h + round(R.__m // (60 - current_time.minute))
-                R.__m = R.__m % round(60 - current_time.minute)
-
-                R.__d = R.__d + (R.__h // (24 - current_time.hour))
-                R.__h = R.__h % round(24 - current_time.hour)
-
-                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                try:
-                    datetime.utcnow().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
-                except BaseException:
-                    self.GetTime(d, h, m, s)
-                    R = self
-                    R.__h = self.__h
-                    R.__m = self.__m
-                    R.__s = self.__s
-                    R.__d = self.__d
-
-                    R.__m = R.__m + (R.__s // round(60 - current_time.second))
-                    R.__s = R.__s % round(60 - current_time.second)
-
-                    R.__h = R.__h + round(R.__m // (60 - current_time.minute))
-                    R.__m = R.__m % round(60 - current_time.minute)
-
-                    R.__d = R.__d + (R.__h // (24 - current_time.hour))
-                    R.__h = R.__h % round(24 - current_time.hour)
-
-                    R.__months = R.__d // 30
-                    R.__d = R.__d % 30
-
-                return None
-        try:
-            time = Time(d=days, h=hours, m=minutes, s=seconds)
-            time = time.PutResult()
-            print(time)
-            current_time = current_time.replace(month=time[0] + current_time.month, day=time[1] + current_time.day, hour=time[2] + current_time.hour,
-                                                minute=time[3] + current_time.minute, second=time[4] + current_time.second)
-        except BaseException:
-            try:
-                current_time = current_time.replace(day = days + current_time.day, minute=minutes + current_time.minute, second=seconds + current_time.second, hour=hours + current_time.hour)
-            except BaseException:
-                try:
-                    current_time = current_time.replace(day=days,
-                                                        minute=minutes,
-                                                        second=seconds,
-                                                        hour=hours)
-                except BaseException:
-                    await ctx.message.reply('This is currently an **unresolved** bug, don\'t report this.')
-                    return
-        # if not(days is None):
-        #
-        # else:
-        #     time2 = Time(d=current_time.day, h=hours + current_time.hour, m=minutes + current_time.minute, s=seconds + current_time.second)
-        #     time2.PutResult()
-        #     current_time = current_time.replace(month=time[0] + current_time.month, day=time2[1], hour=time[2], minute=time[3], second=time[4])
+        current_time = current_time + timedelta(days = days, hours = hours, minutes = minutes, seconds = seconds)
         if current_time < datetime.utcnow():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
-        return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)}!')
+        return await ctx.author.send(f'Your reminder was set for {discord.utils.format_dt(current_time)} UTC!')
 
 
     @commands.command(aliases=('del_reminder', 'remove_reminder', 'delete_reminder', 'close_reminder'), description='Adds a reminder to deletion queue.', brief='Deletes a reminder.')
@@ -1677,9 +1543,9 @@ class reminder_cog(commands.Cog):
             string = f'You have **{len(keys)}** reminders - '
             for index, key in enumerate(keys):
                 if (index + 1) != len(keys):
-                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}, '
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])} UTC, '
                 else:
-                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}.'
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])} UTC.'
             context = await ctx.author.send(
                 f'{string} {ctx.author.mention} You have 60 seconds to reply to this message with the reminder to cancel(I.E 4, 7, 1).')
 
@@ -1704,7 +1570,7 @@ class reminder_cog(commands.Cog):
                 else:
                     self.to_del.append(keys[int(message.content) - 1])
                     return await message.reply(
-                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders_dict[keys[int(message.content) - 1]])}')
+                        f'Reminder deletion queued for {discord.utils.format_dt(self.reminders_dict[keys[int(message.content) - 1]])} UTC')
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
@@ -1731,7 +1597,7 @@ class reminder_cog(commands.Cog):
             for key in self.reminders_dict.keys():
                 if ctx.author.id == key[0]:
                     return await ctx.author.send(
-                        f'{ctx.author.mention} Your reminder ends on {discord.utils.format_dt(self.reminders_dict[key])}!')
+                        f'{ctx.author.mention} Your reminder ends on {discord.utils.format_dt(self.reminders_dict[key])} UTC!')
         elif reminders > 1:
             keys = list()
             for key in self.reminders_dict.keys():
@@ -1740,9 +1606,9 @@ class reminder_cog(commands.Cog):
             string = f'You have **{len(keys)}** reminders - '
             for index, key in enumerate(keys):
                 if (index + 1) != len(keys):
-                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}, '
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])} UTC, '
                 else:
-                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])}.'
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key])} UTC.'
             return await ctx.author.send(f'{ctx.author.mention} {string}')
         else:
             return await ctx.message.reply('You do not currently have an active reminder.')
@@ -1759,6 +1625,47 @@ class fetch_data_cog(commands.Cog):
     @commands.command(aliases=('charinfo', 'char_info'), description='Returns the unicode version of <char> passed', brief='Unicode version of a character.')
     async def char(self, ctx, *, char):
         await ctx.send(f'`{char}`')
+
+
+    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
+    async def evaluate(self, ctx, *, python_code: str):
+        if not (ctx.message.attachments is None) and python_code is None:
+            for index, attachment in enumerate(ctx.message.attachments):
+                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                    file = await attachment.save(fp=fr'./{name}')
+                    os.remove(fr'./{name}')
+                    python_code = open(fr'./{name}', 'r').read()
+        if python_code.startswith('```py'):
+            python_code = python_code.lstrip('```py')
+        elif python_code.startswith('```'):
+            python_code = python_code.lstrip('```')
+        elif python_code.startswith('`'):
+            python_code = python_code.lstrip('`')
+        if python_code.endswith('```'):
+            python_code = python_code.rstrip('```')
+        elif python_code.endswith('`'):
+            python_code = python_code.rstrip('`')
+        result = subprocess.run([sys.executable, "-c", python_code],
+                                capture_output=True, text=True, timeout=5)
+        if (f'''```
+{result.stderr}
+{result.stdout}
+```'''.count('''
+    ''') - 2) > 19:
+            o = open('out.txt', 'w')
+            o = o.writelines(str(result.stdout))
+            file = discord.File(
+                r'./out.txt')
+            await ctx.send(content='Program output too long, full output in text document:', file=file)
+            o = ''
+            return
+        f = ''
+        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+```
+{result.stderr}
+{result.stdout}
+```''')
 
 
     @commands.command(aliases=('server_info', 'guild', 'guild_info', 'serverinfo', 'guildinfo'), description='Returns info and extra details of the current guild.', brief='Info on guild.')
@@ -2042,48 +1949,6 @@ class owner_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
-    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
-    @commands.is_owner()
-    async def evaluate(self, ctx, *, python_code: str):
-        if not (ctx.message.attachments is None) and python_code is None:
-            for index, attachment in enumerate(ctx.message.attachments):
-                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
-                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
-                    file = await attachment.save(fp=fr'./{name}')
-                    os.remove(fr'./{name}')
-                    python_code = open(fr'./{name}', 'r').read()
-        if python_code.startswith('```py'):
-            python_code = python_code.lstrip('```py')
-        elif python_code.startswith('```'):
-            python_code = python_code.lstrip('```')
-        elif python_code.startswith('`'):
-            python_code = python_code.lstrip('`')
-        if python_code.endswith('```'):
-            python_code = python_code.rstrip('```')
-        elif python_code.endswith('`'):
-            python_code = python_code.rstrip('`')
-        result = subprocess.run([sys.executable, "-c", python_code],
-                                capture_output=True, text=True, timeout=5)
-        if (f'''```
-{result.stderr}
-{result.stdout}
-```'''.count('''
-''') - 2) > 19:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
-```
-{result.stderr}
-{result.stdout}
-```''')
 
 
     @commands.command(description='Owners only: Resets cooldown for command <command>.', brief='Resets a commands cooldown.')
@@ -2563,8 +2428,8 @@ class extras_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description = 'Commands that do not fall into any other category.'
-        
-        
+
+
     @commands.command(aliases=['g'], description='Sends a message for users to react to, once done, randoms picks the number of members passed.', brief='Starts a giveaway.')
     @commands.cooldown(1, 600, commands.BucketType.guild)
     async def giveaway(self, ctx: commands.Context, members: int=3, role_to_mention: discord.Role=None):
@@ -2597,71 +2462,8 @@ class extras_cog(commands.Cog):
                 icon = icon.url
         else:
             icon = icon.url
-        current_time = datetime.now()
-
-        class Time:
-            def GetTime(self, d, h, m, s):
-                self.__h = int(h)
-                self.__m = int(m)
-                self.__s = int(s)
-                self.__d = int(d)
-
-            def PutResult(self):
-                return (self.__months, self.__d, self.__h, self.__m, self.__s)
-
-            def __init__(self, d, h, m, s):
-                self.GetTime(d, h, m, s)
-                R = self
-                R.__h = self.__h
-                R.__m = self.__m
-                R.__s = self.__s
-                R.__d = self.__d
-
-                R.__m = R.__m + (R.__s // round(60 - current_time.second))
-                R.__s = R.__s % round(60 - current_time.second)
-
-                R.__h = R.__h + round(R.__m // (60 - current_time.minute))
-                R.__m = R.__m % round(60 - current_time.minute)
-
-                R.__d = R.__d + (R.__h // (24 - current_time.hour))
-                R.__h = R.__h % round(24 - current_time.hour)
-
-                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                try:
-                    datetime.utcnow().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
-                except BaseException:
-                    self.GetTime(d, h, m, s)
-                    R = self
-                    R.__h = self.__h
-                    R.__m = self.__m
-                    R.__s = self.__s
-                    R.__d = self.__d
-
-                    R.__m = R.__m + (R.__s // round(60 - current_time.second))
-                    R.__s = R.__s % round(60 - current_time.second)
-
-                    R.__h = R.__h + round(R.__m // (60 - current_time.minute))
-                    R.__m = R.__m % round(60 - current_time.minute)
-
-                    R.__d = R.__d + (R.__h // (24 - current_time.hour))
-                    R.__h = R.__h % round(24 - current_time.hour)
-
-                    R.__months = R.__d // 30
-                    R.__d = R.__d % 30
-
-                return None
-
-        time = Time(0, 0, 10, 0)
-        time = time.PutResult()
-        try:
-            current_time = current_time.replace(month=time[0] + current_time.month, day=time[1] + current_time.day,
-                                            hour=time[2] + current_time.hour, minute=time[3] + current_time.minute)
-        except BaseException:
-            await ctx.message.reply('Cannot create giveaway.')
-            returns
-
-
+        current_time = datetime.utcnow()
+        current_time = current_time + timedelta(minutes=10)
         if role_to_mention is None:
             embed = discord.Embed(color=ctx.author.color, description=f'**{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
         else:
@@ -2699,7 +2501,7 @@ class extras_cog(commands.Cog):
         winner = '\n'.join(winners)
         embed = discord.Embed(title='Winners', description=winner)
         await context.reply(ctx.author.mention, embed=embed)
-        
+
 
     @commands.command(aliases=['add_topic'], description = 'Requests a topic verification to be added by the bot owner.', brief = 'Adds a topic.')
     @commands.cooldown(1, 420, commands.BucketType.user)
