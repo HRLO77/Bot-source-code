@@ -1331,11 +1331,11 @@ class ban_cog(commands.Cog):
         self.check_bans.start()
 
 
-    @commands.command(description='Bans a member for time specified. [reason] MUST be wrapped in double quotes.', brief='Temporarily bans a member.')
+    @commands.command(aliases=['tempban'], description='Bans a member for time specified. [reason] MUST be wrapped in double quotes.', brief='Temporarily bans a member.')
     @commands.has_permissions(ban_members=True)
-    async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, reason: str='None'):
+    async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, hours: int=0, reason: str='None'):
         current_time = datetime.utcnow()
-        current_time = current_time + timedelta(days = days, months=months, years=years)
+        current_time = current_time + timedelta(days = days, months=months, years=years, hours = hours)
         await member.send(
             f'{member.mention} you\'ve been temp-banned in **{ctx.guild}** until {discord.utils.format_dt(current_time)} because **{reason}** by **{ctx.author.mention}**.')
         self.bans_dict[member] = current_time
@@ -1515,9 +1515,9 @@ class reminder_cog(commands.Cog):
 
 
     @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
-    async def remind(self, ctx, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
+    async def remind(self, ctx, years: int=0, months: int=0, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
         current_time = datetime.utcnow()
-        current_time = current_time + timedelta(days = days, hours = hours, minutes = minutes, seconds = seconds)
+        current_time = current_time + timedelta(days = days, hours = hours, minutes = minutes, seconds = seconds, months = months, years = years)
         if current_time < datetime.utcnow():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
