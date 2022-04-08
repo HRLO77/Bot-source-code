@@ -2567,49 +2567,70 @@ class extras_cog(commands.Cog):
         
     @commands.command(aliases=['g'], description='Sends a message for users to react to, once done, randoms picks the number of members passed.', brief='Starts a giveaway.')
     @commands.cooldown(1, 600, commands.BucketType.guild)
-        async def giveaway(self, ctx: commands.Context, members: int=3, role_to_mention: discord.Role=None):
-            context = await ctx.author.send(f'{ctx.author.mention} are you sure you want to start a giveaway in **{ctx.guild}** to **{members}** users?')
-            await context.add_reaction('✅')
-            await context.add_reaction('❌')
-            if members > 10 or members < 1:
-                await ctx.message.reply('Please enter more than 0 users, and less than 11.')
-                return ctx.command.reset_cooldown(ctx)
-            while True:
-                try:
-                    payload = await self.bot.wait_for('raw_reaction_add', timeout=120, check=lambda payload: payload.user_id == ctx.author.id and str(payload.emoji) in ('❌', '✅') and payload.message_id == context.id)
-                except asyncio.exceptions.TimeoutError:
+    async def giveaway(self, ctx: commands.Context, members: int=3, role_to_mention: discord.Role=None):
+        context = await ctx.author.send(f'{ctx.author.mention} are you sure you want to start a giveaway in **{ctx.guild}** to **{members}** users?')
+        await context.add_reaction('✅')
+        await context.add_reaction('❌')
+        if members > 10 or members < 1:
+            await ctx.message.reply('Please enter more than 0 users, and less than 11.')
+            return ctx.command.reset_cooldown(ctx)
+        while True:
+            try:
+                payload = await self.bot.wait_for('raw_reaction_add', timeout=120, check=lambda payload: payload.user_id == ctx.author.id and str(payload.emoji) in ('❌', '✅') and payload.message_id == context.id)
+            except asyncio.exceptions.TimeoutError:
+                await ctx.message.reply('Giveaway cancelled.')
+                ctx.command.reset_cooldown(ctx)
+                return
+            else:
+                if '✅' in str(payload.emoji):
+                    break
+                else:
                     await ctx.message.reply('Giveaway cancelled.')
                     ctx.command.reset_cooldown(ctx)
                     return
-                else:
-                    if '✅' in str(payload.emoji):
-                        break
-                    else:
-                        await ctx.message.reply('Giveaway cancelled.')
-                        ctx.command.reset_cooldown(ctx)
-                        return
-            icon = ctx.guild.icon
+        icon = ctx.guild.icon
+        if icon is None:
+            icon = self.bot.user.avatar
             if icon is None:
-                icon = self.bot.user.avatar
-                if icon is None:
-                    icon = self.bot.user.default_avatar.url
-                else:
-                    icon = icon.url
+                icon = self.bot.user.default_avatar.url
             else:
                 icon = icon.url
-            current_time = datetime.now()
+        else:
+            icon = icon.url
+        current_time = datetime.now()
 
-            class Time:
-                def GetTime(self, d, h, m, s):
-                    self.__h = int(h)
-                    self.__m = int(m)
-                    self.__s = int(s)
-                    self.__d = int(d)
+        class Time:
+            def GetTime(self, d, h, m, s):
+                self.__h = int(h)
+                self.__m = int(m)
+                self.__s = int(s)
+                self.__d = int(d)
 
-                def PutResult(self):
-                    return (self.__months, self.__d, self.__h, self.__m, self.__s)
+            def PutResult(self):
+                return (self.__months, self.__d, self.__h, self.__m, self.__s)
 
-                def __init__(self, d, h, m, s):
+            def __init__(self, d, h, m, s):
+                self.GetTime(d, h, m, s)
+                R = self
+                R.__h = self.__h
+                R.__m = self.__m
+                R.__s = self.__s
+                R.__d = self.__d
+
+                R.__m = R.__m + (R.__s // round(60 - current_time.second))
+                R.__s = R.__s % round(60 - current_time.second)
+
+                R.__h = R.__h + round(R.__m // (60 - current_time.minute))
+                R.__m = R.__m % round(60 - current_time.minute)
+
+                R.__d = R.__d + (R.__h // (24 - current_time.hour))
+                R.__h = R.__h % round(24 - current_time.hour)
+
+                R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
+                R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
+                try:
+                    datetime.utcnow().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
+                except BaseException:
                     self.GetTime(d, h, m, s)
                     R = self
                     R.__h = self.__h
@@ -2626,79 +2647,58 @@ class extras_cog(commands.Cog):
                     R.__d = R.__d + (R.__h // (24 - current_time.hour))
                     R.__h = R.__h % round(24 - current_time.hour)
 
-                    R.__months = R.__d // int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                    R.__d = R.__d % int(calendar.monthrange(current_time.year, current_time.month)[-1])
-                    try:
-                        datetime.utcnow().replace(month=current_time.month + R.__months, day=current_time.day + R.__d)
-                    except BaseException:
-                        self.GetTime(d, h, m, s)
-                        R = self
-                        R.__h = self.__h
-                        R.__m = self.__m
-                        R.__s = self.__s
-                        R.__d = self.__d
+                    R.__months = R.__d // 30
+                    R.__d = R.__d % 30
 
-                        R.__m = R.__m + (R.__s // round(60 - current_time.second))
-                        R.__s = R.__s % round(60 - current_time.second)
+                return None
 
-                        R.__h = R.__h + round(R.__m // (60 - current_time.minute))
-                        R.__m = R.__m % round(60 - current_time.minute)
-
-                        R.__d = R.__d + (R.__h // (24 - current_time.hour))
-                        R.__h = R.__h % round(24 - current_time.hour)
-
-                        R.__months = R.__d // 30
-                        R.__d = R.__d % 30
-
-                    return None
-
-            time = Time(0, 0, 10, 0)
-            time = time.PutResult()
-            try:
-                current_time = current_time.replace(month=time[0] + current_time.month, day=time[1] + current_time.day,
-                                                hour=time[2] + current_time.hour, minute=time[3] + current_time.minute)
-            except BaseException:
-                await ctx.message.reply('Cannot create giveaway.')
-                returns
+        time = Time(0, 0, 10, 0)
+        time = time.PutResult()
+        try:
+            current_time = current_time.replace(month=time[0] + current_time.month, day=time[1] + current_time.day,
+                                            hour=time[2] + current_time.hour, minute=time[3] + current_time.minute)
+        except BaseException:
+            await ctx.message.reply('Cannot create giveaway.')
+            returns
 
 
-            if role_to_mention is None:
-                embed = discord.Embed(color=ctx.author.color, description=f'**{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
-            else:
-                embed = discord.Embed(color=ctx.author.color, description=f'{role_to_mention.mention} **{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
-            embed.set_author(icon_url=icon, name=f'Giveaway in {ctx.guild}!')
-            embed.set_footer(icon_url=icon, text=f'Giveaway in {ctx.guild} on {str(ctx.message.created_at).rsplit(" ")[0]} started by {ctx.author}.')
+        if role_to_mention is None:
+            embed = discord.Embed(color=ctx.author.color, description=f'**{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
+        else:
+            embed = discord.Embed(color=ctx.author.color, description=f'{role_to_mention.mention} **{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
+        embed.set_author(icon_url=icon, name=f'Giveaway in {ctx.guild}!')
+        embed.set_footer(icon_url=icon, text=f'Giveaway in {ctx.guild} on {str(ctx.message.created_at).rsplit(" ")[0]} started by {ctx.author}.')
 
-            added = list()
-            class view(discord.ui.View):
+        added = list()
+        class view(discord.ui.View):
 
-                @discord.ui.button(label='Join Giveaway!', style=discord.ButtonStyle.green)
-                async def callback(self: discord.ui.view, button: discord.ui.Button, interact: discord.MessageInteraction):
-                    if not interact.author.id in added:
-                        added.append(interact.author.id)
-                        await interact.send(ephemeral=True, content='You successfully joined the giveaway!')
-                    else:
-                        await interact.send(ephemeral=True, content='You already joined the giveaway.')
+            @discord.ui.button(label='Join Giveaway!', style=discord.ButtonStyle.green)
+            async def callback(self: discord.ui.view, button: discord.ui.Button, interact: discord.MessageInteraction):
+                if not interact.author.id in added:
+                    added.append(interact.author.id)
+                    await interact.send(ephemeral=True, content='You successfully joined the giveaway!')
+                else:
+                    await interact.send(ephemeral=True, content='You already joined the giveaway.')
 
 
-            context = await ctx.message.reply(embed=embed, view=view())
-            await asyncio.sleep(600)
-            await context.edit(view=None)
+        context = await ctx.message.reply(embed=embed, view=view())
+        await asyncio.sleep(600)
+        await context.edit(view=None)
 
-            winners = list()
-            if len(winners) > members:
-                pass
-            else:
-                await ctx.message.reply(f'Less than **{members}** people joined the giveaway.')
-                return ctx.command.reset_cooldown(ctx)
+        winners = list()
+        if len(winners) > members:
+            pass
+        else:
+            await ctx.message.reply(f'Less than **{members}** people joined the giveaway.')
+            return ctx.command.reset_cooldown(ctx)
 
-            for i in range(members):
-                winner = random.choice(added)
-                winners.append(ctx.guild.get_member(winner).mention)
-                added.remove(winner)
-            winner = '\n'.join(winners)
-            embed = discord.Embed(title='Winners', description=winner)
-            await context.reply(ctx.author.mention, embed=embed)
+        for i in range(members):
+            winner = random.choice(added)
+            winners.append(ctx.guild.get_member(winner).mention)
+            added.remove(winner)
+        winner = '\n'.join(winners)
+        embed = discord.Embed(title='Winners', description=winner)
+        await context.reply(ctx.author.mention, embed=embed)
         
 
     @commands.command(aliases=['add_topic'], description = 'Requests a topic verification to be added by the bot owner.', brief = 'Adds a topic.')
