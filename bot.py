@@ -582,20 +582,19 @@ class mute_cog(commands.Cog):
         self.description = 'Commands that are related to muting members/managing timeouts.'
 
 
-    @commands.command(description = 'Adds a timeout to <member> for minutes specified with reason [reason].', brief = 'Mutes a member.')
+    @commands.command(description = 'Adds a timeout to <member> for time specified with reason [reason].', brief = 'Mutes a member.')
     @commands.has_permissions(moderate_members=True)
-    async def mute(self, ctx, member: discord.Member, time: float = 10, *, reason='None'):
-        print(member, time, reason)
-        duration = (time * 60)
+    async def mute(self, ctx, member: discord.Member, days: int=1, hours: int=0, minutes: int=0, *, reason='None'):
+        duration = timedelta(days=days, minutes=minutes, hours=hours)
         await member.timeout(duration=duration, reason=reason)
         try:
-            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {time} minutes, because:
-    **{reason}**.''')
+            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {days} days, {hours} hours and {minutes} minutes, because:
+**{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {str(member)}.')
         await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {time} minutes, because:
-    **{reason}**.''')
+**{reason}**.''')
 
 
     @commands.command(description = 'Removes timeout from <member>.', brief = 'Unmutes a member.')
@@ -1612,6 +1611,129 @@ class reminder_cog(commands.Cog):
             return await ctx.author.send(f'{ctx.author.mention} {string}')
         else:
             return await ctx.message.reply('You do not currently have an active reminder.')
+        
+        
+class repeater_cog(commands.Cog):
+
+    @tasks.loop(seconds=1)
+    async def check_reminders(self):
+        await self.bot.wait_until_ready()
+        for index, key in enumerate(self.to_del):
+            del self.reminders_dict[key]
+            self.to_del.pop(index)
+        current_time = datetime.utcnow()
+        for key in self.reminders_dict.keys():
+            data = self.reminders_dict[key][1]
+            time = current_time + timedelta(
+                days=data[2] + (data[0] * 365 + int(calendar.isleap(current_time.year))) + data[1] * 30,
+                hours=data[3], minutes=data[4], seconds=data[5])
+            if self.reminders_dict[key][0] < current_time:
+                try:
+                    user = await self.bot.fetch_user(key[0])
+                except BaseException:
+                    print(f'Couldn\'t find member {key[0]} for repeater checking.')
+                    self.to_del.append(key)
+                else:
+                    await user.send(
+                        f'{user.mention} your repeater is up! ({discord.utils.format_dt(self.reminders_dict[key][0])})')
+                    self.reminders_dict[key] = (time, self.reminders_dict[key][1])
+
+
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.reminders_dict = dict()
+        self.to_del = list()
+        self.check_reminders.start()
+        self.description = 'Commands that are related to repeaters. Repeaters are a combination of alarms and reminders, they repeat every interval of time that the user inputs, and does not delete unless specified.'
+
+
+    @commands.command(aliases=('start_repeater', 'repeater'), description='Sets a repeater for the current user to go off on the arguments passed.', brief='Creates a repeater.')
+    async def repeat(self, ctx, years: int=0, months: int=0, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
+        current_time = datetime.utcnow()
+        current_time = current_time + timedelta(days = days + months*30 + (years*365 + int(calendar.isleap(current_time.year))), hours = hours, minutes = minutes, seconds = seconds)
+        if current_time < datetime.utcnow():
+            return await ctx.message.reply('Please enter values that are in the future.')
+        self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = (current_time, (years, months, days, hours, minutes, seconds))
+        return await ctx.author.send(f'Your repeater was set for {discord.utils.format_dt(current_time)} UTC!')
+
+
+    @commands.command(aliases=('del_repeater', 'remove_repeater', 'delete_repeater', 'close_repeater'), description='Adds a repeater to deletion queue.', brief='Deletes a repeater.')
+    async def clear_repeater(self, ctx):
+        reminders = 0
+        for key in self.reminders_dict.keys():
+            if ctx.author.id == key[0]:
+                reminders += 1
+        if reminders == 1:
+            for key in self.reminders_dict.keys():
+                if ctx.author.id == key[0]:
+                    self.to_del.append(key)
+            return await ctx.message.reply('Repeater deletion added to queue.')
+        elif reminders > 1:
+            keys = list()
+            for key in self.reminders_dict.keys():
+                if ctx.author.id == key[0]:
+                    keys.append(key)
+            string = f'You have **{len(keys)}** repeaters - '
+            for index, key in enumerate(keys):
+                if (index + 1) != len(keys):
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key][0])} UTC, '
+                else:
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key][0])} UTC.'
+            context = await ctx.author.send(
+                f'{string} {ctx.author.mention} You have 60 seconds to reply to this message with the repeater to cancel(I.E 4, 7, 1).')
+
+            def check(m):
+                if m.author.id == ctx.author.id:
+                    if m.reference is None:
+                        return False
+                    elif m.reference.message_id == context.id:
+                        try:
+                            if int(m.content) < len(keys) + 1 and int(m.content) > 0:
+                                return True
+                            else:
+                                raise ValueError
+                        except BaseException:
+                            return False
+
+            while True:
+                try:
+                    message = await self.bot.wait_for(event='message', timeout=60, check=check)
+                except asyncio.exceptions.TimeoutError:
+                    return await context.reply('Repeater deletion cancelled.')
+                else:
+                    self.to_del.append(keys[int(message.content) - 1])
+                    return await message.reply(
+                        f'Repeater deletion queued for {discord.utils.format_dt(self.reminders_dict[keys[int(message.content) - 1]][0])} UTC')
+        else:
+            await ctx.message.reply('You don\'t currently have any repeaters set.')
+
+
+    @commands.command(aliases=('check_repeater', 'check_repeaters'), description='DMs a list of repeaters the current user has.', brief='Returns repeaters set.')
+    async def repeaters(self, ctx):
+        reminders = 0
+        for key in self.reminders_dict.keys():
+            if ctx.author.id == key[0]:
+                reminders += 1
+        if reminders == 1:
+            for key in self.reminders_dict.keys():
+                if ctx.author.id == key[0]:
+                    return await ctx.author.send(
+                        f'{ctx.author.mention} Your repeater ends on {discord.utils.format_dt(self.reminders_dict[key][0])} UTC!')
+        elif reminders > 1:
+            keys = list()
+            for key in self.reminders_dict.keys():
+                if ctx.author.id == key[0]:
+                    keys.append(key)
+            string = f'You have **{len(keys)}** repeaters - '
+            for index, key in enumerate(keys):
+                if (index + 1) != len(keys):
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key][0])} UTC, '
+                else:
+                    string = f'{string}{discord.utils.format_dt(self.reminders_dict[key][0])} UTC.'
+            return await ctx.author.send(f'{ctx.author.mention} {string}')
+        else:
+            return await ctx.message.reply('You do not currently have an active repeater.')
 
 
 class fetch_data_cog(commands.Cog):
@@ -2795,7 +2917,9 @@ def remove_cogs():
     bot.remove_cog(extras_cog(bot))
     bot.remove_cog(reminder_cog(bot))
     bot.remove_cog(alarm_cog(bot))
+    bot.remove_cog(repeater_cog(bot))
 
+    
 
 def add_cogs():
     bot.add_cog(cog=event_cog(bot), override=True)
@@ -2820,7 +2944,9 @@ def add_cogs():
     bot.add_cog(cog=extras_cog(bot), override=True)
     bot.add_cog(cog=reminder_cog(bot), override=True)
     bot.add_cog(cog=alarm_cog(bot), override=True)
+    bot.add_cog(cog=repeater_cog(bot), override=True)
 
+    
 
 
 add_cogs()
