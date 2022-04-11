@@ -2554,8 +2554,8 @@ class extras_cog(commands.Cog):
 
 
     @commands.command(aliases=['g'], description='Sends a message for users to react to, once done, randoms picks the number of members passed.', brief='Starts a giveaway.')
-    @commands.cooldown(1, 600, commands.BucketType.guild)
-    async def giveaway(self, ctx: commands.Context, members: int=3, role_to_mention: discord.Role=None):
+    @commands.cooldown(1, 600, commands.BucketType.member)
+    async def giveaway(self, ctx: commands.Context, members: int=3, role_to_mention: discord.Role=None, hours: int=0, minutes: int=10):
         context = await ctx.author.send(f'{ctx.author.mention} are you sure you want to start a giveaway in **{ctx.guild}** to **{members}** users?')
         await context.add_reaction('✅')
         await context.add_reaction('❌')
@@ -2600,23 +2600,24 @@ class extras_cog(commands.Cog):
             @discord.ui.button(label='Join Giveaway!', style=discord.ButtonStyle.green)
             async def callback(self: discord.ui.view, button: discord.ui.Button, interact: discord.MessageInteraction):
                 if not interact.author.id in added:
-                    added.append(interact.author.id)
+                    for i in range(3):
+                        added.append(interact.author.id)
                     await interact.send(ephemeral=True, content='You successfully joined the giveaway!')
                 else:
                     await interact.send(ephemeral=True, content='You already joined the giveaway.')
 
 
         context = await ctx.message.reply(embed=embed, view=view())
-        await asyncio.sleep(600)
+        await asyncio.sleep(10)
         await context.edit(view=None)
 
         winners = list()
-        if len(winners) > members:
+        if len(added) > members:
             pass
         else:
             await ctx.message.reply(f'Less than **{members}** people joined the giveaway.')
             return ctx.command.reset_cooldown(ctx)
-
+        self.giveaways_dict[(ctx.guild.id, ctx.message.channel.id, context.id)] = [added, members]
         for i in range(members):
             winner = random.choice(added)
             winners.append(ctx.guild.get_member(winner).mention)
@@ -2624,6 +2625,47 @@ class extras_cog(commands.Cog):
         winner = '\n'.join(winners)
         embed = discord.Embed(title='Winners', description=winner)
         await context.reply(ctx.author.mention, embed=embed)
+
+
+    @commands.command()
+    async def reroll(self, ctx, message: discord.Message=None):
+        print(self.giveaways_dict[(message.guild.id, message.channel.id, message.id)])
+        if message is None and ctx.message.reference is None:
+            return await ctx.send('Please reply to the giveaway message or enter an id to reroll.')
+        elif isinstance(message, discord.Message):
+            try:
+                prev = self.giveaways_dict[(message.guild.id, message.channel.id, message.id)]
+                data = self.giveaways_dict[(message.guild.id, message.channel.id, message.id)]
+            except KeyError:
+                return await ctx.send('Please reply to the giveaway message or enter an id to reroll.')
+            else:
+                print('hello', data)
+                winners = list()
+                for i in range(data[1]):
+                    winner = random.choice(data[0])
+                    winners.append(ctx.guild.get_member(winner).mention)
+                thing = '\n'.join(winners)
+                embed = discord.Embed(title='Winners', description=thing)
+                del self.giveaways_dict[(message.guild.id, message.channel.id, message.id)]
+                self.giveaways_dict[(message.guild.id, message.channel.id, message.id)] = prev
+                return await message.reply(ctx.author.mention, embed=embed)
+        elif not(ctx.message.reference is None):
+            message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+            try:
+                prev = list(self.giveaways_dict[(message.guild.id, message.channel.id, message.id)])
+                data = list(self.giveaways_dict[(message.guild.id, message.channel.id, message.id)])
+            except KeyError:
+                return await ctx.send('Please reply to the giveaway message or enter an id to reroll.')
+            else:
+                winners = list()
+                for i in range(data[1]):
+                    winner = random.choice(data[0])
+                    winners.append(ctx.guild.get_member(winner).mention)
+                winner = '\n'.join(winners)
+                embed = discord.Embed(title='Winners', description=winner)
+                del self.giveaways_dict[(message.guild.id, message.channel.id, message.id)]
+                self.giveaways_dict[(message.guild.id, message.channel.id, message.id)] = prev
+                return await message.reply(ctx.author.mention, embed=embed)
 
 
     @commands.command(aliases=['add_topic'], description = 'Requests a topic verification to be added by the bot owner.', brief = 'Adds a topic.')
