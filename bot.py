@@ -2608,7 +2608,7 @@ class extras_cog(commands.Cog):
 
 
         context = await ctx.message.reply(embed=embed, view=view())
-        await asyncio.sleep(10)
+        await asyncio.sleep(hours * 60 * 60 + minutes*60)
         await context.edit(view=None)
 
         winners = list()
