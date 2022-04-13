@@ -2253,6 +2253,7 @@ class filters_cog(commands.Cog):
     @commands.command(aliases=('content_check', 'content_filter'))
     @commands.has_permissions(manage_messages=True, moderate_members=True)
     async def content(self, ctx):
+        message = ctx.message
         try:
             content_check[str(message.guild.id)]
         except KeyError:
