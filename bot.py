@@ -2588,9 +2588,9 @@ class extras_cog(commands.Cog):
         current_time = datetime.utcnow()
         current_time = current_time + timedelta(minutes=10)
         if role_to_mention is None:
-            embed = discord.Embed(color=ctx.author.color, description=f'**{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
+            embed = discord.Embed(color=ctx.author.color, description=f'**{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time + timedelta(seconds=hours * 60 * 60 + minutes*60), style="R")} with **{members}** winners!')
         else:
-            embed = discord.Embed(color=ctx.author.color, description=f'{role_to_mention.mention} **{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time, style="R")} with **{members}** winners!')
+            embed = discord.Embed(color=ctx.author.color, description=f'{role_to_mention.mention} **{ctx.author}** is hosting a giveaway that ends {discord.utils.format_dt(current_time + timedelta(seconds=hours * 60 * 60 + minutes*60), style="R")} with **{members}** winners!')
         embed.set_author(icon_url=icon, name=f'Giveaway in {ctx.guild}!')
         embed.set_footer(icon_url=icon, text=f'Giveaway in {ctx.guild} on {str(ctx.message.created_at).rsplit(" ")[0]} started by {ctx.author}.')
 
