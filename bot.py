@@ -580,6 +580,29 @@ class mute_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description = 'Commands that are related to muting members/managing timeouts.'
+        
+        
+    @commands.command(aliases=('vc_mute', 'voice_mute'), description='Mutes a member in all vcs.', brief='Disables a member to speak.')
+    @commands.has_permissions(mute_members=True)
+    async def vcmute(self, ctx, member: discord.Member, *, reason: str='None'):
+        await member.edit(mute=True, reason=reason)
+        await ctx.message.reply(f'{member.mention} was voice muted because *{reason}*.')
+
+
+    @commands.command(aliases=('vc_unmute', 'voice_unmute'), description='Unmutes a member in all vcs.', brief='Enables a member to speak.')
+    @commands.has_permissions(mute_members=True)
+    async def vcunmute(self, ctx, member: discord.Member, *, reason: str='None'):
+        await member.edit(mute=False, reason=reason)
+        await ctx.message.reply(f'{member.mention} was voice unmuted because *{reason}*.')
+
+
+    @commands.command(aliases=('vc_kick', 'voice_kick'), description='Removes a member from the current vc.', brief='Disconnects a member from a vc.')
+    @commands.has_permissions(mute_members=True)
+    async def vckick(self, ctx, member: discord.Member, *, reason: str='None'):
+        if member.voice is None:
+            return
+        await member.edit(voice_channel=None, reason=reason)
+        await ctx.message.reply(f'{member.mention} was kicked from voice because *{reason}*.')
 
 
     @commands.command(description = 'Adds a timeout to <member> for time specified with reason [reason].', brief = 'Mutes a member.')
