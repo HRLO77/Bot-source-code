@@ -23,6 +23,8 @@ import json
 from datetime import datetime
 TOKEN = 'TOKEN'
 
+content_check = dict()
+
 
 def convert_to_list(string):
     cache = ''
@@ -80,7 +82,7 @@ def log(to_log: tuple, guild):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
+reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
 
 topics = list()
 success = {True: 0, False: 0, 'last': False}
@@ -186,6 +188,10 @@ class event_cog(commands.Cog):
                 filtering[str(message.guild.id)]
             except KeyError:
                 filtering[str(message.guild.id)] = 1
+            try:
+                content_check[str(message.guild.id)]
+            except KeyError:
+                content_check[str(message.guild.id)] = 1
         async def syspurgeban(member_id, limit=10, bulk: bool = False):
             list_messages = []
             messages = 0
@@ -303,8 +309,9 @@ class event_cog(commands.Cog):
                 await message.author.timeout(duration=600.0, reason='Spam')
                 await message.author.send(
                     f'{message.author.mention} you\'ve been muted in **{message.guild}** for spamming for **10** minutes.')
-        if profanity.contains_profanity(message.content.lower()):
-            await message.delete()
+        if bool(content_check[str(message.guild.id)]):
+            if profanity.contains_profanity(message.content.lower()):
+                await message.delete()
         if (filtering[str(message.guild.id)]) == 1:
             try:
                 await bot.wait_for('message', timeout=1, check=check_for_spam)
@@ -501,24 +508,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon,
-                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon,
+    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -580,8 +587,8 @@ class mute_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description = 'Commands that are related to muting members/managing timeouts.'
-        
-        
+
+
     @commands.command(aliases=('vc_mute', 'voice_mute'), description='Mutes a member in all vcs.', brief='Disables a member to speak.')
     @commands.has_permissions(mute_members=True)
     async def vcmute(self, ctx, member: discord.Member, *, reason: str='None'):
@@ -1353,7 +1360,7 @@ class ban_cog(commands.Cog):
         self.check_bans.start()
 
 
-    @commands.command(aliases=['tempban'], description='Bans a member for time specified..', brief='Temporarily bans a member.')
+    @commands.command(aliases=['tempban'], description='Bans a member for time specified.', brief='Temporarily bans a member.')
     @commands.has_permissions(ban_members=True)
     async def temp_ban(self, ctx, member: discord.Member, years: int=0, months: int=0, days: int=1, hours: int=0, reason: str='None'):
         current_time = datetime.utcnow()
@@ -1539,7 +1546,7 @@ class reminder_cog(commands.Cog):
     @commands.command(aliases=('start_reminder', 'reminder'), description='Sets a reminder for the current user to go off on the arguments passed.', brief='Creates a reminder.')
     async def remind(self, ctx, years: int=0, months: int=0, days: int = 1, hours: int = 0, minutes: int = 0, seconds: int = 0):
         current_time = datetime.utcnow()
-        current_time = current_time + timedelta(days = days + months*30 + (years*365 + int(calendar.isleap(current_time.year))), hours = hours, minutes = minutes, seconds = seconds)        
+        current_time = current_time + timedelta(days = days + months*30 + (years*365 + int(calendar.isleap(current_time.year))), hours = hours, minutes = minutes, seconds = seconds)
         if current_time < datetime.utcnow():
             return await ctx.message.reply('Please enter values that are in the future.')
         self.reminders_dict[(ctx.author.id, random.randint(0, 99999))] = current_time
@@ -1596,18 +1603,6 @@ class reminder_cog(commands.Cog):
         else:
             await ctx.message.reply('You don\'t currently have any reminders set.')
 
-    @commands.command(aliases=('format_date', 'format_dt', 'format_time'), description='Formats arguments passed into discord timestamp formating.', brief='Returns a timestamp.')
-    async def format(self, ctx, years: int = datetime.utcnow().year, months: int = datetime.utcnow().month,
-                     days: int = datetime.utcnow().day, hours: int = datetime.utcnow().hour,
-                     minutes: int = datetime.utcnow().minute, seconds: int = datetime.utcnow().second):
-        current_time = datetime.utcnow()
-        try:
-            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes,
-                                                second=seconds)
-        except BaseException:
-            await ctx.message.reply('That isn\'t a valid datetime.')
-        except:
-            await ctx.message.reply(str(discord.utils.format_dt(current_time)))
 
     @commands.command(aliases=('check_reminder', 'check_reminders'), description='DMs a list of reminders the current user has.', brief='Returns reminders set.')
     async def reminders(self, ctx):
@@ -1634,8 +1629,8 @@ class reminder_cog(commands.Cog):
             return await ctx.author.send(f'{ctx.author.mention} {string}')
         else:
             return await ctx.message.reply('You do not currently have an active reminder.')
-        
-        
+
+
 class repeater_cog(commands.Cog):
 
     @tasks.loop(seconds=1)
@@ -2053,44 +2048,45 @@ class owner_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
-    @commands.command(aliases=('e', 'eval'), description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19', brief='Evaluates output of <python_code>.')
-    @commands.is_owner()
-    async def evaluate(self, ctx, *, python_code: str):
-        if not (ctx.message.attachments is None) and python_code is None:
-            for index, attachment in enumerate(ctx.message.attachments):
-                if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
-                    name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
-                    file = await attachment.save(fp=fr'./{name}')
-                    os.remove(fr'./{name}')
-                    python_code = open(fr'./{name}', 'r').read()
-        if python_code.startswith('```py'):
-            python_code = python_code.lstrip('```py')
-        elif python_code.startswith('```'):
-            python_code = python_code.lstrip('```')
-        elif python_code.startswith('`'):
-            python_code = python_code.lstrip('`')
-        if python_code.endswith('```'):
-            python_code = python_code.rstrip('```')
-        elif python_code.endswith('`'):
-            python_code = python_code.rstrip('`')
-        result = subprocess.run([sys.executable, "-c", python_code],
-                                capture_output=True, text=True, timeout=5)
-        if (f'''```
+
+        @commands.command(aliases=('e', 'eval'),
+                          description='Returns the output of <python_code>, sends output in a .txt file if the lines are greater than 19',
+                          brief='Evaluates output of <python_code>.')
+        @commands.is_owner()
+        async def evaluate(self, ctx, *, python_code: str):
+            if not (ctx.message.attachments is None) and python_code is None:
+                for index, attachment in enumerate(ctx.message.attachments):
+                    if any(i in str(attachment.filename).rsplit('.')[-1] for i in ('txt', 'py', 'python')):
+                        name = f'{random.randint(0, 99999)}.{str(attachment.filename).rsplit(".")[-1]}'
+                        file = await attachment.save(fp=fr'./{name}')
+                        os.remove(fr'./{name}')
+                        python_code = open(fr'./{name}', 'r').read()
+            if python_code.startswith('```py'):
+                python_code = python_code.lstrip('```py')
+            elif python_code.startswith('```'):
+                python_code = python_code.lstrip('```')
+            elif python_code.startswith('`'):
+                python_code = python_code.lstrip('`')
+            if python_code.endswith('```'):
+                python_code = python_code.rstrip('```')
+            elif python_code.endswith('`'):
+                python_code = python_code.rstrip('`')
+            result = subprocess.run([sys.executable, "-c", python_code],
+                                    capture_output=True, text=True, timeout=5)
+            if (f'''```
 {result.stderr}
 {result.stdout}
 ```'''.count('''
-    ''') - 2) > 19:
-            o = open('out.txt', 'w')
-            o = o.writelines(str(result.stdout))
-            file = discord.File(
-                r'./out.txt')
-            await ctx.send(content='Program output too long, full output in text document:', file=file)
-            o = ''
-            return
-        f = ''
-        await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
+        ''') - 2) > 19:
+                o = open('out.txt', 'w')
+                o = o.writelines(str(result.stdout))
+                file = discord.File(
+                    r'./out.txt')
+                await ctx.send(content='Program output too long, full output in text document:', file=file)
+                o = ''
+                return
+            f = ''
+            await ctx.send(f'''{ctx.author.mention} Your code has finished with a return code of **{result.returncode}**:
 ```
 {result.stderr}
 {result.stdout}
@@ -2252,6 +2248,23 @@ class filters_cog(commands.Cog):
         else:
             raise ValueError('Invalid value for "spam_check".')
         await ctx.send(f'Spam filter level has been set to {value}.')
+
+
+    @commands.command(aliases=('content_check', 'content_filter'))
+    @commands.has_permissions(manage_messages=True, moderate_members=True)
+    async def content(self, ctx):
+        try:
+            content_check[str(message.guild.id)]
+        except KeyError:
+            content_check[str(message.guild.id)] = 1
+            return await ctx.message.reply(f'Content filtering for this guild has been set to **True**.')
+        else:
+            if bool(content_check[str(message.guild.id)]):
+                content_check[str(message.guild.id)] = 0
+            else:
+                content_check[str(message.guild.id)] = 1
+            return await ctx.message.reply(f'Content filtering for this guild has been set to **{content_check[str(message.guild.id)]}**.')
+
 
 
 class channels_cog(commands.Cog):
@@ -2573,7 +2586,27 @@ class extras_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.giveaways_dict = dict()
         self.description = 'Commands that do not fall into any other category.'
+
+
+    @commands.command(aliases=('format_date', 'format_dt', 'format_time'), description='Formats arguments passed into discord timestamp formating.', brief='Returns a timestamp.')
+    async def format(self, ctx, years: int = datetime.utcnow().year, months: int = datetime.utcnow().month,
+                     days: int = datetime.utcnow().day, hours: int = datetime.utcnow().hour,
+                     minutes: int = datetime.utcnow().minute, seconds: int = datetime.utcnow().second):
+        current_time = datetime.utcnow()
+        try:
+            current_time = current_time.replace(year=years, month=months, day=days, hour=hours, minute=minutes,
+                                                second=seconds)
+        except BaseException:
+            await ctx.message.reply('That isn\'t a valid datetime.')
+        except:
+            await ctx.message.reply(str(discord.utils.format_dt(current_time)))
+
+
+    @commands.command(aliases=('utc_now', 'utcnow'), description='Returns the current UTC time, plus additions specified.', brief='The current time in UTC.')
+    async def utc(self, ctx, years: int=0, months: int=0, days: int=0, hours: int=0, minutes: int=0):
+        await ctx.message.reply(f'{discord.utils.format_dt((datetime.utcnow() + timedelta(days=days + months*30 + years*365, hours=hours, minutes=minutes)).strftime("20%y-%m-%d %r"))}, {(datetime.utcnow() + timedelta(days=days + months*30 + years*365, hours=hours, minutes=minutes)).strftime("20%y-%m-%d %r")}')
 
 
     @commands.command(aliases=['g'], description='Sends a message for users to react to, once done, randoms picks the number of members passed.', brief='Starts a giveaway.')
@@ -2690,7 +2723,6 @@ class extras_cog(commands.Cog):
                 self.giveaways_dict[(message.guild.id, message.channel.id, message.id)] = prev
                 return await message.reply(ctx.author.mention, embed=embed)
 
-
     @commands.command(aliases=['add_topic'], description = 'Requests a topic verification to be added by the bot owner.', brief = 'Adds a topic.')
     @commands.cooldown(1, 420, commands.BucketType.user)
     async def topic_add(self, ctx, *, topic: str):
@@ -2791,7 +2823,7 @@ class alarm_cog(commands.Cog):
             data = self.alarms_dict[key]
             for day in data[0]:
                 if data[4]:
-                    if (int(self.DAYS_INT[day]) - 1) == now.weekday():
+                    if (int(self.DAYS_INT[day]) - 1):
                         if int(data[1]) == now.hour:
                             if int(now.minute) == data[2]:
                                 try:
@@ -2984,7 +3016,6 @@ def remove_cogs():
     bot.remove_cog(alarm_cog(bot))
     bot.remove_cog(repeater_cog(bot))
 
-    
 
 def add_cogs():
     bot.add_cog(cog=event_cog(bot), override=True)
@@ -3011,7 +3042,6 @@ def add_cogs():
     bot.add_cog(cog=alarm_cog(bot), override=True)
     bot.add_cog(cog=repeater_cog(bot), override=True)
 
-    
 
 
 add_cogs()
