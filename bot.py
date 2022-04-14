@@ -2077,7 +2077,7 @@ class owner_cog(commands.Cog):
 {result.stderr}
 {result.stdout}
 ```'''.count('''
-        ''') - 2) > 19:
+        ''') - 2) > 9:
                 o = open('out.txt', 'w')
                 o = o.writelines(str(result.stdout))
                 file = discord.File(
