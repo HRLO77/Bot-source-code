@@ -782,6 +782,11 @@ class ticket_cog(commands.Cog):
                             f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
                         return
 
+                    
+    @ticket.on_error
+    async def ticket_error(self, ctx: commands.Context, error):
+        ctx.command.reset_cooldown(ctx=ctx)                    
+                    
 
 class messages_cog(commands.Cog):
 
