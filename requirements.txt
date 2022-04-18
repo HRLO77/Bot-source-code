@@ -1,3 +1,0 @@
-disnake
-discord
-better_profanity
