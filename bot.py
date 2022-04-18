@@ -17,6 +17,7 @@ from disnake.ext import commands
 import disnake as discord
 import random
 import Functions
+import requests
 import importlib as ilib
 import asyncio
 import json
@@ -2167,7 +2168,7 @@ class print_cog(commands.Cog):
 async def ping(ctx):
     embed = discord.Embed(title='Status')
     if (bot.latency * 1000) > 119:
-        embed.color = discord.Color.from_rgb(0,255,0)
+        embed.color = discord.Color.from_rgb(255, 0, 0)
     elif (bot.latency * 1000) > 79:
         embed.color = discord.Color.from_rgb(255,249,8)
     elif (bot.latency * 1000) > 39:
@@ -2195,6 +2196,8 @@ async def ping(ctx):
         embed.add_field(name='Background ping', value=f'Last ping: Successful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
     else:
         embed.add_field(name='Background ping', value=f'Last ping: Unsuccessful\nSuccessful pings: **{(success[True] / (success[True] + success[False])) * 100}%**')
+    embed.add_field(name='Heroku status', value=f'Apps  :{requests.get("https://status.heroku.com/api/v4/current-status").json()["status"][0]["status"]}_circle:\nData  :{requests.get("https://status.heroku.com/api/v4/current-status").json()["status"][1]["status"]}_circle:\nTools :{requests.get("https://status.heroku.com/api/v4/current-status").json()["status"][2]["status"]}_circle:')
+    
     await ctx.message.reply(embed=embed)
 
 
