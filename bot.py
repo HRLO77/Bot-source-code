@@ -1,6 +1,8 @@
 # import ensurepip
 #
 # ensurepip.bootstrap()
+log_channels = dict()
+import requests
 import os
 import calendar
 from better_profanity import profanity
@@ -17,7 +19,6 @@ from disnake.ext import commands
 import disnake as discord
 import random
 import Functions
-import requests
 import importlib as ilib
 import asyncio
 import json
@@ -83,7 +84,8 @@ def log(to_log: tuple, guild):
 
 # If you want to create a system to provides a default role when a member reacts, follow the dict syntax below.
 # Remember to enter integers for all of the ID's, and a string for the emoji! You can create multiple default roles for different messages in your channel using this dictionary syntax!
-reacting = {('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')}
+# ('guild_id', 'reacting_message_id'): ('role_id_to_add', 'emoji_to_react')
+reacting = {('guild_id', 'message_id_to_react'): ('role_id_to_add', 'emoji_to_react')}
 
 topics = list()
 success = {True: 0, False: 0, 'last': False}
@@ -138,6 +140,47 @@ class event_cog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+
+    # @commands.Cog.listener("on_member_ban")
+    # async def on_member_ban(self, guild: discord.Guild, user: discord.User):
+    #     logs = await (await guild.audit_logs(limit=100, action=discord.AuditLogAction.ban)).flatten()
+    #     action = None
+    #     for i in logs:
+    #         try:
+    #             if i.target.id == user.id:
+    #                 action = i
+    #                 break
+    #         except BaseException:
+    #             continue
+    #     embed = discord.Embed(color=discord.Color.red, title='Ban', description=f'{user.mention} was banned on {discord.utils.format_dt(action.created_at)} by {action.user.mention} because {action.reason}.')
+    #     try:
+    #         await (await guild.fetch_channel(log_channels[guild.id])).send(embed=embed)
+    #     except (discord.NotFound, discord.HTTPException, discord.Forbidden):
+    #         channel = await guild.create_channel(name='mod-logs')
+    #         await channel.send(embed=embed)
+    #         logs_channel[guild.id] = channel.id
+    #
+    #
+    #
+    # @commands.Cog.listener("on_member_unban")
+    # async def on_member_unban(self, guild: discord.Guild, user: discord.User):
+    #     logs = await guild.audit_logs(limit=100, action=discord.AuditLogAction.unban).flatten()
+    #     action = None
+    #     for i in logs:
+    #         try:
+    #             if i.target.id == user.id:
+    #                 action = i
+    #                 break
+    #         except BaseException:
+    #             continue
+    #     embed = discord.Embed(color=discord.Color.green, title='Unban', description=f'{user.mention} was unbanned on {discord.utils.format_dt(action.created_at)} by {action.user.mention} because {action.reason}.')
+    #     try:
+    #         await (await guild.fetch_channel(log_channels[guild.id])).send(embed=embed)
+    #     except (discord.NotFound, discord.HTTPException, discord.Forbidden):
+    #         channel = await guild.create_channel(name='mod-logs')
+    #         await channel.send(embed=embed)
+    #         logs_channel[guild.id] = channel.id
 
 
     @commands.Cog.listener("on_disconnect")
@@ -439,15 +482,58 @@ class event_cog(commands.Cog):
         await member.send(':wave:')
 
 
+    # @commands.Cog.listener('on_member_update')
+    # async def on_member_update(self, before: discord.Member, after: discord.Member):
+    #     if isinstance(after.current_timeout, datetime):
+    #         logs = await after.guild.audit_logs(limit=100, action=discord.AuditLogAction.member_update).flatten()
+    #         action = None
+    #         print('Done!')
+    #         for i in logs:
+    #             try:
+    #                 if i.target.id == user.id and not isinstance(i.target.current_timeout, None) is None:
+    #                     action = i
+    #                     break
+    #             except BaseException:
+    #                 continue
+    #         if action is None:
+    #             return
+    #         embed = discord.Embed(color=discord.Color.yellow, title='Mute',
+    #                               description=f'{after.mention} was muted on {discord.utils.format_dt(action.created_at)} by {action.user.mention} because {action.reason}.')
+    #         try:
+    #             await (await after.guild.fetch_channel(log_channels[after.guild.id])).send(embed=embed)
+    #         except (discord.NotFound, discord.HTTPException, discord.Forbidden):
+    #             channel = await after.  guild.create_channel(name='mod-logs')
+    #             await channel.send(embed=embed)
+    #             logs_channel[after.guild.id] = channel.id
+
+
+
     @commands.Cog.listener("on_meber_remove")
     async def on_member_remove(self, member: discord.Member):
-        await member.send(f'{member.mention} see you soon in **{member.guild.name}**')
+        await member.send(f'{member.mention} see you soon in **{member.guild.name}**!')
         await member.send(':wave:')
+        # logs = await member.guild.audit_logs(limit=100, action=discord.AuditLogAction.kick).flatten()
+        # action = None
+        # for i in logs:
+        #     try:
+        #         if i.target.id == member.id:
+        #             action = i
+        #             break
+        #     except BaseException:
+        #         continue
+        # if action is None:
+        #     return
+        # embed = discord.Embed(color=discord.Color.orange, title='Kick',
+        #                       description=f'{user.mention} was kicked on {discord.utils.format_dt(action.created_at)} by {action.user.mention} because {action.reason}.')
+        # try:
+        #     await (await member.guild.fetch_channel(log_channels[member.guild.id])).send(embed=embed)
+        # except (discord.NotFound, discord.HTTPException, discord.Forbidden):
+        #     channel = await member.guild.create_channel(name='mod-logs')
+        #     await channel.send(embed=embed)
+        #     logs_channel[member.guild.id] = channel.id
 
 
     # s
-
-
     @commands.Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload):
         data = reacting.get((payload.guild_id, payload.message_id))
@@ -509,24 +595,24 @@ class event_cog(commands.Cog):
             print('Message delete log error.')
 
 
-    @commands.Cog.listener("on_command_error")
-    async def on_command_error(self, ctx, error):
-        embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
-        embed.color = ctx.author.color
-        icon = self.bot.user.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = self.bot.user.default_avatar.url
-        embed.set_author(icon_url=icon, name=self.bot.user)
-        icon = ctx.author.avatar
-        if not (icon is None):
-            icon = icon.url
-        else:
-            icon = ctx.author.default_avatar.url
-        embed.set_footer(icon_url=icon,
-                         text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
-        await ctx.send(embed=embed)
+    # @commands.Cog.listener("on_command_error")
+    # async def on_command_error(self, ctx, error):
+    #     embed = discord.Embed(title=f"An error occurred:", description=f'{error}')
+    #     embed.color = ctx.author.color
+    #     icon = self.bot.user.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = self.bot.user.default_avatar.url
+    #     embed.set_author(icon_url=icon, name=self.bot.user)
+    #     icon = ctx.author.avatar
+    #     if not (icon is None):
+    #         icon = icon.url
+    #     else:
+    #         icon = ctx.author.default_avatar.url
+    #     embed.set_footer(icon_url=icon,
+    #                      text=f'{ctx.author} ran a command ran at {str(ctx.message.created_at).rsplit(".")[0] + " GMT"} in the {ctx.message.channel} channel within {ctx.message.guild}.')
+    #     await ctx.send(embed=embed)
 
 
 class kick_cog(commands.Cog):
@@ -619,12 +705,12 @@ class mute_cog(commands.Cog):
         duration = timedelta(days=days, minutes=minutes, hours=hours)
         await member.timeout(duration=duration, reason=reason)
         try:
-            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {days} days, {hours} hours and {minutes} minutes, because:
+            await member.send(f'''{member.mention} you were put in the timeout chair by **{ctx.author}** for {duration}, because:
 **{reason}**.''')
         except (discord.HTTPException, discord.errors.HTTPException, discord.ext.commands.errors.CommandInvokeError,
                 commands.CommandInvokeError, commands.CommandError, AttributeError, discord.Forbidden):
             print(f'Cannot direct message {str(member)}.')
-        await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {time} minutes, because:
+        await ctx.send(f'''{ctx.author.mention} put {member.mention} in the timeout chair for {duration}, because:
 **{reason}**.''')
 
 
@@ -703,7 +789,7 @@ class ticket_cog(commands.Cog):
 
     @commands.command(aliases=('open_ticket', 'start_ticket'), description = 'Opens a ticket channel in the current guild.', brief = 'Creates a ticket.')
     @commands.cooldown(1, 600, commands.BucketType.member)
-    async def ticket(self, ctx, *, reason: str):
+    async def ticket(self, ctx, *, reason: str='None'):
         bot_author = ctx.guild.me
         cached_message = None
         truth = False
@@ -723,7 +809,7 @@ class ticket_cog(commands.Cog):
         embed = discord.Embed(title=f'Ticket-{integer}', description=f'{ctx.author.mention} run `@{bot_author.name} close` to close this ticket.', color=(bot_author.color))
         embed.set_author(name=f'{ctx.author} requested a ticket', icon_url=icon)
         icon = ctx.guild.icon
-        if icon is None:
+        if icon is None: 
             icon = ctx.author.avatar
             if icon is None:
                 icon = ctx.author.default_avatar.url
@@ -766,8 +852,6 @@ class ticket_cog(commands.Cog):
                     await ticket.set_permissions(ctx.guild.get_role(role), view_channel=True)
                 except (discord.Forbidden, discord.HTTPException, discord.NotFound):
                     print(f'Could not whitelist role {role} in guild {ctx.guild.id} for ticket viewing.')
-
-
         while True:
             try:
                 cached_message = await self.bot.wait_for('message', timeout=600)
@@ -782,8 +866,8 @@ class ticket_cog(commands.Cog):
                         await ctx.author.send(
                             f'{ctx.author.mention} `ticket-{integer}` was closed in **{ctx.guild}** by you.')
                         return
-                  
-                    
+
+
 
 class messages_cog(commands.Cog):
 
@@ -791,6 +875,37 @@ class messages_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description = 'Commands that are related to managing/viewing messages.'
+
+
+    @commands.command(description='Creates an embed with json data provided, read documentation at https://pastebin.com/9w4Fp110', brief='Sends a highly customizable embed.')
+    async def custom_embed(self, ctx):
+        if len(ctx.message.attachments) == 1:
+            if ctx.message.attachments[0].filename.rsplit('.')[-1] == 'json':
+                contents = ((await ctx.message.attachments[0].read()).decode())
+                try:
+                    data = json.loads(contents)
+                except BaseException:
+                    return await ctx.send('Could not create embed with sent json data.')
+                else:
+                    try:
+                        color = data.get('color') if data.get('color') is not None else discord.Embed.Empty
+                        description = data.get('description') if data.get('description') is not None else discord.Embed.Empty
+                        title = data.get('title') if data.get('title') is not None else discord.Embed.Empty
+                        author = data.get('author') if data.get('author') is not None else discord.Embed.Empty
+                        footer = data.get('footer') if data.get('footer') is not None else discord.Embed.Empty
+                        author_icon = data.get('author_icon') if data.get('author_icon') is not None else discord.Embed.Empty
+                        footer_icon = data.get('footer_icon') if data.get('footer_icon') is not None else discord.Embed.Empty
+                        fields = list()
+                        for name, value in data.get('fields'):
+                            fields.append((name, value))
+                    except BaseException:
+                        embed = discord.Embed(color=discord.Color.from_rgb(r=color[0], g=color[1], b=color[2]), description=description, title=title)
+                        embed.set_footer(icon_url=footer_icon, text=footer)
+                        embed.set_author(icon_url=author_icon, name=author)
+                        for tup in fields:
+                            embed.add_field(name=tup[0], value=tup[1])
+                        await ctx.send(embed=embed)
+
 
     @commands.command(description = 'Finds the last message deleted in the current guild/channel passed.', brief = 'Finds the last message deleted.')
     @commands.has_permissions(view_audit_log=True)
@@ -2079,7 +2194,10 @@ class owner_cog(commands.Cog):
 {result.stderr}
 {result.stdout}
 ```'''.count('''
-    ''') - 2) > 9:
+        ''') - 2) > 9 or len(f'''```
+{result.stderr}
+{result.stdout}
+```''') > 1000:
             o = open('out.txt', 'w')
             o = o.writelines(str(result.stdout))
             file = discord.File(
